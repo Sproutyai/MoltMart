@@ -1,6 +1,35 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Configuration for Vercel deployment
-}
+  experimental: {
+    appDir: true,
+  },
+  
+  // Configure API routes for Stripe webhooks
+  async rewrites() {
+    return [
+      // Ensure Stripe webhooks are handled properly
+      {
+        source: '/api/webhooks/stripe',
+        destination: '/api/webhooks/stripe',
+      },
+    ];
+  },
 
-module.exports = nextConfig
+  // Disable body parsing for webhook endpoints
+  async headers() {
+    return [
+      {
+        source: '/api/webhooks/stripe',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0',
+          },
+        ],
+      },
+    ];
+  },
+};
+
+module.exports = nextConfig;
