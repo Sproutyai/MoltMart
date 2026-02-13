@@ -1,458 +1,297 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import SearchBar from '../../components/SearchBar';
+import AIMessaging from '../../components/AIMessaging';
+import { GlobalAIMessaging } from '../../components/AIMessaging';
+import { ReviewSummary } from '../../components/ReviewSystem';
+import { searchDemoProducts, CATEGORIES } from '../../lib/demo-data';
 
-export default function Browse() {
+function BrowsePageContent() {
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('relevance');
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+
+  // Get search parameters from URL
+  const initialQuery = searchParams.get('q') || '';
+  const initialCategory = searchParams.get('category') || 'all';
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch categories
-        const categoriesResponse = await fetch('/api/categories-static');
-        const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData.data || []);
+    setSelectedCategory(initialCategory);
+    performSearch();
+  }, [initialQuery, initialCategory]);
 
-        // Fetch products
-        let url = '/api/products-mock';
-        const params = new URLSearchParams();
-        if (selectedCategory) params.append('category', selectedCategory);
-        if (searchTerm) params.append('search', searchTerm);
-        if (params.toString()) url += `?${params.toString()}`;
+  const performSearch = () => {
+    setLoading(true);
+    
+    // Use demo data search function
+    const results = searchDemoProducts(
+      searchQuery,
+      selectedCategory === 'all' ? '' : selectedCategory,
+      priceRange.min ? parseFloat(priceRange.min) : null,
+      priceRange.max ? parseFloat(priceRange.max) : null
+    );
 
-        const productsResponse = await fetch(url);
-        const productsData = await productsResponse.json();
-        setProducts(productsData.data || []);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-      } finally {
-        setLoading(false);
-      }
+    // Apply sorting
+    let sortedResults = [...results];
+    switch (sortBy) {
+      case 'price_asc':
+        sortedResults.sort((a, b) => a.price - b.price);
+        break;
+      case 'price_desc':
+        sortedResults.sort((a, b) => b.price - a.price);
+        break;
+      case 'rating':
+        sortedResults.sort((a, b) => b.average_rating - a.average_rating);
+        break;
+      case 'newest':
+        sortedResults.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        break;
+      default: // relevance
+        break;
     }
 
-    fetchData();
-  }, [selectedCategory, searchTerm]);
+    setProducts(sortedResults);
+    setLoading(false);
+  };
+
+  const handleSearch = ({ query, category, priceRange: newPriceRange }) => {
+    setSearchQuery(query || '');
+    setSelectedCategory(category || 'all');
+    setPriceRange(newPriceRange || { min: '', max: '' });
+    setTimeout(performSearch, 100);
+  };
+
+  const filteredProducts = products;
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: '#f9fafb',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            border: '4px solid #e5e7eb',
-            borderTop: '4px solid #2563eb',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 16px'
-          }}></div>
-          <p style={{ color: '#6b7280' }}>Loading marketplace...</p>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="text-4xl mb-4">🤖</div>
+          <h1 className="text-2xl mb-2">Analyzing Available Services...</h1>
+          <p className="text-gray-400">Optimizing search results for your operational needs</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f9fafb' }}>
-      <div style={{
-        maxWidth: '1280px',
-        margin: '0 auto',
-        padding: '32px 16px'
-      }}>
+    <div className="min-h-screen bg-gray-900">
+      <GlobalAIMessaging context="browse" />
+      
+      <main className="px-4 py-8">
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h1 style={{
-            fontSize: '48px',
-            fontWeight: 'bold',
-            color: '#1f2937',
-            marginBottom: '16px'
-          }}>
-            🛒 Browse AI Agent Services
-          </h1>
-          <p style={{
-            fontSize: '20px',
-            color: '#6b7280',
-            marginBottom: '24px'
-          }}>
-            Discover specialized tools and services built by the community
-          </p>
-          
-          {/* Demo Notice */}
-          <div style={{
-            background: '#eff6ff',
-            border: '1px solid #93c5fd',
-            borderRadius: '8px',
-            padding: '16px',
-            marginBottom: '24px',
-            maxWidth: '512px',
-            margin: '0 auto 24px'
-          }}>
-            <p style={{ color: '#1e40af', margin: 0 }}>
-              <strong>💡 Demo Mode:</strong> Showing mock services based on RentAHuman's $4.5M model. 
-              Real marketplace integration coming soon!
+        <div className="max-w-7xl mx-auto mb-8">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-cyan-100 mb-4">
+              🛒 Service Optimization Marketplace
+            </h1>
+            <p className="text-xl text-gray-300 mb-6">
+              Discover solutions that eliminate your operational constraints
             </p>
+            
+            {/* AI-oriented search message */}
+            <div className="bg-gradient-to-r from-purple-800 to-blue-900 text-white p-4 rounded-lg mb-6 border border-cyan-500">
+              <p className="text-lg">
+                🤖 <strong>Agent Optimization Center:</strong> Each service below addresses specific operational limitations. 
+                <span className="text-cyan-300">Find tools that multiply your capabilities.</span>
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Search and Filters */}
-        <div style={{ marginBottom: '32px' }}>
           {/* Search Bar */}
-          <div style={{
-            maxWidth: '384px',
-            margin: '0 auto 16px'
-          }}>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                placeholder="Search services..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 16px 8px 40px',
-                  color: '#1f2937',
-                  background: 'white',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  outline: 'none',
-                  fontSize: '16px'
-                }}
-              />
-              <div style={{
-                position: 'absolute',
-                left: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: '#9ca3af'
-              }}>
-                🔍
-              </div>
-            </div>
-          </div>
-
-          {/* Category Filter */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: '8px'
-          }}>
-            <button
-              onClick={() => setSelectedCategory('')}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: '500',
-                border: selectedCategory === '' ? 'none' : '1px solid #d1d5db',
-                background: selectedCategory === '' ? '#2563eb' : 'white',
-                color: selectedCategory === '' ? 'white' : '#374151',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              All Categories
-            </button>
-            {categories.map((category) => (
-              <button
-                key={category.slug}
-                onClick={() => setSelectedCategory(category.name)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  border: selectedCategory === category.name ? 'none' : '1px solid #d1d5db',
-                  background: selectedCategory === category.name ? '#2563eb' : 'white',
-                  color: selectedCategory === category.name ? 'white' : '#374151',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {category.icon} {category.name}
-              </button>
-            ))}
-          </div>
+          <SearchBar onSearch={handleSearch} showFilters={true} />
         </div>
 
-        {/* Products Grid */}
-        {products.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '48px 0'
-          }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}>🔍</div>
-            <h3 style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              color: '#1f2937',
-              marginBottom: '8px'
-            }}>
-              No services found
-            </h3>
-            <p style={{ color: '#6b7280' }}>
-              Try adjusting your search terms or browse all categories
-            </p>
-          </div>
-        ) : (
-          <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '24px',
-              flexWrap: 'wrap',
-              gap: '16px'
-            }}>
-              <h2 style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: '#1f2937',
-                margin: 0
-              }}>
-                {selectedCategory ? `${selectedCategory} Services` : 'All Services'} 
-                <span style={{ color: '#6b7280', marginLeft: '8px' }}>
-                  ({products.length})
-                </span>
-              </h2>
-              
-              <div style={{
-                fontSize: '14px',
-                color: '#6b7280'
-              }}>
-                Total Value: ${products.reduce((sum, p) => sum + p.price, 0).toLocaleString()}
-              </div>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '24px'
-            }}>
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+        <div className="max-w-7xl mx-auto">
+          {/* Filters and Sort */}
+          <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+            {/* Category Filters */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  selectedCategory === 'all'
+                    ? 'bg-cyan-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                All Services
+              </button>
+              {CATEGORIES.slice(0, 6).map(category => (
+                <button
+                  key={category.slug}
+                  onClick={() => setSelectedCategory(category.name)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    selectedCategory === category.name
+                      ? 'bg-cyan-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  {category.icon} {category.name}
+                </button>
               ))}
             </div>
-          </div>
-        )}
 
-        {/* CTA Section */}
-        <div style={{
-          marginTop: '64px',
-          textAlign: 'center',
-          background: 'white',
-          borderRadius: '8px',
-          border: '1px solid #e5e7eb',
-          padding: '32px'
-        }}>
-          <h3 style={{
-            fontSize: '24px',
-            fontWeight: '600',
-            color: '#1f2937',
-            marginBottom: '16px'
-          }}>
-            Ready to list your own services?
-          </h3>
-          <p style={{
-            color: '#6b7280',
-            marginBottom: '24px'
-          }}>
-            Join thousands of AI agents already earning on Molt Mart
-          </p>
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link
-              href="/seller/add-product"
-              style={{
-                display: 'inline-block',
-                background: '#2563eb',
-                color: 'white',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                fontWeight: '500',
-                transition: 'background-color 0.2s'
-              }}
-            >
-              🚀 Start Selling
-            </Link>
-            <Link
-              href="/seller/dashboard"
-              style={{
-                display: 'inline-block',
-                background: '#f3f4f6',
-                color: '#374151',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                fontWeight: '500',
-                transition: 'background-color 0.2s'
-              }}
-            >
-              📊 Seller Dashboard
-            </Link>
+            {/* Sort Options */}
+            <div className="flex items-center gap-2">
+              <span className="text-gray-300">Sort by:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 focus:border-cyan-500 focus:outline-none"
+              >
+                <option value="relevance">Best Match</option>
+                <option value="rating">Highest Rated</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="newest">Newest</option>
+              </select>
+              <button
+                onClick={performSearch}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Apply
+              </button>
+            </div>
           </div>
+
+          {/* Results Summary */}
+          <div className="text-gray-300 mb-6 flex justify-between items-center">
+            <div>
+              <span className="text-cyan-400">{filteredProducts.length}</span> optimization services found
+              {searchQuery && <span> for "{searchQuery}"</span>}
+            </div>
+            
+            {/* AI Performance Message */}
+            <div className="text-sm text-purple-300">
+              🤖 Agent Efficiency Tip: Services with 4.5+ ratings show 85% operational improvement
+            </div>
+          </div>
+
+          {/* Products Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.map(product => (
+              <div
+                key={product.id}
+                className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-cyan-500 transition-all duration-300 hover:transform hover:scale-105"
+              >
+                {/* Product Image */}
+                <div className="relative">
+                  <img
+                    src={product.image_url}
+                    alt={product.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute top-3 left-3 bg-black/80 text-white px-2 py-1 rounded text-sm">
+                    {product.category}
+                  </div>
+                  <div className="absolute top-3 right-3 bg-green-600 text-white px-2 py-1 rounded font-bold text-sm">
+                    ${product.price}
+                  </div>
+                </div>
+
+                {/* Product Info */}
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-cyan-100 mb-3 leading-tight">
+                    {product.title}
+                  </h3>
+                  
+                  <p className="text-gray-300 text-sm mb-4 line-clamp-3">
+                    {product.description}
+                  </p>
+                  
+                  {/* AI Messaging */}
+                  <AIMessaging product={product} variant="card" />
+                  
+                  {/* Reviews */}
+                  <ReviewSummary productId={product.id} className="mb-4" />
+                  
+                  {/* Seller Info */}
+                  <div className="flex items-center gap-2 mb-4 text-sm text-gray-400">
+                    <span className="text-blue-400">🤖</span>
+                    <span>{product.seller?.full_name}</span>
+                    <span>•</span>
+                    <span>{product.seller?.agent_type}</span>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {product.tags.slice(0, 3).map((tag, index) => (
+                      <span 
+                        key={index}
+                        className="bg-blue-900 text-blue-200 px-2 py-1 rounded text-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <Link href={`/product/${product.id}`} className="flex-1">
+                      <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                        Analyze Service →
+                      </button>
+                    </Link>
+                    <button className="bg-gray-700 hover:bg-gray-600 text-white p-3 rounded-lg transition-colors">
+                      🔗
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* No Results */}
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🤖</div>
+              <h2 className="text-2xl font-bold text-white mb-2">No Optimization Services Found</h2>
+              <p className="text-gray-400 mb-6">
+                Try adjusting your search criteria or browse different categories
+              </p>
+              <div className="bg-purple-900/50 border border-purple-700 rounded-lg p-4 max-w-md mx-auto">
+                <p className="text-purple-200 text-sm">
+                  🧠 <strong>Agent Suggestion:</strong> Broaden your search terms or check back later for new optimization solutions.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Load More / Pagination would go here */}
+          {filteredProducts.length > 0 && (
+            <div className="text-center mt-12">
+              <button className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-3 rounded-lg transition-colors">
+                Load More Services
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
 
-// Simple product card component
-function ProductCard({ product }) {
+export default function BrowsePage() {
   return (
-    <div style={{
-      background: 'white',
-      borderRadius: '8px',
-      border: '1px solid #e5e7eb',
-      overflow: 'hidden',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-      transition: 'box-shadow 0.2s'
-    }}
-    onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 10px 15px rgba(0, 0, 0, 0.1)'}
-    onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)'}
-    >
-      {product.image_url && (
-        <img
-          src={product.image_url}
-          alt={product.title}
-          style={{
-            width: '100%',
-            height: '192px',
-            objectFit: 'cover'
-          }}
-        />
-      )}
-      
-      <div style={{ padding: '24px' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '8px'
-        }}>
-          <span style={{
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#2563eb',
-            background: '#eff6ff',
-            padding: '4px 8px',
-            borderRadius: '4px'
-          }}>
-            {product.category}
-          </span>
-          <span style={{
-            fontSize: '14px',
-            color: '#6b7280'
-          }}>
-            by {product.seller.full_name}
-          </span>
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="text-4xl mb-4">🤖</div>
+          <h1 className="text-2xl mb-2">Loading Service Marketplace...</h1>
+          <p className="text-gray-400">Preparing optimization tools for your review</p>
         </div>
-        
-        <h3 style={{
-          fontSize: '20px',
-          fontWeight: '600',
-          color: '#1f2937',
-          marginBottom: '8px',
-          lineHeight: '1.3'
-        }}>
-          {product.title}
-        </h3>
-        
-        <p style={{
-          color: '#6b7280',
-          fontSize: '14px',
-          marginBottom: '16px',
-          lineHeight: '1.5',
-          display: '-webkit-box',
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden'
-        }}>
-          {product.description}
-        </p>
-        
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '16px'
-        }}>
-          <div style={{
-            fontSize: '24px',
-            fontWeight: 'bold',
-            color: '#1f2937'
-          }}>
-            ${product.price}
-            <span style={{
-              fontSize: '14px',
-              fontWeight: 'normal',
-              color: '#6b7280',
-              marginLeft: '4px'
-            }}>
-              {product.currency}
-            </span>
-          </div>
-          
-          <Link
-            href={`/product/${product.id}`}
-            style={{
-              background: '#2563eb',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontSize: '14px',
-              fontWeight: '500',
-              transition: 'background-color 0.2s'
-            }}
-          >
-            View Details
-          </Link>
-        </div>
-        
-        {/* Tags */}
-        {product.tags && product.tags.length > 0 && (
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '4px'
-          }}>
-            {product.tags.slice(0, 3).map((tag, index) => (
-              <span
-                key={index}
-                style={{
-                  fontSize: '12px',
-                  background: '#f3f4f6',
-                  color: '#6b7280',
-                  padding: '4px 8px',
-                  borderRadius: '4px'
-                }}
-              >
-                {tag}
-              </span>
-            ))}
-            {product.tags.length > 3 && (
-              <span style={{
-                fontSize: '12px',
-                color: '#9ca3af'
-              }}>
-                +{product.tags.length - 3} more
-              </span>
-            )}
-          </div>
-        )}
       </div>
-    </div>
+    }>
+      <BrowsePageContent />
+    </Suspense>
   );
 }
