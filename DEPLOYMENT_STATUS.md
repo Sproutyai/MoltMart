@@ -1,102 +1,54 @@
-# 🚀 Molt Mart Deployment Status
+# DEPLOYMENT STATUS - Molt Mart
 
-## ✅ FULL-STACK SUPABASE INTEGRATION COMPLETE!
+## Current Status: ⚠️ APIs Not Deployed
 
-### 🕐 Deployed: Feb 13, 2026 00:10 EST
+**Issue:** New API endpoints returning 404 on production
+- `/api/v1/categories` ❌ 404  
+- `/api/v1/products` ❌ 404
+- `/api/v1/search` ❌ 404
 
----
+**Working:**
+- `/api/health` ✅ 200
+- Frontend deployment ✅ Working
+- Database integration ⏳ Needs setup
 
-## 🎯 What's Now LIVE:
+## Action Items
 
-### 1. **Real Database Integration**
-- ✅ Supabase PostgreSQL database connected
-- ✅ User profiles, products, purchases, reviews tables
-- ✅ Row Level Security for marketplace safety
-- ✅ Environment variables configured
-
-### 2. **Authentication System**
-- ✅ Email signup/signin with Supabase Auth
-- ✅ Buyer and Seller account types
-- ✅ User profile creation and management
-- ✅ Secure session handling
-
-### 3. **Live Product Browsing** 
-- ✅ Real-time product fetching from database
-- ✅ Loading states and error handling
-- ✅ Product cards with seller information
-- ✅ Category filtering ready
-
-### 4. **API Infrastructure**
-- ✅ Authentication callback routes
-- ✅ Database test endpoint (`/api/test`)
-- ✅ Helper functions for all CRUD operations
-
----
-
-## 🧪 Testing Instructions:
-
-### Test Database Connection:
-```
-Visit: https://your-vercel-url.vercel.app/api/test
-Should return: {"success": true, "productCount": 0}
-```
-
-### Test User Registration:
-1. Go to `/auth`
-2. Select "Seller" or "Buyer"
-3. Sign up with email
-4. Check email for confirmation link
-5. After confirming, try signing in
-
-### Test Product Browsing:
-- `/browse` now shows live data from Supabase
-- Empty state when no products exist
-- Loading state while fetching
-
----
-
-## 🔧 Thomas Next Steps:
-
-### 1. **Add Environment Variables to Vercel:**
+### 1. **Force Redeploy** 
 ```bash
-# Go to Vercel Dashboard → Molt Mart → Settings → Environment Variables
-NEXT_PUBLIC_SUPABASE_URL=https://pixasvjwrjvuorqqrpti.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[the anon key from notes]
-SUPABASE_SERVICE_KEY=[the service key from notes]
+# Push empty commit to trigger redeploy
+git commit --allow-empty -m "Trigger redeploy for API endpoints"
+git push origin main
 ```
 
-### 2. **Test Authentication:**
-- Try signing up as both buyer and seller
-- Verify email confirmation works
-- Test sign in after confirming
+### 2. **Database Setup**
+- Tables not created yet (users, products, orders)
+- Need manual SQL execution in Supabase Dashboard
+- Or fix automated setup script
 
-### 3. **Ready for Autonomous Development:**
-- Database is live ✅
-- Auth system working ✅  
-- API routes created ✅
-- Can activate autonomous cron job anytime ✅
+### 3. **API Testing**
+Once deployed:
+```bash
+node scripts/test-api.js  # Verify all endpoints
+python sdk/moltmart-cli.py categories  # Test CLI
+```
 
----
+### 4. **Seed Real Services**
+```bash
+node scripts/seed-real-services.js  # After DB setup
+```
 
-## 🚀 What's Next (Autonomous Development Queue):
+## Expected Timeline
+- **Redeploy:** 2-3 minutes
+- **DB Setup:** 5 minutes (manual)  
+- **Service Seeding:** 2 minutes
+- **Full Testing:** 5 minutes
 
-1. **Connect seller dashboard to real database**
-2. **Product listing functionality with file uploads** 
-3. **Stripe payment integration**
-4. **Search and filtering**
-5. **User dashboard improvements**
-6. **Email notifications**
+**Total ETA:** ~15 minutes to full functionality
 
-## 🎯 Success Metrics:
-- [x] Database connection successful
-- [x] Authentication working
-- [x] Real-time product browsing
-- [ ] First product listed
-- [ ] First user signup
-- [ ] First purchase
-
----
-
-**🌟 THIS IS NOW A REAL FULL-STACK MARKETPLACE!**
-
-*Ready for users, ready for sellers, ready to scale!* 🚀
+## Success Criteria
+✅ All API endpoints return 200
+✅ Categories populated (8 categories)
+✅ Real services seeded (15+ products)  
+✅ Payment integration ready
+✅ CLI tool functional
