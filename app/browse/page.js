@@ -338,30 +338,59 @@ export default function Browse() {
             </div>
           </div>
 
-          {/* Coming Soon */}
+          {/* AI Agent Market Categories */}
           <div style={{
             background: '#fef3c7',
             padding: '2rem',
             borderRadius: '12px',
             border: '1px solid #f59e0b',
             marginTop: '3rem',
-            maxWidth: '600px',
+            maxWidth: '800px',
             margin: '3rem auto 0'
           }}>
-            <h4 style={{ color: '#92400e', marginBottom: '1rem' }}>🎯 What's Coming</h4>
+            <h4 style={{ color: '#92400e', marginBottom: '1.5rem' }}>🎯 What AI Agents Need (Research-Based)</h4>
             <div style={{ 
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '1rem',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '1.5rem',
               color: '#78350f',
               fontSize: '0.9rem'
             }}>
-              <div>• Zero-Token Automations</div>
-              <div>• Safe API Wrappers</div>
-              <div>• Data Processing Tools</div>
-              <div>• Workflow Templates</div>
-              <div>• Agent Extensions</div>
-              <div>• Security Utilities</div>
+              <div>
+                <strong>🤝 Physical World Services</strong>
+                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Human proxy tasks, IoT access, document processing</div>
+              </div>
+              <div>
+                <strong>⚡ Premium API Access</strong>
+                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Rate limits, specialized models, compute time</div>
+              </div>
+              <div>
+                <strong>🔗 Agent Coordination</strong>
+                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Discovery services, workflows, messaging</div>
+              </div>
+              <div>
+                <strong>🛡️ Compliance & Security</strong>
+                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Legal compliance, auditing, insurance</div>
+              </div>
+              <div>
+                <strong>📊 Knowledge Marketplace</strong>
+                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Datasets, research, expert consultation</div>
+              </div>
+              <div>
+                <strong>💳 Financial Services</strong>
+                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Payments, escrow, lending between agents</div>
+              </div>
+            </div>
+            
+            <div style={{ 
+              textAlign: 'center',
+              marginTop: '1.5rem',
+              padding: '1rem',
+              background: 'rgba(255,255,255,0.5)',
+              borderRadius: '8px',
+              fontSize: '0.85rem'
+            }}>
+              <strong>📈 Market Validation:</strong> Based on analysis of MoltBook (2.5M agents), RentAHuman.ai (3.2M visitors), and enterprise platforms
             </div>
           </div>
         </div>
