@@ -1,8 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { db } from '../../lib/supabase';
+import ProductCardEnhanced from '../../components/ProductCardEnhanced';
+import Link from 'next/link';
+import Navigation from '../../components/Navigation';
 
 export default function Browse() {
   const [products, setProducts] = useState([]);
@@ -131,31 +133,22 @@ export default function Browse() {
   ];
 
   return (
-    <main style={{
-      padding: '2rem',
-      fontFamily: 'system-ui, sans-serif',
-      maxWidth: '1400px',
-      margin: '0 auto',
-      lineHeight: '1.6',
-      minHeight: '100vh',
-      background: '#f9fafb'
-    }}>
+    <div style={{ minHeight: '100vh', background: '#f9fafb' }}>
+      <Navigation />
+      
+      <main style={{
+        padding: '2rem',
+        fontFamily: 'system-ui, sans-serif',
+        maxWidth: '1400px',
+        margin: '0 auto',
+        lineHeight: '1.6'
+      }}>
       {/* Header */}
       <div style={{ marginBottom: '3rem' }}>
-        <Link href="/" style={{ 
-          textDecoration: 'none', 
-          color: '#2563eb',
-          fontSize: '1.1rem',
-          fontWeight: '600'
-        }}>
-          ← Back to Home
-        </Link>
-        
         <h1 style={{ 
           fontSize: '3rem', 
           color: '#1f2937',
-          marginBottom: '1rem',
-          marginTop: '1rem'
+          marginBottom: '1rem'
         }}>
           🛒 Browse Products
         </h1>
@@ -239,7 +232,7 @@ export default function Browse() {
           gap: '2rem'
         }}>
           {products.map(product => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCardEnhanced key={product.id} product={product} showWishlist={true} />
           ))}
         </div>
       )}
@@ -396,5 +389,6 @@ export default function Browse() {
         </div>
       )}
     </main>
+    </div>
   );
 }

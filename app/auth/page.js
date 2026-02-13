@@ -1,15 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from '../../lib/auth';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '../../lib/AuthContext';
+import { ProtectedRoute } from '../../lib/ProtectedRoute';
 
-export default function Auth() {
+function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [userType, setUserType] = useState('buyer');
-  const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,26 +19,47 @@ export default function Auth() {
   });
   
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { signIn, signUp, loading: contextLoading } = useAuth();
+
+  // Check for URL parameters
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'callback_error') {
+      setError('Authentication callback failed. Please try again.');
+    }
+
+    // Set default mode from URL
+    const mode = searchParams.get('mode');
+    if (mode === 'signup') {
+      setIsLogin(false);
+    }
+  }, [searchParams]);
 
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-    setError(''); // Clear error when user types
+    setError('');
+    setSuccess('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setAuthLoading(true);
     setError('');
+    setSuccess('');
 
     try {
       if (isLogin) {
         // Sign in existing user
-        const { user } = await auth.signIn(formData.email, formData.password);
-        if (user) {
-          router.push(userType === 'seller' ? '/dashboard' : '/browse');
+        const data = await signIn(formData.email, formData.password);
+        if (data.user) {
+          // Get user profile to determine redirect
+          const userProfile = data.user.user_metadata;
+          const redirectPath = userProfile?.user_type === 'seller' ? '/dashboard' : '/browse';
+          router.push(redirectPath);
         }
       } else {
         // Sign up new user
@@ -44,23 +67,29 @@ export default function Auth() {
           throw new Error('Name is required');
         }
         
-        const { user } = await auth.signUp(formData.email, formData.password, {
+        const data = await signUp(formData.email, formData.password, {
           name: formData.name,
           userType: userType
         });
         
-        if (user) {
-          // Show success message for email confirmation
-          setError('Please check your email and click the confirmation link to activate your account.');
-          setLoading(false);
-          return;
+        if (data.user) {
+          if (!data.user.email_confirmed_at) {
+            // Show success message for email confirmation
+            setSuccess('Please check your email and click the confirmation link to activate your account.');
+            setAuthLoading(false);
+            return;
+          } else {
+            // User is immediately confirmed, redirect
+            const redirectPath = userType === 'seller' ? '/dashboard' : '/browse';
+            router.push(redirectPath);
+          }
         }
       }
     } catch (err) {
       console.error('Auth error:', err);
       setError(err.message || 'Authentication failed. Please try again.');
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
@@ -153,18 +182,37 @@ export default function Auth() {
         {/* Error Message */}
         {error && (
           <div style={{
-            background: error.includes('email') ? '#f0f9ff' : '#fef2f2',
-            border: error.includes('email') ? '1px solid #0ea5e9' : '1px solid #f87171',
+            background: '#fef2f2',
+            border: '1px solid #f87171',
             padding: '1rem',
             borderRadius: '8px',
             marginBottom: '1rem'
           }}>
             <p style={{ 
-              color: error.includes('email') ? '#0369a1' : '#dc2626',
+              color: '#dc2626',
               margin: 0,
               fontSize: '0.9rem'
             }}>
               {error}
+            </p>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {success && (
+          <div style={{
+            background: '#f0f9ff',
+            border: '1px solid #0ea5e9',
+            padding: '1rem',
+            borderRadius: '8px',
+            marginBottom: '1rem'
+          }}>
+            <p style={{ 
+              color: '#0369a1',
+              margin: 0,
+              fontSize: '0.9rem'
+            }}>
+              {success}
             </p>
           </div>
         )}
@@ -188,7 +236,7 @@ export default function Auth() {
               onChange={handleInputChange}
               placeholder="agent@example.com"
               required
-              disabled={loading}
+              disabled={authLoading || contextLoading}
               style={{
                 width: '100%',
                 padding: '1rem',
@@ -292,21 +340,21 @@ export default function Auth() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={authLoading || contextLoading}
             style={{
-              background: loading ? '#9ca3af' : (userType === 'seller' && !isLogin ? '#10b981' : '#2563eb'),
+              background: (authLoading || contextLoading) ? '#9ca3af' : (userType === 'seller' && !isLogin ? '#10b981' : '#2563eb'),
               color: 'white',
               padding: '1rem',
               border: 'none',
               borderRadius: '8px',
               fontSize: '1.1rem',
-              cursor: loading ? 'not-allowed' : 'pointer',
+              cursor: (authLoading || contextLoading) ? 'not-allowed' : 'pointer',
               fontWeight: '600',
               marginTop: '1rem',
-              opacity: loading ? 0.8 : 1
+              opacity: (authLoading || contextLoading) ? 0.8 : 1
             }}
           >
-            {loading 
+            {(authLoading || contextLoading)
               ? (isLogin ? 'Signing In...' : 'Creating Account...') 
               : (isLogin ? 'Sign In' : `Create ${userType === 'seller' ? 'Seller' : 'Buyer'} Account`)
             }
@@ -335,5 +383,13 @@ export default function Auth() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function Auth() {
+  return (
+    <ProtectedRoute requireAuth={false}>
+      <AuthPage />
+    </ProtectedRoute>
   );
 }

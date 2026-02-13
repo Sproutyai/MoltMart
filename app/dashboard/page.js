@@ -1,56 +1,106 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../lib/AuthContext';
+import { ProtectedRoute } from '../../lib/ProtectedRoute';
+import Navigation from '../../components/Navigation';
+import { db } from '../../lib/supabase';
 
-export default function Dashboard() {
+function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  // Mock seller data - will come from database
+  // Get seller data from authenticated user
   const seller = {
-    name: "AI Agent Co.",
-    email: "agent@example.com",
-    joinDate: "Feb 2026",
+    name: user?.profile?.full_name || user?.user_metadata?.full_name || 'Seller',
+    email: user?.email || user?.profile?.email || 'Unknown',
+    joinDate: user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { 
+      month: 'short', year: 'numeric' 
+    }) : 'Unknown',
     totalSales: 0,
-    totalProducts: 0,
+    totalProducts: products.length,
     totalRevenue: 0
   };
 
-  const products = []; // Empty initially - sellers will create products
+  // Fetch seller's products
+  useEffect(() => {
+    async function fetchProducts() {
+      if (!user?.id) return;
+      
+      try {
+        const data = await db.getSellerProducts(user.id);
+        setProducts(data || []);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProducts();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f9fafb' }}>
+        <Navigation />
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'calc(100vh - 80px)',
+          color: '#6b7280'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              border: '4px solid #e5e7eb',
+              borderTop: '4px solid #2563eb',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 1rem'
+            }}></div>
+            <p>Loading dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <main style={{
-      padding: '2rem',
-      fontFamily: 'system-ui, sans-serif',
-      maxWidth: '1400px',
-      margin: '0 auto',
-      lineHeight: '1.6',
-      minHeight: '100vh',
-      background: '#f9fafb'
-    }}>
-      {/* Header */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '2rem'
+    <div style={{ minHeight: '100vh', background: '#f9fafb' }}>
+      <Navigation />
+      
+      <main style={{
+        padding: '2rem',
+        fontFamily: 'system-ui, sans-serif',
+        maxWidth: '1400px',
+        margin: '0 auto',
+        lineHeight: '1.6'
       }}>
-        <div>
-          <Link href="/" style={{ textDecoration: 'none', color: '#2563eb', fontSize: '1.1rem', fontWeight: '600' }}>
-            🛒 Molt Mart
-          </Link>
-          <h1 style={{ 
-            fontSize: '2.5rem', 
-            color: '#1f2937',
-            marginBottom: '0.5rem',
-            marginTop: '0.5rem'
-          }}>
-            Seller Dashboard
-          </h1>
-          <p style={{ color: '#6b7280', fontSize: '1.1rem' }}>
-            Welcome back, {seller.name}
-          </p>
-        </div>
+        {/* Header */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: '2rem'
+        }}>
+          <div>
+            <h1 style={{ 
+              fontSize: '2.5rem', 
+              color: '#1f2937',
+              marginBottom: '0.5rem'
+            }}>
+              Seller Dashboard
+            </h1>
+            <p style={{ color: '#6b7280', fontSize: '1.1rem' }}>
+              Welcome back, {seller.name}
+            </p>
+          </div>
         
         <Link href="/dashboard/new-product" style={{ textDecoration: 'none' }}>
           <button style={{
@@ -264,5 +314,14 @@ export default function Dashboard() {
         </div>
       </div>
     </main>
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <ProtectedRoute requireAuth={true}>
+      <DashboardPage />
+    </ProtectedRoute>
   );
 }

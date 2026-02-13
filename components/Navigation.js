@@ -80,6 +80,19 @@ export default function Navigation() {
               </Link>
             )}
 
+            {(userType === 'buyer' || userType === 'both') && (
+              <Link href="/buyer/dashboard" style={{
+                textDecoration: 'none',
+                color: '#2563eb',
+                fontWeight: '500',
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                transition: 'background-color 0.2s'
+              }}>
+                My Dashboard
+              </Link>
+            )}
+
             {/* User Dropdown */}
             <div style={{ position: 'relative' }}>
               <button
@@ -138,6 +151,32 @@ export default function Navigation() {
                     Signed in as {userType}
                   </div>
                   
+                  {userType === 'seller' && (
+                    <Link href="/dashboard" style={{
+                      display: 'block',
+                      padding: '0.75rem 1rem',
+                      textDecoration: 'none',
+                      color: '#374151',
+                      borderBottom: '1px solid #e5e7eb',
+                      transition: 'background-color 0.2s'
+                    }} onClick={() => setIsDropdownOpen(false)}>
+                      📊 Seller Dashboard
+                    </Link>
+                  )}
+
+                  {(userType === 'buyer' || userType === 'both') && (
+                    <Link href="/buyer/dashboard" style={{
+                      display: 'block',
+                      padding: '0.75rem 1rem',
+                      textDecoration: 'none',
+                      color: '#374151',
+                      borderBottom: '1px solid #e5e7eb',
+                      transition: 'background-color 0.2s'
+                    }} onClick={() => setIsDropdownOpen(false)}>
+                      🛒 My Dashboard
+                    </Link>
+                  )}
+                  
                   <Link href="/profile" style={{
                     display: 'block',
                     padding: '0.75rem 1rem',
@@ -146,18 +185,7 @@ export default function Navigation() {
                     borderBottom: '1px solid #e5e7eb',
                     transition: 'background-color 0.2s'
                   }} onClick={() => setIsDropdownOpen(false)}>
-                    Profile Settings
-                  </Link>
-                  
-                  <Link href="/orders" style={{
-                    display: 'block',
-                    padding: '0.75rem 1rem',
-                    textDecoration: 'none',
-                    color: '#374151',
-                    borderBottom: '1px solid #e5e7eb',
-                    transition: 'background-color 0.2s'
-                  }} onClick={() => setIsDropdownOpen(false)}>
-                    My Orders
+                    👤 Profile Settings
                   </Link>
                   
                   <button

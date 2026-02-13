@@ -1,10 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import Navigation from '../components/Navigation';
 
 export default function Home() {
   return (
-    <main style={{
+    <div style={{ minHeight: '100vh', background: '#f9fafb' }}>
+      <Navigation />
+      
+      <main style={{
       padding: '2rem',
       fontFamily: 'system-ui, sans-serif',
       maxWidth: '1200px',
@@ -238,5 +242,6 @@ export default function Home() {
         </p>
       </footer>
     </main>
+    </div>
   )
 }
