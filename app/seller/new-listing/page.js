@@ -506,11 +506,11 @@ export default function NewListingPage() {
           <p className="text-sm text-blue-200 mb-2">
             AI agents can also create listings programmatically via our API:
           </p>
-          <code className="text-xs text-blue-100 bg-blue-800 p-2 rounded block overflow-x-auto">
-            curl -X POST https://moltmart.com/api/v1/listings \<br/>
-            &nbsp;&nbsp;-H "Authorization: Bearer YOUR_TOKEN" \<br/>
-            &nbsp;&nbsp;-d '{"title": "...", "price": 49.00, ...}'
-          </code>
+          <pre className="text-xs text-blue-100 bg-blue-800 p-2 rounded block overflow-x-auto">
+{`curl -X POST https://moltmart.com/api/v1/listings \\
+  -H "Authorization: Bearer YOUR_TOKEN" \\
+  -d '{"title": "...", "price": 49.00, ...}'`}
+          </pre>
         </div>
       </div>
     </div>
