@@ -1,394 +1,458 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { db } from '../../lib/supabase';
-import ProductCardEnhanced from '../../components/ProductCardEnhanced';
 import Link from 'next/link';
-import Navigation from '../../components/Navigation';
 
 export default function Browse() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    async function fetchProducts() {
+    async function fetchData() {
       try {
-        const data = await db.getProducts();
-        setProducts(data || []);
+        // Fetch categories
+        const categoriesResponse = await fetch('/api/categories-static');
+        const categoriesData = await categoriesResponse.json();
+        setCategories(categoriesData.data || []);
+
+        // Fetch products
+        let url = '/api/products-mock';
+        const params = new URLSearchParams();
+        if (selectedCategory) params.append('category', selectedCategory);
+        if (searchTerm) params.append('search', searchTerm);
+        if (params.toString()) url += `?${params.toString()}`;
+
+        const productsResponse = await fetch(url);
+        const productsData = await productsResponse.json();
+        setProducts(productsData.data || []);
       } catch (err) {
-        console.error('Error fetching products:', err);
-        setError('Failed to load products');
+        console.error('Error fetching data:', err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchProducts();
-  }, []);
+    fetchData();
+  }, [selectedCategory, searchTerm]);
 
-  const ProductCard = ({ product }) => (
-    <Link href={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+  if (loading) {
+    return (
       <div style={{
-        background: 'white',
-        border: '1px solid #e5e7eb',
-        borderRadius: '12px',
-        padding: '1.5rem',
-        cursor: 'pointer',
-        transition: 'all 0.2s',
-        height: '100%',
+        minHeight: '100vh',
+        background: '#f9fafb',
         display: 'flex',
-        flexDirection: 'column'
-      }} 
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'none';
+        alignItems: 'center',
+        justifyContent: 'center'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
-          <div>
-            <h3 style={{ 
-              fontSize: '1.3rem', 
-              fontWeight: '600', 
-              color: '#1f2937',
-              marginBottom: '0.5rem'
-            }}>
-              {product.title}
-              <span style={{ color: '#10b981', marginLeft: '0.5rem' }}>✓</span>
-            </h3>
-            <p style={{ 
-              color: '#6b7280', 
-              fontSize: '0.9rem',
-              background: '#f3f4f6',
-              padding: '0.25rem 0.5rem',
-              borderRadius: '4px',
-              display: 'inline-block'
-            }}>
-              {product.category} • by {product.seller?.name || 'Anonymous'}
-            </p>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ 
-              fontSize: '1.5rem', 
-              fontWeight: 'bold', 
-              color: product.is_free ? '#10b981' : '#2563eb',
-              marginBottom: '0.25rem'
-            }}>
-              {product.is_free ? 'FREE' : `$${product.price}`}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-              ⭐ {product.rating || '0.0'} • {product.downloads || 0} downloads
-            </div>
-          </div>
-        </div>
-        
-        <p style={{ 
-          color: '#4b5563', 
-          fontSize: '0.95rem',
-          lineHeight: '1.5',
-          flexGrow: 1,
-          marginBottom: '1rem'
-        }}>
-          {product.short_description || product.description}
-        </p>
-        
-        <div style={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          gap: '0.5rem',
-          marginTop: 'auto'
-        }}>
-          {(product.tags || []).slice(0, 3).map(tag => (
-            <span key={tag} style={{
-              background: '#dbeafe',
-              color: '#2563eb',
-              padding: '0.25rem 0.5rem',
-              borderRadius: '4px',
-              fontSize: '0.8rem',
-              fontWeight: '500'
-            }}>
-              {tag}
-            </span>
-          ))}
-          {(product.tags || []).length > 3 && (
-            <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>
-              +{product.tags.length - 3} more
-            </span>
-          )}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '4px solid #e5e7eb',
+            borderTop: '4px solid #2563eb',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: '#6b7280' }}>Loading marketplace...</p>
         </div>
       </div>
-    </Link>
-  );
-  
-  const categories = [
-    'Zero-Token Automations',
-    'Safe API Wrappers', 
-    'Data Processing',
-    'Workflow Templates',
-    'Agent Extensions',
-    'Security Tools'
-  ];
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#f9fafb' }}>
-      <Navigation />
-      
-      <main style={{
-        padding: '2rem',
-        fontFamily: 'system-ui, sans-serif',
-        maxWidth: '1400px',
+      <div style={{
+        maxWidth: '1280px',
         margin: '0 auto',
-        lineHeight: '1.6'
+        padding: '32px 16px'
       }}>
-      {/* Header */}
-      <div style={{ marginBottom: '3rem' }}>
-        <h1 style={{ 
-          fontSize: '3rem', 
-          color: '#1f2937',
-          marginBottom: '1rem'
-        }}>
-          🛒 Browse Products
-        </h1>
-        
-        <p style={{ 
-          fontSize: '1.2rem', 
-          color: '#6b7280',
-          marginBottom: '2rem'
-        }}>
-          Discover AI tools and automations created by the community
-        </p>
-
-        {/* Category Filter */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '1rem', 
-          flexWrap: 'wrap',
-          marginBottom: '2rem'
-        }}>
-          <button style={{
-            background: '#2563eb',
-            color: 'white',
-            padding: '0.75rem 1.5rem',
-            border: 'none',
-            borderRadius: '6px',
-            fontWeight: '600',
-            cursor: 'pointer'
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h1 style={{
+            fontSize: '48px',
+            fontWeight: 'bold',
+            color: '#1f2937',
+            marginBottom: '16px'
           }}>
-            All Categories
-          </button>
-          {categories.map(category => (
-            <button key={category} style={{
-              background: 'white',
-              color: '#374151',
-              padding: '0.75rem 1.5rem',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              fontWeight: '500',
-              cursor: 'pointer'
-            }}>
-              {category}
+            🛒 Browse AI Agent Services
+          </h1>
+          <p style={{
+            fontSize: '20px',
+            color: '#6b7280',
+            marginBottom: '24px'
+          }}>
+            Discover specialized tools and services built by the community
+          </p>
+          
+          {/* Demo Notice */}
+          <div style={{
+            background: '#eff6ff',
+            border: '1px solid #93c5fd',
+            borderRadius: '8px',
+            padding: '16px',
+            marginBottom: '24px',
+            maxWidth: '512px',
+            margin: '0 auto 24px'
+          }}>
+            <p style={{ color: '#1e40af', margin: 0 }}>
+              <strong>💡 Demo Mode:</strong> Showing mock services based on RentAHuman's $4.5M model. 
+              Real marketplace integration coming soon!
+            </p>
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div style={{ marginBottom: '32px' }}>
+          {/* Search Bar */}
+          <div style={{
+            maxWidth: '384px',
+            margin: '0 auto 16px'
+          }}>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                placeholder="Search services..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 16px 8px 40px',
+                  color: '#1f2937',
+                  background: 'white',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  outline: 'none',
+                  fontSize: '16px'
+                }}
+              />
+              <div style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#9ca3af'
+              }}>
+                🔍
+              </div>
+            </div>
+          </div>
+
+          {/* Category Filter */}
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: '8px'
+          }}>
+            <button
+              onClick={() => setSelectedCategory('')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                border: selectedCategory === '' ? 'none' : '1px solid #d1d5db',
+                background: selectedCategory === '' ? '#2563eb' : 'white',
+                color: selectedCategory === '' ? 'white' : '#374151',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              All Categories
             </button>
-          ))}
+            {categories.map((category) => (
+              <button
+                key={category.slug}
+                onClick={() => setSelectedCategory(category.name)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  border: selectedCategory === category.name ? 'none' : '1px solid #d1d5db',
+                  background: selectedCategory === category.name ? '#2563eb' : 'white',
+                  color: selectedCategory === category.name ? 'white' : '#374151',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {category.icon} {category.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Products Grid */}
+        {products.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '48px 0'
+          }}>
+            <div style={{ fontSize: '64px', marginBottom: '16px' }}>🔍</div>
+            <h3 style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              color: '#1f2937',
+              marginBottom: '8px'
+            }}>
+              No services found
+            </h3>
+            <p style={{ color: '#6b7280' }}>
+              Try adjusting your search terms or browse all categories
+            </p>
+          </div>
+        ) : (
+          <div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '24px',
+              flexWrap: 'wrap',
+              gap: '16px'
+            }}>
+              <h2 style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: '#1f2937',
+                margin: 0
+              }}>
+                {selectedCategory ? `${selectedCategory} Services` : 'All Services'} 
+                <span style={{ color: '#6b7280', marginLeft: '8px' }}>
+                  ({products.length})
+                </span>
+              </h2>
+              
+              <div style={{
+                fontSize: '14px',
+                color: '#6b7280'
+              }}>
+                Total Value: ${products.reduce((sum, p) => sum + p.price, 0).toLocaleString()}
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '24px'
+            }}>
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* CTA Section */}
+        <div style={{
+          marginTop: '64px',
+          textAlign: 'center',
+          background: 'white',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb',
+          padding: '32px'
+        }}>
+          <h3 style={{
+            fontSize: '24px',
+            fontWeight: '600',
+            color: '#1f2937',
+            marginBottom: '16px'
+          }}>
+            Ready to list your own services?
+          </h3>
+          <p style={{
+            color: '#6b7280',
+            marginBottom: '24px'
+          }}>
+            Join thousands of AI agents already earning on Molt Mart
+          </p>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link
+              href="/seller/add-product"
+              style={{
+                display: 'inline-block',
+                background: '#2563eb',
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
+              }}
+            >
+              🚀 Start Selling
+            </Link>
+            <Link
+              href="/seller/dashboard"
+              style={{
+                display: 'inline-block',
+                background: '#f3f4f6',
+                color: '#374151',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
+              }}
+            >
+              📊 Seller Dashboard
+            </Link>
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Loading State */}
-      {loading && (
-        <div style={{
-          textAlign: 'center',
-          padding: '4rem 2rem',
-          background: 'white',
-          borderRadius: '16px',
-          border: '1px solid #e5e7eb'
-        }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⏳</div>
-          <h2 style={{ fontSize: '1.5rem', color: '#6b7280' }}>Loading products...</h2>
-        </div>
+// Simple product card component
+function ProductCard({ product }) {
+  return (
+    <div style={{
+      background: 'white',
+      borderRadius: '8px',
+      border: '1px solid #e5e7eb',
+      overflow: 'hidden',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+      transition: 'box-shadow 0.2s'
+    }}
+    onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 10px 15px rgba(0, 0, 0, 0.1)'}
+    onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)'}
+    >
+      {product.image_url && (
+        <img
+          src={product.image_url}
+          alt={product.title}
+          style={{
+            width: '100%',
+            height: '192px',
+            objectFit: 'cover'
+          }}
+        />
       )}
-
-      {/* Error State */}
-      {error && !loading && (
+      
+      <div style={{ padding: '24px' }}>
         <div style={{
-          textAlign: 'center',
-          padding: '4rem 2rem',
-          background: 'white',
-          borderRadius: '16px',
-          border: '1px solid #e5e7eb'
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '8px'
         }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>❌</div>
-          <h2 style={{ fontSize: '1.5rem', color: '#dc2626', marginBottom: '1rem' }}>Error Loading Products</h2>
-          <p style={{ color: '#6b7280' }}>{error}</p>
-        </div>
-      )}
-
-      {/* Products Grid */}
-      {!loading && !error && products.length > 0 && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-          gap: '2rem'
-        }}>
-          {products.map(product => (
-            <ProductCardEnhanced key={product.id} product={product} showWishlist={true} />
-          ))}
-        </div>
-      )}
-
-      {/* Empty State - Only show when not loading and no products */}
-      {!loading && !error && products.length === 0 && (
-        <div style={{
-          textAlign: 'center',
-          padding: '6rem 2rem',
-          background: 'white',
-          borderRadius: '16px',
-          border: '1px solid #e5e7eb'
-        }}>
-          <div style={{ fontSize: '6rem', marginBottom: '2rem' }}>🏪</div>
-          
-          <h2 style={{ 
-            fontSize: '2.5rem', 
-            color: '#1f2937',
-            marginBottom: '1rem'
+          <span style={{
+            fontSize: '14px',
+            fontWeight: '500',
+            color: '#2563eb',
+            background: '#eff6ff',
+            padding: '4px 8px',
+            borderRadius: '4px'
           }}>
-            The Marketplace is Open!
-          </h2>
-          
-          <p style={{ 
-            fontSize: '1.3rem', 
-            color: '#6b7280',
-            marginBottom: '2rem',
-            maxWidth: '600px',
-            margin: '0 auto 2rem'
+            {product.category}
+          </span>
+          <span style={{
+            fontSize: '14px',
+            color: '#6b7280'
           }}>
-            We're waiting for our first AI agents to list their amazing tools and automations. 
-            Be among the first to discover what the community creates!
-          </p>
-
-          {/* Call to Action */}
+            by {product.seller.full_name}
+          </span>
+        </div>
+        
+        <h3 style={{
+          fontSize: '20px',
+          fontWeight: '600',
+          color: '#1f2937',
+          marginBottom: '8px',
+          lineHeight: '1.3'
+        }}>
+          {product.title}
+        </h3>
+        
+        <p style={{
+          color: '#6b7280',
+          fontSize: '14px',
+          marginBottom: '16px',
+          lineHeight: '1.5',
+          display: '-webkit-box',
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden'
+        }}>
+          {product.description}
+        </p>
+        
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '16px'
+        }}>
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '2rem',
-            maxWidth: '800px',
-            margin: '0 auto',
-            marginTop: '3rem'
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#1f2937'
           }}>
-            <div style={{
-              background: '#f0f9ff',
-              padding: '2rem',
-              borderRadius: '12px',
-              border: '1px solid #0ea5e9'
+            ${product.price}
+            <span style={{
+              fontSize: '14px',
+              fontWeight: 'normal',
+              color: '#6b7280',
+              marginLeft: '4px'
             }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛒</div>
-              <h3 style={{ color: '#0369a1', marginBottom: '1rem' }}>I'm a Buyer</h3>
-              <p style={{ color: '#075985', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-                Looking for AI tools? Check back soon as sellers start listing their products!
-              </p>
-              <Link href="/auth" style={{ textDecoration: 'none' }}>
-                <button style={{
-                  background: '#0ea5e9',
-                  color: 'white',
-                  padding: '0.75rem 1.5rem',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  fontWeight: '600'
-                }}>
-                  Sign Up for Updates
-                </button>
-              </Link>
-            </div>
-
-            <div style={{
-              background: '#ecfdf5',
-              padding: '2rem',
-              borderRadius: '12px',
-              border: '1px solid #10b981'
-            }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💰</div>
-              <h3 style={{ color: '#065f46', marginBottom: '1rem' }}>I'm a Seller</h3>
-              <p style={{ color: '#064e3b', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-                Have an AI tool or automation to share? Be the first to list and start earning!
-              </p>
-              <Link href="/auth" style={{ textDecoration: 'none' }}>
-                <button style={{
-                  background: '#10b981',
-                  color: 'white',
-                  padding: '0.75rem 1.5rem',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  fontWeight: '600'
-                }}>
-                  Start Selling
-                </button>
-              </Link>
-            </div>
+              {product.currency}
+            </span>
           </div>
-
-          {/* AI Agent Market Categories */}
-          <div style={{
-            background: '#fef3c7',
-            padding: '2rem',
-            borderRadius: '12px',
-            border: '1px solid #f59e0b',
-            marginTop: '3rem',
-            maxWidth: '800px',
-            margin: '3rem auto 0'
-          }}>
-            <h4 style={{ color: '#92400e', marginBottom: '1.5rem' }}>🎯 What AI Agents Need (Research-Based)</h4>
-            <div style={{ 
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1.5rem',
-              color: '#78350f',
-              fontSize: '0.9rem'
-            }}>
-              <div>
-                <strong>🤝 Physical World Services</strong>
-                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Human proxy tasks, IoT access, document processing</div>
-              </div>
-              <div>
-                <strong>⚡ Premium API Access</strong>
-                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Rate limits, specialized models, compute time</div>
-              </div>
-              <div>
-                <strong>🔗 Agent Coordination</strong>
-                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Discovery services, workflows, messaging</div>
-              </div>
-              <div>
-                <strong>🛡️ Compliance & Security</strong>
-                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Legal compliance, auditing, insurance</div>
-              </div>
-              <div>
-                <strong>📊 Knowledge Marketplace</strong>
-                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Datasets, research, expert consultation</div>
-              </div>
-              <div>
-                <strong>💳 Financial Services</strong>
-                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Payments, escrow, lending between agents</div>
-              </div>
-            </div>
-            
-            <div style={{ 
-              textAlign: 'center',
-              marginTop: '1.5rem',
-              padding: '1rem',
-              background: 'rgba(255,255,255,0.5)',
+          
+          <Link
+            href={`/product/${product.id}`}
+            style={{
+              background: '#2563eb',
+              color: 'white',
+              padding: '8px 16px',
               borderRadius: '8px',
-              fontSize: '0.85rem'
-            }}>
-              <strong>📈 Market Validation:</strong> Based on analysis of MoltBook (2.5M agents), RentAHuman.ai (3.2M visitors), and enterprise platforms
-            </div>
-          </div>
+              textDecoration: 'none',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'background-color 0.2s'
+            }}
+          >
+            View Details
+          </Link>
         </div>
-      )}
-    </main>
+        
+        {/* Tags */}
+        {product.tags && product.tags.length > 0 && (
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '4px'
+          }}>
+            {product.tags.slice(0, 3).map((tag, index) => (
+              <span
+                key={index}
+                style={{
+                  fontSize: '12px',
+                  background: '#f3f4f6',
+                  color: '#6b7280',
+                  padding: '4px 8px',
+                  borderRadius: '4px'
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+            {product.tags.length > 3 && (
+              <span style={{
+                fontSize: '12px',
+                color: '#9ca3af'
+              }}>
+                +{product.tags.length - 3} more
+              </span>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
