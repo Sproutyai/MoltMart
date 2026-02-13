@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { verifyWebhookSignature, formatAmountFromStripe } from '@/lib/stripe';
+import { verifyWebhookSignature, formatAmountFromStripe } from '../../../../lib/stripe.js';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(

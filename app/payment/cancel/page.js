@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function PaymentCancelPage() {
+function PaymentCancelContent() {
   const searchParams = useSearchParams();
   const [productData, setProductData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -131,42 +131,6 @@ export default function PaymentCancelPage() {
           </ul>
         </div>
 
-        {/* Need Help Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Need Help?</h3>
-          <div className="space-y-4">
-            <div className="flex items-start space-x-3">
-              <svg className="w-5 h-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div>
-                <p className="font-medium text-gray-900">Payment Issues</p>
-                <p className="text-sm text-gray-600">If you're experiencing payment problems, try using a different payment method or contact your bank.</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-3">
-              <svg className="w-5 h-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <div>
-                <p className="font-medium text-gray-900">Contact Support</p>
-                <p className="text-sm text-gray-600">Still having issues? Reach out to our support team for assistance.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <svg className="w-5 h-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-              <div>
-                <p className="font-medium text-gray-900">Payment Methods</p>
-                <p className="text-sm text-gray-600">We accept all major credit cards, debit cards, and digital wallets through Stripe.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Action Buttons */}
         <div className="text-center space-x-4">
           <Link 
@@ -186,5 +150,24 @@ export default function PaymentCancelPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function PaymentCancelPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <PaymentCancelContent />
+    </Suspense>
   );
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { stripe, formatAmountForStripe } from '@/lib/stripe';
+import { stripe, formatAmountForStripe } from '../../../lib/stripe.js';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(

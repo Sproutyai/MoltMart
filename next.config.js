@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Configuration for Vercel deployment
-  experimental: {
-    appDir: true,
-  },
   
   // Configure API routes for Stripe webhooks
   async rewrites() {
