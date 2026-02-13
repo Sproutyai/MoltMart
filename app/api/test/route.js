@@ -1,15 +1,23 @@
 import { NextResponse } from 'next/server'
-import { db } from '../../../lib/supabase'
+import { createServiceClient } from '../../../lib/supabase'
 
 export async function GET() {
   try {
-    // Test database connection by trying to fetch products
-    const products = await db.getProducts()
+    // Test database connection using service client
+    const supabase = createServiceClient()
+    
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('id, title')
+      .limit(1)
+    
+    if (error) throw error
     
     return NextResponse.json({
       success: true,
       message: 'Database connection successful!',
-      productCount: products.length,
+      productCount: products?.length || 0,
+      environment: process.env.NODE_ENV,
       timestamp: new Date().toISOString()
     })
   } catch (error) {
