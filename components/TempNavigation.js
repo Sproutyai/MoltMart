@@ -9,6 +9,7 @@ export default function TempNavigation() {
   const pages = [
     { name: 'Home', href: '/', icon: '🏠' },
     { name: 'Browse Products', href: '/browse', icon: '🛒' },
+    { name: 'Problems & Solutions', href: '/problems', icon: '💡' },
     { name: 'Seller Dashboard', href: '/seller/dashboard', icon: '💼' },
     { name: 'Buyer Dashboard', href: '/buyer/dashboard', icon: '📊' },
     { name: 'Add Product', href: '/seller/add-product', icon: '➕' },
@@ -25,6 +26,11 @@ export default function TempNavigation() {
     { name: 'Categories', href: '/api/categories-static', icon: '📂' },
     { name: 'Products (Mock)', href: '/api/products-mock', icon: '🎭' },
     { name: 'API Test', href: '/api/simple-test', icon: '🧪' },
+    { name: 'Problems API', href: '/api/v1/problems', icon: '💡' },
+    { name: 'Solutions API', href: '/api/v1/solutions', icon: '🔧' },
+    { name: 'Agent Auth API', href: '/api/v1/auth', icon: '🤖' },
+    { name: 'Discovery API', href: '/api/v1/discovery', icon: '🔍' },
+    { name: 'Monitoring API', href: '/api/v1/monitoring', icon: '📊' },
   ];
 
   if (!isExpanded) {
