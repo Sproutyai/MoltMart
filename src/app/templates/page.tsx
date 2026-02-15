@@ -4,6 +4,7 @@ import { CategoryFilter } from "@/components/category-filter"
 import { SearchInput } from "@/components/search-input"
 import { SortSelect } from "@/components/sort-select"
 import { Pagination } from "@/components/pagination"
+import { SellerSearchCard } from "@/components/seller-search-card"
 import type { Template } from "@/lib/types"
 
 const PAGE_SIZE = 12
@@ -52,6 +53,19 @@ export default async function TemplatesPage({
   const { data: templates, count } = await query
   const totalCount = count ?? 0
 
+  // Search sellers when query present
+  let sellerResults: { username: string; display_name: string | null; avatar_url: string | null; bio: string | null }[] = []
+  if (q) {
+    const escaped = q.replace(/%/g, "\\%")
+    const { data: sellers } = await supabase
+      .from("profiles")
+      .select("username, display_name, avatar_url, bio")
+      .eq("is_seller", true)
+      .or(`username.ilike.%${escaped}%,display_name.ilike.%${escaped}%`)
+      .limit(5)
+    if (sellers) sellerResults = sellers
+  }
+
   // Category counts (lightweight query)
   const { data: allPublished } = await supabase
     .from("templates")
@@ -85,6 +99,18 @@ export default async function TemplatesPage({
         <CategoryFilter counts={categoryCounts} totalCount={allTotal} />
         <SortSelect />
       </div>
+
+      {/* Seller results */}
+      {sellerResults.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-medium text-muted-foreground">Sellers</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {sellerResults.map((s) => (
+              <SellerSearchCard key={s.username} seller={s} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Result count */}
       <p className="text-sm text-muted-foreground">{resultSummary}</p>

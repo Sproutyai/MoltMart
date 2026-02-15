@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { StarRating } from "@/components/star-rating"
+import { SellerLink } from "@/components/seller-link"
 import { Download } from "lucide-react"
 import type { Template } from "@/lib/types"
 
@@ -34,9 +35,12 @@ export function TemplateCard({ template }: TemplateCardProps) {
         <CardContent className="pb-2">
           <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
           {template.seller && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              by {template.seller.display_name || template.seller.username}
-            </p>
+            <div className="mt-2">
+              <SellerLink
+                username={template.seller.username}
+                displayName={template.seller.display_name}
+              />
+            </div>
           )}
         </CardContent>
         <CardFooter className="flex items-center justify-between text-xs text-muted-foreground">

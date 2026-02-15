@@ -4,8 +4,22 @@ export interface Profile {
   display_name: string | null
   bio: string | null
   avatar_url: string | null
+  banner_url?: string | null
+  website?: string | null
+  github_username?: string | null
+  twitter_username?: string | null
+  specialties?: string[]
   is_seller: boolean
+  is_verified?: boolean
+  follower_count?: number
   created_at: string
+}
+
+export interface SellerStats {
+  total_templates: number
+  total_downloads: number
+  avg_rating: number
+  total_reviews: number
 }
 
 export interface Template {

@@ -7,6 +7,8 @@ import { TemplatePreview } from "@/components/template-preview"
 import { ReviewList } from "@/components/review-list"
 import { DownloadButton } from "@/components/download-button"
 import { ReviewFormWrapper } from "@/components/review-form-wrapper"
+import { SellerLink } from "@/components/seller-link"
+import { TemplateCard } from "@/components/template-card"
 import { Download, Calendar } from "lucide-react"
 import type { Template, Review } from "@/lib/types"
 
@@ -43,6 +45,16 @@ export default async function TemplateDetailPage({
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Fetch more by this seller
+  const { data: moreBySeller } = await supabase
+    .from("templates")
+    .select("*, seller:profiles!seller_id(username, display_name)")
+    .eq("seller_id", t.seller_id)
+    .eq("status", "published")
+    .neq("id", t.id)
+    .order("download_count", { ascending: false })
+    .limit(3)
+
   let hasPurchased = false
   if (user) {
     const { data: purchase } = await supabase
@@ -68,9 +80,14 @@ export default async function TemplateDetailPage({
             ))}
           </div>
           <h1 className="mt-3 text-3xl font-bold">{t.title}</h1>
-          <p className="mt-1 text-muted-foreground">
-            by {t.seller.display_name || t.seller.username}
-          </p>
+          <div className="mt-1">
+            <SellerLink
+              username={t.seller.username}
+              displayName={t.seller.display_name}
+              avatarUrl={t.seller.avatar_url}
+              showAvatar
+            />
+          </div>
           <div className="mt-2 flex items-center gap-3">
             <StarRating value={t.avg_rating} />
             <span className="text-sm text-muted-foreground">
@@ -104,6 +121,19 @@ export default async function TemplateDetailPage({
             </div>
           )}
         </div>
+        {moreBySeller && moreBySeller.length > 0 && (
+          <>
+            <Separator />
+            <div>
+              <h2 className="mb-4 text-xl font-semibold">More by {t.seller.display_name || t.seller.username}</h2>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {(moreBySeller as (Template & { seller: { username: string; display_name: string | null } })[]).map((mt) => (
+                  <TemplateCard key={mt.id} template={mt} />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Right column */}
