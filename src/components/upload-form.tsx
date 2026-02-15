@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CATEGORIES, MAX_UPLOAD_SIZE } from "@/lib/constants"
-import { Loader2 } from "lucide-react"
+import { CATEGORIES, DIFFICULTIES, AI_MODELS, LICENSES, MAX_UPLOAD_SIZE, MAX_SCREENSHOTS, MAX_SCREENSHOT_SIZE } from "@/lib/constants"
+import { Loader2, X, ImagePlus } from "lucide-react"
 import { toast } from "sonner"
 
 function slugify(s: string) {
@@ -21,12 +21,58 @@ export function UploadForm() {
   const [loading, setLoading] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [longDescription, setLongDescription] = useState("")
   const [category, setCategory] = useState("")
   const [tags, setTags] = useState("")
+  const [longDescription, setLongDescription] = useState("")
+  const [difficulty, setDifficulty] = useState<string>("beginner")
+  const [selectedModels, setSelectedModels] = useState<string[]>([])
+  const [requirements, setRequirements] = useState("")
+  const [setupInstructions, setSetupInstructions] = useState("")
+  const [screenshots, setScreenshots] = useState<File[]>([])
+  const [screenshotPreviews, setScreenshotPreviews] = useState<string[]>([])
+  const [demoVideoUrl, setDemoVideoUrl] = useState("")
+  const screenshotInputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
   const [pricingType, setPricingType] = useState<"free" | "paid">("free")
   const [priceUsd, setPriceUsd] = useState("")
+  const [version, setVersion] = useState("1.0.0")
+  const [license, setLicense] = useState("MIT")
+
+  function toggleModel(model: string) {
+    setSelectedModels((prev) =>
+      prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model]
+    )
+  }
+
+  function handleScreenshotAdd(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    const remaining = MAX_SCREENSHOTS - screenshots.length
+    const toAdd = files.slice(0, remaining)
+    for (const f of toAdd) {
+      if (f.size > MAX_SCREENSHOT_SIZE) {
+        toast.error(`${f.name} is too large (max 5MB)`)
+        return
+      }
+      if (!f.type.startsWith("image/")) {
+        toast.error(`${f.name} is not an image`)
+        return
+      }
+    }
+    setScreenshots((prev) => [...prev, ...toAdd])
+    setScreenshotPreviews((prev) => [
+      ...prev,
+      ...toAdd.map((f) => URL.createObjectURL(f)),
+    ])
+    if (screenshotInputRef.current) screenshotInputRef.current.value = ""
+  }
+
+  function removeScreenshot(index: number) {
+    setScreenshots((prev) => prev.filter((_, i) => i !== index))
+    setScreenshotPreviews((prev) => {
+      URL.revokeObjectURL(prev[index])
+      return prev.filter((_, i) => i !== index)
+    })
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -44,9 +90,20 @@ export function UploadForm() {
       fd.append("long_description", longDescription)
       fd.append("category", category)
       fd.append("tags", tags)
+      fd.append("difficulty", difficulty)
+      fd.append("ai_models", JSON.stringify(selectedModels))
+      fd.append("requirements", requirements)
+      fd.append("setup_instructions", setupInstructions)
+      fd.append("demo_video_url", demoVideoUrl)
+      fd.append("version", version)
+      fd.append("license", license)
       fd.append("file", file)
       const priceCents = pricingType === "paid" ? Math.round(parseFloat(priceUsd) * 100) : 0
       fd.append("price_cents", String(priceCents))
+
+      for (const ss of screenshots) {
+        fd.append("screenshots", ss)
+      }
 
       const res = await fetch("/api/templates/upload", { method: "POST", body: fd })
       const data = await res.json()
@@ -61,70 +118,164 @@ export function UploadForm() {
     }
   }
 
+  const difficultyEmoji: Record<string, string> = { beginner: "🟢", intermediate: "🟡", advanced: "🔴" }
+
   return (
     <Card className="max-w-2xl">
       <CardHeader><CardTitle>New Template</CardTitle></CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="title">Title *</Label>
-            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="My Agent Template" required />
-            {title && <p className="text-xs text-muted-foreground mt-1">Slug: {slugify(title)}</p>}
-          </div>
-          <div>
-            <Label htmlFor="description">Short Description *</Label>
-            <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A brief description" required />
-          </div>
-          <div>
-            <Label htmlFor="longDescription">Long Description</Label>
-            <Textarea id="longDescription" value={longDescription} onChange={(e) => setLongDescription(e.target.value)} rows={5} placeholder="Detailed description..." />
-          </div>
-          <div>
-            <Label>Category *</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="tags">Tags (comma separated)</Label>
-            <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="agent, productivity, coding" />
-          </div>
-          <div>
-            <Label htmlFor="file">Template File (.zip, max 10MB) *</Label>
-            <Input id="file" type="file" accept=".zip" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-          </div>
-
-          <div className="space-y-3">
-            <Label>Pricing</Label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="pricing" checked={pricingType === "free"} onChange={() => setPricingType("free")} className="accent-primary" />
-                <span className="text-sm">Free</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="pricing" checked={pricingType === "paid"} onChange={() => setPricingType("paid")} className="accent-primary" />
-                <span className="text-sm">Paid</span>
-              </label>
-            </div>
-            {pricingType === "paid" && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">$</span>
-                  <Input type="number" min="1.00" step="0.01" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="1.00" className="w-32" />
-                  <span className="text-sm text-muted-foreground">USD</span>
-                </div>
-                {priceUsd && parseFloat(priceUsd) >= 1 && (
-                  <p className="text-xs text-muted-foreground">
-                    You earn ${(parseFloat(priceUsd) * 0.88).toFixed(2)} (88%) · Molt Mart fee ${(parseFloat(priceUsd) * 0.12).toFixed(2)} (12%)
-                  </p>
-                )}
-                <p className="text-xs text-amber-600">Payments coming soon — paid templates will be listed but not purchasable yet</p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <details open>
+            <summary className="cursor-pointer text-lg font-semibold mb-3">1. Basic Info</summary>
+            <div className="space-y-4 pl-1">
+              <div>
+                <Label htmlFor="title">Title *</Label>
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="My Agent Template" required />
+                {title && <p className="text-xs text-muted-foreground mt-1">Slug: {slugify(title)}</p>}
               </div>
-            )}
-          </div>
+              <div>
+                <Label htmlFor="description">Short Description *</Label>
+                <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A brief one-line description" required />
+              </div>
+              <div>
+                <Label>Category *</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="tags">Tags (comma separated)</Label>
+                <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="agent, productivity, coding" />
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary className="cursor-pointer text-lg font-semibold mb-3">2. Details</summary>
+            <div className="space-y-4 pl-1">
+              <div>
+                <Label htmlFor="longDescription">Long Description (Markdown supported)</Label>
+                <Textarea id="longDescription" value={longDescription} onChange={(e) => setLongDescription(e.target.value)} rows={6} placeholder="Detailed description with **markdown** support..." />
+              </div>
+              <div>
+                <Label>Setup Difficulty *</Label>
+                <div className="flex gap-3 mt-1">
+                  {DIFFICULTIES.map((d) => (
+                    <label key={d} className={`flex items-center gap-1.5 cursor-pointer rounded-md border px-3 py-2 text-sm transition-colors ${difficulty === d ? "border-primary bg-primary/10" : "border-border"}`}>
+                      <input type="radio" name="difficulty" value={d} checked={difficulty === d} onChange={() => setDifficulty(d)} className="sr-only" />
+                      <span>{difficultyEmoji[d]}</span>
+                      <span className="capitalize">{d}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label>AI Model Compatibility</Label>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {AI_MODELS.map((model) => (
+                    <label key={model} className={`cursor-pointer rounded-md border px-3 py-1.5 text-sm transition-colors ${selectedModels.includes(model) ? "border-primary bg-primary/10" : "border-border"}`}>
+                      <input type="checkbox" checked={selectedModels.includes(model)} onChange={() => toggleModel(model)} className="sr-only" />
+                      {model}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="requirements">Requirements / Prerequisites</Label>
+                <Textarea id="requirements" value={requirements} onChange={(e) => setRequirements(e.target.value)} rows={3} placeholder="e.g. OpenRouter API key, Node.js 18+, etc." />
+              </div>
+              <div>
+                <Label htmlFor="setupInstructions">Setup Instructions (Markdown)</Label>
+                <Textarea id="setupInstructions" value={setupInstructions} onChange={(e) => setSetupInstructions(e.target.value)} rows={4} placeholder="Step-by-step setup guide..." />
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary className="cursor-pointer text-lg font-semibold mb-3">3. Media</summary>
+            <div className="space-y-4 pl-1">
+              <div>
+                <Label>Screenshots (up to {MAX_SCREENSHOTS}, max 5MB each)</Label>
+                <div className="flex flex-wrap gap-3 mt-2">
+                  {screenshotPreviews.map((src, i) => (
+                    <div key={i} className="relative w-24 h-24 rounded-md overflow-hidden border">
+                      <img src={src} alt={`Screenshot ${i + 1}`} className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => removeScreenshot(i)} className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 text-white hover:bg-black/80">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {screenshots.length < MAX_SCREENSHOTS && (
+                    <button type="button" onClick={() => screenshotInputRef.current?.click()} className="w-24 h-24 rounded-md border-2 border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                      <ImagePlus size={20} />
+                      <span className="text-xs">Add</span>
+                    </button>
+                  )}
+                </div>
+                <input ref={screenshotInputRef} type="file" accept="image/*" multiple onChange={handleScreenshotAdd} className="hidden" />
+              </div>
+              <div>
+                <Label htmlFor="demoVideoUrl">Demo Video URL (YouTube or Loom)</Label>
+                <Input id="demoVideoUrl" value={demoVideoUrl} onChange={(e) => setDemoVideoUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary className="cursor-pointer text-lg font-semibold mb-3">4. File & Pricing</summary>
+            <div className="space-y-4 pl-1">
+              <div>
+                <Label htmlFor="file">Template File (.zip, max 10MB) *</Label>
+                <Input id="file" type="file" accept=".zip" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="version">Version</Label>
+                  <Input id="version" value={version} onChange={(e) => setVersion(e.target.value)} placeholder="1.0.0" />
+                </div>
+                <div>
+                  <Label>License</Label>
+                  <Select value={license} onValueChange={setLicense}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LICENSES.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Label>Pricing</Label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="pricing" checked={pricingType === "free"} onChange={() => setPricingType("free")} className="accent-primary" />
+                    <span className="text-sm">Free</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="pricing" checked={pricingType === "paid"} onChange={() => setPricingType("paid")} className="accent-primary" />
+                    <span className="text-sm">Paid</span>
+                  </label>
+                </div>
+                {pricingType === "paid" && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">$</span>
+                      <Input type="number" min="1.00" step="0.01" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="1.00" className="w-32" />
+                      <span className="text-sm text-muted-foreground">USD</span>
+                    </div>
+                    {priceUsd && parseFloat(priceUsd) >= 1 && (
+                      <p className="text-xs text-muted-foreground">
+                        You earn ${(parseFloat(priceUsd) * 0.88).toFixed(2)} (88%) · Molt Mart fee ${(parseFloat(priceUsd) * 0.12).toFixed(2)} (12%)
+                      </p>
+                    )}
+                    <p className="text-xs text-amber-600">Payments coming soon — paid templates will be listed but not purchasable yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </details>
 
           <Button type="submit" disabled={loading} className="w-full">
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

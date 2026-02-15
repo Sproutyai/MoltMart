@@ -18,6 +18,15 @@ export async function POST(request: Request) {
   const category = formData.get("category") as string
   const tagsRaw = formData.get("tags") as string
   const file = formData.get("file") as File
+  const difficulty = (formData.get("difficulty") as string) || "beginner"
+  const aiModelsRaw = formData.get("ai_models") as string
+  const requirements = formData.get("requirements") as string
+  const setupInstructions = formData.get("setup_instructions") as string
+  const demoVideoUrl = formData.get("demo_video_url") as string
+  const version = (formData.get("version") as string) || "1.0.0"
+  const license = (formData.get("license") as string) || "MIT"
+  const priceCentsRaw = formData.get("price_cents") as string
+  const priceCents = priceCentsRaw ? parseInt(priceCentsRaw, 10) : 0
 
   if (!title || !slug || !description || !category || !file) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -31,7 +40,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 400 })
   }
 
-  // Extract preview data from zip
   const buffer = Buffer.from(await file.arrayBuffer())
   const previewData: { soul_md?: string; agents_md?: string; file_list?: string[] } = {}
 
@@ -62,7 +70,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Upload failed: " + uploadError.message }, { status: 500 })
   }
 
+  const screenshotFiles = formData.getAll("screenshots") as File[]
+  const screenshotUrls: string[] = []
+  for (let i = 0; i < screenshotFiles.length; i++) {
+    const ss = screenshotFiles[i]
+    if (!ss.size) continue
+    const ext = ss.name.split(".").pop() || "png"
+    const ssPath = `${user.id}/${slug}-${i}-${Date.now()}.${ext}`
+    const ssBuf = Buffer.from(await ss.arrayBuffer())
+    const { error: ssError } = await supabase.storage
+      .from("screenshots")
+      .upload(ssPath, ssBuf, { contentType: ss.type, upsert: true })
+    if (!ssError) {
+      const { data: urlData } = supabase.storage.from("screenshots").getPublicUrl(ssPath)
+      screenshotUrls.push(urlData.publicUrl)
+    }
+  }
+
   const tags = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : []
+  const aiModels: string[] = aiModelsRaw ? JSON.parse(aiModelsRaw) : []
 
   const { data: template, error: insertError } = await supabase
     .from("templates")
@@ -74,11 +100,19 @@ export async function POST(request: Request) {
       long_description: longDescription || null,
       category,
       tags,
-      price_cents: 0,
+      price_cents: priceCents,
       file_path: filePath,
       preview_data: previewData,
       status: "published",
       compatibility: "openclaw",
+      screenshots: screenshotUrls,
+      difficulty,
+      ai_models: aiModels,
+      requirements: requirements || null,
+      setup_instructions: setupInstructions || null,
+      version,
+      license,
+      demo_video_url: demoVideoUrl || null,
     })
     .select()
     .single()

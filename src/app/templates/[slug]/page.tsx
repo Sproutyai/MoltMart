@@ -9,7 +9,10 @@ import { DownloadButton } from "@/components/download-button"
 import { ReviewFormWrapper } from "@/components/review-form-wrapper"
 import { SellerLink } from "@/components/seller-link"
 import { TemplateCard } from "@/components/template-card"
-import { Download, Calendar } from "lucide-react"
+import { ScreenshotCarousel } from "@/components/screenshot-carousel"
+import { MarkdownContent } from "@/components/markdown-content"
+import { VideoEmbed } from "@/components/video-embed"
+import { Download, Calendar, Shield, BookOpen, Cpu } from "lucide-react"
 import type { Template, Review } from "@/lib/types"
 
 export default async function TemplateDetailPage({
@@ -33,19 +36,14 @@ export default async function TemplateDetailPage({
     seller: { username: string; display_name: string | null; avatar_url: string | null }
   }
 
-  // Fetch reviews
   const { data: reviews } = await supabase
     .from("reviews")
     .select("*, buyer:profiles!buyer_id(username, avatar_url)")
     .eq("template_id", t.id)
     .order("created_at", { ascending: false })
 
-  // Check auth & purchase status
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch more by this seller
   const { data: moreBySeller } = await supabase
     .from("templates")
     .select("*, seller:profiles!seller_id(username, display_name)")
@@ -66,17 +64,25 @@ export default async function TemplateDetailPage({
     hasPurchased = !!purchase
   }
 
+  const difficultyConfig: Record<string, { emoji: string; color: string }> = {
+    beginner: { emoji: "🟢", color: "text-green-600" },
+    intermediate: { emoji: "🟡", color: "text-yellow-600" },
+    advanced: { emoji: "🔴", color: "text-red-600" },
+  }
+  const diff = difficultyConfig[t.difficulty] || difficultyConfig.beginner
+
   return (
     <div className="grid gap-8 lg:grid-cols-3">
-      {/* Left column */}
       <div className="space-y-6 lg:col-span-2">
+        {t.screenshots && t.screenshots.length > 0 && (
+          <ScreenshotCarousel screenshots={t.screenshots} title={t.title} />
+        )}
+
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">{t.category}</Badge>
             {t.tags?.map((tag) => (
-              <Badge key={tag} variant="outline">
-                {tag}
-              </Badge>
+              <Badge key={tag} variant="outline">{tag}</Badge>
             ))}
           </div>
           <h1 className="mt-3 text-3xl font-bold">{t.title}</h1>
@@ -98,9 +104,42 @@ export default async function TemplateDetailPage({
 
         <Separator />
 
-        <div className="prose prose-sm max-w-none dark:prose-invert">
-          <p>{t.long_description || t.description}</p>
+        <div>
+          <h2 className="mb-3 text-xl font-semibold">Description</h2>
+          <MarkdownContent content={t.long_description || t.description} />
         </div>
+
+        {t.requirements && (
+          <>
+            <Separator />
+            <div>
+              <h2 className="mb-3 text-xl font-semibold flex items-center gap-2">
+                <BookOpen size={20} /> Requirements
+              </h2>
+              <MarkdownContent content={t.requirements} />
+            </div>
+          </>
+        )}
+
+        {t.setup_instructions && (
+          <>
+            <Separator />
+            <div>
+              <h2 className="mb-3 text-xl font-semibold">Setup Instructions</h2>
+              <MarkdownContent content={t.setup_instructions} />
+            </div>
+          </>
+        )}
+
+        {t.demo_video_url && (
+          <>
+            <Separator />
+            <div>
+              <h2 className="mb-3 text-xl font-semibold">Demo</h2>
+              <VideoEmbed url={t.demo_video_url} />
+            </div>
+          </>
+        )}
 
         <Separator />
 
@@ -121,6 +160,7 @@ export default async function TemplateDetailPage({
             </div>
           )}
         </div>
+
         {moreBySeller && moreBySeller.length > 0 && (
           <>
             <Separator />
@@ -136,11 +176,14 @@ export default async function TemplateDetailPage({
         )}
       </div>
 
-      {/* Right column */}
       <div>
         <div className="sticky top-20 space-y-4 rounded-lg border p-6">
           <div className="text-center">
-            <span className="text-3xl font-bold text-green-600">Free</span>
+            {t.price_cents === 0 ? (
+              <span className="text-3xl font-bold text-green-600">Free</span>
+            ) : (
+              <span className="text-3xl font-bold">${(t.price_cents / 100).toFixed(2)}</span>
+            )}
           </div>
 
           <DownloadButton
@@ -151,16 +194,32 @@ export default async function TemplateDetailPage({
 
           <Separator />
 
-          <div className="space-y-2 text-sm">
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Difficulty</span>
+              <span className={`flex items-center gap-1 font-medium capitalize ${diff.color}`}>
+                {diff.emoji} {t.difficulty}
+              </span>
+            </div>
+            {t.ai_models && t.ai_models.length > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-1"><Cpu size={14} /> Models</span>
+                <span className="text-right">{t.ai_models.join(", ")}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Version</span>
+              <span>{t.version || "1.0.0"}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground flex items-center gap-1"><Shield size={14} /> License</span>
+              <span>{t.license || "MIT"}</span>
+            </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Downloads</span>
               <span className="flex items-center gap-1">
                 <Download size={14} /> {t.download_count}
               </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Compatibility</span>
-              <span>OpenClaw {t.compatibility}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Updated</span>

@@ -43,6 +43,14 @@ export interface Template {
   review_count: number
   status: 'draft' | 'published' | 'archived'
   compatibility: string
+  screenshots: string[]
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+  ai_models: string[]
+  requirements: string | null
+  version: string
+  license: string
+  demo_video_url: string | null
+  setup_instructions: string | null
   created_at: string
   updated_at: string
   seller?: Profile

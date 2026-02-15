@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,18 +9,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { CATEGORIES } from "@/lib/constants"
-import { Loader2, Trash2 } from "lucide-react"
+import { CATEGORIES, DIFFICULTIES, AI_MODELS, LICENSES, MAX_SCREENSHOTS, MAX_SCREENSHOT_SIZE } from "@/lib/constants"
+import { Loader2, Trash2, X, ImagePlus } from "lucide-react"
 import { toast } from "sonner"
 import type { Template } from "@/lib/types"
 
@@ -30,11 +23,55 @@ export function EditTemplateForm({ template }: { template: Template }) {
   const [deleting, setDeleting] = useState(false)
   const [title, setTitle] = useState(template.title)
   const [description, setDescription] = useState(template.description)
-  const [longDescription, setLongDescription] = useState(template.long_description || "")
   const [category, setCategory] = useState(template.category)
   const [tags, setTags] = useState(template.tags?.join(", ") || "")
+  const [longDescription, setLongDescription] = useState(template.long_description || "")
+  const [difficulty, setDifficulty] = useState(template.difficulty || "beginner")
+  const [selectedModels, setSelectedModels] = useState<string[]>(template.ai_models || [])
+  const [requirements, setRequirements] = useState(template.requirements || "")
+  const [setupInstructions, setSetupInstructions] = useState(template.setup_instructions || "")
+  const [existingScreenshots, setExistingScreenshots] = useState<string[]>(template.screenshots || [])
+  const [newScreenshots, setNewScreenshots] = useState<File[]>([])
+  const [newPreviews, setNewPreviews] = useState<string[]>([])
+  const [demoVideoUrl, setDemoVideoUrl] = useState(template.demo_video_url || "")
+  const screenshotInputRef = useRef<HTMLInputElement>(null)
   const [pricingType, setPricingType] = useState<"free" | "paid">(template.price_cents > 0 ? "paid" : "free")
   const [priceUsd, setPriceUsd] = useState(template.price_cents > 0 ? (template.price_cents / 100).toFixed(2) : "")
+  const [version, setVersion] = useState(template.version || "1.0.0")
+  const [license, setLicense] = useState(template.license || "MIT")
+
+  const totalScreenshots = existingScreenshots.length + newScreenshots.length
+
+  function toggleModel(model: string) {
+    setSelectedModels((prev) =>
+      prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model]
+    )
+  }
+
+  function handleScreenshotAdd(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    const remaining = MAX_SCREENSHOTS - totalScreenshots
+    const toAdd = files.slice(0, remaining)
+    for (const f of toAdd) {
+      if (f.size > MAX_SCREENSHOT_SIZE) { toast.error(`${f.name} too large (max 5MB)`); return }
+      if (!f.type.startsWith("image/")) { toast.error(`${f.name} is not an image`); return }
+    }
+    setNewScreenshots((prev) => [...prev, ...toAdd])
+    setNewPreviews((prev) => [...prev, ...toAdd.map((f) => URL.createObjectURL(f))])
+    if (screenshotInputRef.current) screenshotInputRef.current.value = ""
+  }
+
+  function removeExistingScreenshot(index: number) {
+    setExistingScreenshots((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  function removeNewScreenshot(index: number) {
+    setNewScreenshots((prev) => prev.filter((_, i) => i !== index))
+    setNewPreviews((prev) => {
+      URL.revokeObjectURL(prev[index])
+      return prev.filter((_, i) => i !== index)
+    })
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -44,6 +81,20 @@ export function EditTemplateForm({ template }: { template: Template }) {
     try {
       const priceCents = pricingType === "paid" ? Math.round(parseFloat(priceUsd) * 100) : 0
       const tagList = tags.split(",").map((t) => t.trim()).filter(Boolean)
+
+      const uploadedUrls: string[] = []
+      for (const ss of newScreenshots) {
+        const fd = new FormData()
+        fd.append("file", ss)
+        fd.append("template_slug", template.slug)
+        const res = await fetch("/api/screenshots/upload", { method: "POST", body: fd })
+        if (res.ok) {
+          const data = await res.json()
+          uploadedUrls.push(data.url)
+        }
+      }
+
+      const allScreenshots = [...existingScreenshots, ...uploadedUrls]
 
       const res = await fetch(`/api/templates/${template.id}`, {
         method: "PATCH",
@@ -55,6 +106,14 @@ export function EditTemplateForm({ template }: { template: Template }) {
           category,
           tags: tagList,
           price_cents: priceCents,
+          difficulty,
+          ai_models: selectedModels,
+          requirements: requirements || null,
+          setup_instructions: setupInstructions || null,
+          screenshots: allScreenshots,
+          demo_video_url: demoVideoUrl || null,
+          version,
+          license,
         }),
       })
 
@@ -90,61 +149,164 @@ export function EditTemplateForm({ template }: { template: Template }) {
     }
   }
 
+  const difficultyEmoji: Record<string, string> = { beginner: "🟢", intermediate: "🟡", advanced: "🔴" }
+
   return (
     <Card className="max-w-2xl">
       <CardHeader><CardTitle>Edit Template</CardTitle></CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label>Slug (read-only)</Label>
             <Input value={template.slug} disabled className="bg-muted" />
           </div>
-          <div>
-            <Label htmlFor="title">Title *</Label>
-            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-          </div>
-          <div>
-            <Label htmlFor="description">Short Description *</Label>
-            <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} required />
-          </div>
-          <div>
-            <Label htmlFor="longDescription">Long Description</Label>
-            <Textarea id="longDescription" value={longDescription} onChange={(e) => setLongDescription(e.target.value)} rows={5} />
-          </div>
-          <div>
-            <Label>Category *</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="tags">Tags (comma separated)</Label>
-            <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} />
-          </div>
 
-          <div className="space-y-3">
-            <Label>Pricing</Label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="pricing" checked={pricingType === "free"} onChange={() => setPricingType("free")} className="accent-primary" />
-                <span className="text-sm">Free</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="pricing" checked={pricingType === "paid"} onChange={() => setPricingType("paid")} className="accent-primary" />
-                <span className="text-sm">Paid</span>
-              </label>
-            </div>
-            {pricingType === "paid" && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">$</span>
-                <Input type="number" min="1.00" step="0.01" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="1.00" className="w-32" />
-                <span className="text-sm text-muted-foreground">USD</span>
+          <details open>
+            <summary className="cursor-pointer text-lg font-semibold mb-3">1. Basic Info</summary>
+            <div className="space-y-4 pl-1">
+              <div>
+                <Label htmlFor="title">Title *</Label>
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
               </div>
-            )}
-          </div>
+              <div>
+                <Label htmlFor="description">Short Description *</Label>
+                <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} required />
+              </div>
+              <div>
+                <Label>Category *</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="tags">Tags (comma separated)</Label>
+                <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} />
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary className="cursor-pointer text-lg font-semibold mb-3">2. Details</summary>
+            <div className="space-y-4 pl-1">
+              <div>
+                <Label htmlFor="longDescription">Long Description (Markdown)</Label>
+                <Textarea id="longDescription" value={longDescription} onChange={(e) => setLongDescription(e.target.value)} rows={6} />
+              </div>
+              <div>
+                <Label>Setup Difficulty *</Label>
+                <div className="flex gap-3 mt-1">
+                  {DIFFICULTIES.map((d) => (
+                    <label key={d} className={`flex items-center gap-1.5 cursor-pointer rounded-md border px-3 py-2 text-sm transition-colors ${difficulty === d ? "border-primary bg-primary/10" : "border-border"}`}>
+                      <input type="radio" name="difficulty" value={d} checked={difficulty === d} onChange={() => setDifficulty(d)} className="sr-only" />
+                      <span>{difficultyEmoji[d]}</span>
+                      <span className="capitalize">{d}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label>AI Model Compatibility</Label>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {AI_MODELS.map((model) => (
+                    <label key={model} className={`cursor-pointer rounded-md border px-3 py-1.5 text-sm transition-colors ${selectedModels.includes(model) ? "border-primary bg-primary/10" : "border-border"}`}>
+                      <input type="checkbox" checked={selectedModels.includes(model)} onChange={() => toggleModel(model)} className="sr-only" />
+                      {model}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="requirements">Requirements</Label>
+                <Textarea id="requirements" value={requirements} onChange={(e) => setRequirements(e.target.value)} rows={3} />
+              </div>
+              <div>
+                <Label htmlFor="setupInstructions">Setup Instructions (Markdown)</Label>
+                <Textarea id="setupInstructions" value={setupInstructions} onChange={(e) => setSetupInstructions(e.target.value)} rows={4} />
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary className="cursor-pointer text-lg font-semibold mb-3">3. Media</summary>
+            <div className="space-y-4 pl-1">
+              <div>
+                <Label>Screenshots (up to {MAX_SCREENSHOTS})</Label>
+                <div className="flex flex-wrap gap-3 mt-2">
+                  {existingScreenshots.map((src, i) => (
+                    <div key={`existing-${i}`} className="relative w-24 h-24 rounded-md overflow-hidden border">
+                      <img src={src} alt={`Screenshot ${i + 1}`} className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => removeExistingScreenshot(i)} className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 text-white hover:bg-black/80">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {newPreviews.map((src, i) => (
+                    <div key={`new-${i}`} className="relative w-24 h-24 rounded-md overflow-hidden border border-primary">
+                      <img src={src} alt={`New screenshot ${i + 1}`} className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => removeNewScreenshot(i)} className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 text-white hover:bg-black/80">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {totalScreenshots < MAX_SCREENSHOTS && (
+                    <button type="button" onClick={() => screenshotInputRef.current?.click()} className="w-24 h-24 rounded-md border-2 border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                      <ImagePlus size={20} />
+                      <span className="text-xs">Add</span>
+                    </button>
+                  )}
+                </div>
+                <input ref={screenshotInputRef} type="file" accept="image/*" multiple onChange={handleScreenshotAdd} className="hidden" />
+              </div>
+              <div>
+                <Label htmlFor="demoVideoUrl">Demo Video URL</Label>
+                <Input id="demoVideoUrl" value={demoVideoUrl} onChange={(e) => setDemoVideoUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary className="cursor-pointer text-lg font-semibold mb-3">4. Pricing & Version</summary>
+            <div className="space-y-4 pl-1">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="version">Version</Label>
+                  <Input id="version" value={version} onChange={(e) => setVersion(e.target.value)} />
+                </div>
+                <div>
+                  <Label>License</Label>
+                  <Select value={license} onValueChange={setLicense}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LICENSES.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Label>Pricing</Label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="pricing" checked={pricingType === "free"} onChange={() => setPricingType("free")} className="accent-primary" />
+                    <span className="text-sm">Free</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="pricing" checked={pricingType === "paid"} onChange={() => setPricingType("paid")} className="accent-primary" />
+                    <span className="text-sm">Paid</span>
+                  </label>
+                </div>
+                {pricingType === "paid" && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">$</span>
+                    <Input type="number" min="1.00" step="0.01" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="1.00" className="w-32" />
+                    <span className="text-sm text-muted-foreground">USD</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </details>
 
           <div className="flex gap-3 pt-2">
             <Button type="submit" disabled={loading} className="flex-1">

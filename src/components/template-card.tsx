@@ -24,10 +24,20 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
   return (
     <Link href={`/templates/${template.slug}`}>
-      <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02]">
+      <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] overflow-hidden">
+        {template.screenshots && template.screenshots.length > 0 && (
+          <div className="aspect-video w-full overflow-hidden bg-muted">
+            <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
+          </div>
+        )}
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between gap-2">
             <Badge variant="outline" className="text-xs">{template.category}</Badge>
+            {template.difficulty && (
+              <Badge variant="outline" className={`text-xs ${template.difficulty === 'beginner' ? 'border-green-500 text-green-600' : template.difficulty === 'intermediate' ? 'border-yellow-500 text-yellow-600' : 'border-red-500 text-red-600'}`}>
+                {template.difficulty === 'beginner' ? '🟢' : template.difficulty === 'intermediate' ? '🟡' : '🔴'} {template.difficulty}
+              </Badge>
+            )}
             {priceDisplay}
           </div>
           <h3 className="mt-2 font-semibold leading-tight line-clamp-1">{template.title}</h3>
