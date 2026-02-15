@@ -6,10 +6,16 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { SellerTemplateRow } from "@/components/seller-template-row"
-import { Loader2, Plus, Store } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Loader2, Plus, Store, Pencil, Archive, DollarSign, Download, Star, Package } from "lucide-react"
 import { toast } from "sonner"
 import type { Profile, Template } from "@/lib/types"
+
+const statusColors: Record<string, "default" | "secondary" | "outline"> = {
+  published: "default",
+  draft: "secondary",
+  archived: "outline",
+}
 
 export default function SellerDashboardPage() {
   const router = useRouter()
@@ -17,6 +23,7 @@ export default function SellerDashboardPage() {
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [becoming, setBecoming] = useState(false)
+  const [archiving, setArchiving] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -54,6 +61,25 @@ export default function SellerDashboardPage() {
     }
   }
 
+  async function toggleArchive(t: Template) {
+    setArchiving(t.id)
+    const newStatus = t.status === "archived" ? "published" : "archived"
+    try {
+      const res = await fetch(`/api/templates/${t.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!res.ok) { toast.error("Failed to update"); return }
+      setTemplates((prev) => prev.map((x) => x.id === t.id ? { ...x, status: newStatus } : x))
+      toast.success(newStatus === "archived" ? "Template archived" : "Template restored")
+    } catch {
+      toast.error("Something went wrong")
+    } finally {
+      setArchiving(null)
+    }
+  }
+
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
 
   if (!profile?.is_seller) {
@@ -78,6 +104,7 @@ export default function SellerDashboardPage() {
 
   const totalDownloads = templates.reduce((s, t) => s + t.download_count, 0)
   const avgRating = templates.length ? (templates.reduce((s, t) => s + t.avg_rating, 0) / templates.length).toFixed(1) : "—"
+  const estimatedEarnings = templates.reduce((s, t) => s + (t.price_cents > 0 ? t.download_count * t.price_cents * 0.88 : 0), 0) / 100
 
   return (
     <div>
@@ -88,17 +115,79 @@ export default function SellerDashboardPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <Card><CardContent className="pt-6 text-center"><div className="text-2xl font-bold">{templates.length}</div><div className="text-xs text-muted-foreground">Templates</div></CardContent></Card>
-        <Card><CardContent className="pt-6 text-center"><div className="text-2xl font-bold">{totalDownloads}</div><div className="text-xs text-muted-foreground">Downloads</div></CardContent></Card>
-        <Card><CardContent className="pt-6 text-center"><div className="text-2xl font-bold">{avgRating}</div><div className="text-xs text-muted-foreground">Avg Rating</div></CardContent></Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <Package className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+            <div className="text-2xl font-bold">{templates.length}</div>
+            <div className="text-xs text-muted-foreground">Templates</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <Download className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+            <div className="text-2xl font-bold">{totalDownloads}</div>
+            <div className="text-xs text-muted-foreground">Downloads</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <Star className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+            <div className="text-2xl font-bold">{avgRating}</div>
+            <div className="text-xs text-muted-foreground">Avg Rating</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <DollarSign className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+            <div className="text-2xl font-bold">${estimatedEarnings.toFixed(2)}</div>
+            <div className="text-xs text-muted-foreground">Est. Earnings</div>
+          </CardContent>
+        </Card>
       </div>
 
       {templates.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">No templates yet. Upload your first one!</p>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-4 py-12">
+            <Package className="h-12 w-12 text-muted-foreground" />
+            <p className="text-muted-foreground">You haven&apos;t uploaded any templates yet</p>
+            <Link href="/dashboard/seller/upload">
+              <Button><Plus className="mr-2 h-4 w-4" />Upload Your First Template</Button>
+            </Link>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-2">
-          {templates.map((t) => <SellerTemplateRow key={t.id} template={t} />)}
+          {templates.map((t) => (
+            <Card key={t.id}>
+              <CardContent className="flex items-center gap-4 py-3">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{t.title}</div>
+                  <div className="text-xs text-muted-foreground">{t.category}</div>
+                </div>
+                <Badge variant={statusColors[t.status] || "secondary"}>{t.status}</Badge>
+                <div className="text-sm text-muted-foreground w-16 text-right">{t.download_count} DLs</div>
+                <div className="text-sm text-muted-foreground w-14 text-right">★ {t.avg_rating.toFixed(1)}</div>
+                <div className="text-sm font-medium w-16 text-right">
+                  {t.price_cents > 0 ? `$${(t.price_cents / 100).toFixed(2)}` : "Free"}
+                </div>
+                <div className="flex gap-1">
+                  <Link href={`/dashboard/seller/edit/${t.id}`}>
+                    <Button variant="ghost" size="sm"><Pencil className="h-4 w-4" /></Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleArchive(t)}
+                    disabled={archiving === t.id}
+                    title={t.status === "archived" ? "Restore" : "Archive"}
+                  >
+                    {archiving === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Archive className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>

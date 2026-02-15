@@ -6,6 +6,7 @@ import { StarRating } from "@/components/star-rating"
 import { TemplatePreview } from "@/components/template-preview"
 import { ReviewList } from "@/components/review-list"
 import { DownloadButton } from "@/components/download-button"
+import { ReviewFormWrapper } from "@/components/review-form-wrapper"
 import { Download, Calendar } from "lucide-react"
 import type { Template, Review } from "@/lib/types"
 
@@ -96,6 +97,12 @@ export default async function TemplateDetailPage({
         <div>
           <h2 className="mb-4 text-xl font-semibold">Reviews</h2>
           <ReviewList reviews={(reviews as (Review & { buyer: { username: string; avatar_url: string | null } })[]) ?? []} />
+          {user && hasPurchased && (
+            <div className="mt-6">
+              <h3 className="mb-3 text-lg font-semibold">Leave a Review</h3>
+              <ReviewFormWrapper templateId={t.id} />
+            </div>
+          )}
         </div>
       </div>
 

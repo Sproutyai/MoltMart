@@ -2,47 +2,94 @@ import { createClient } from "@/lib/supabase/server"
 import { TemplateCard } from "@/components/template-card"
 import { CategoryFilter } from "@/components/category-filter"
 import { SearchInput } from "@/components/search-input"
+import { SortSelect } from "@/components/sort-select"
+import { Pagination } from "@/components/pagination"
 import type { Template } from "@/lib/types"
+
+const PAGE_SIZE = 12
+
+const SORT_MAP: Record<string, { column: string; ascending: boolean }> = {
+  newest: { column: "created_at", ascending: false },
+  popular: { column: "download_count", ascending: false },
+  "top-rated": { column: "avg_rating", ascending: false },
+  "price-asc": { column: "price_cents", ascending: true },
+  "price-desc": { column: "price_cents", ascending: false },
+}
 
 export default async function TemplatesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string }>
+  searchParams: Promise<{ q?: string; category?: string; sort?: string; page?: string }>
 }) {
-  const { q, category } = await searchParams
+  const { q, category, sort, page } = await searchParams
   const supabase = await createClient()
 
+  const currentPage = Math.max(1, parseInt(page || "1", 10) || 1)
+  const sortConfig = SORT_MAP[sort || "newest"] || SORT_MAP.newest
+  const from = (currentPage - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
+  // Build query
   let query = supabase
     .from("templates")
-    .select("*, seller:profiles!seller_id(username, display_name)")
+    .select("*, seller:profiles!seller_id(username, display_name)", { count: "exact" })
     .eq("status", "published")
-    .order("download_count", { ascending: false })
 
+  // Search: title, description, tags
   if (q) {
-    query = query.ilike("title", `%${q}%`)
+    const escaped = q.replace(/%/g, "\\%")
+    query = query.or(`title.ilike.%${escaped}%,description.ilike.%${escaped}%,tags.cs.{${q}}`)
   }
+
   if (category) {
     query = query.eq("category", category)
   }
 
-  const { data: templates } = await query
+  query = query
+    .order(sortConfig.column, { ascending: sortConfig.ascending })
+    .range(from, to)
+
+  const { data: templates, count } = await query
+  const totalCount = count ?? 0
+
+  // Category counts (lightweight query)
+  const { data: allPublished } = await supabase
+    .from("templates")
+    .select("category")
+    .eq("status", "published")
+
+  const categoryCounts: Record<string, number> = {}
+  let allTotal = 0
+  if (allPublished) {
+    for (const t of allPublished) {
+      categoryCounts[t.category] = (categoryCounts[t.category] || 0) + 1
+      allTotal++
+    }
+  }
+
+  // Result summary
+  const resultSummary = q
+    ? `${totalCount} result${totalCount !== 1 ? "s" : ""} for "${q}"`
+    : `${totalCount} template${totalCount !== 1 ? "s" : ""}`
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Browse Templates</h1>
-        <p className="text-muted-foreground">
-          {q ? `Results for "${q}"` : category ? `Category: ${category}` : "All templates"}
-        </p>
+      {/* Header + Search */}
+      <div className="space-y-4">
+        <h1 className="text-3xl font-bold">Browse Templates</h1>
+        <SearchInput />
       </div>
 
+      {/* Filter bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <CategoryFilter />
-        <div className="sm:w-64">
-          <SearchInput />
-        </div>
+        <CategoryFilter counts={categoryCounts} totalCount={allTotal} />
+        <SortSelect />
       </div>
 
+      {/* Result count */}
+      <p className="text-sm text-muted-foreground">{resultSummary}</p>
+
+      {/* Results grid */}
       {templates && templates.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(templates as (Template & { seller: { username: string; display_name: string | null } })[]).map((t) => (
@@ -53,10 +100,13 @@ export default async function TemplatesPage({
         <div className="flex flex-col items-center gap-2 py-16 text-center">
           <p className="text-lg font-medium">No templates found</p>
           <p className="text-sm text-muted-foreground">
-            Try adjusting your search or category filter
+            Try a different search term, category, or sort option
           </p>
         </div>
       )}
+
+      {/* Pagination */}
+      <Pagination totalCount={totalCount} pageSize={PAGE_SIZE} currentPage={currentPage} />
     </div>
   )
 }

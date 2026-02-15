@@ -39,7 +39,7 @@ export async function POST(
   )
 
   // Increment download count
-  await supabase.rpc("increment_download_count", { template_id: id })
+  await supabase.rpc("increment_download_count", { tid: id })
 
   // Create signed URL
   const { data: signedUrl, error: storageError } = await supabase.storage

@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server"
 import { DownloadButton } from "@/components/download-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Package } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Package, Star, ShoppingBag } from "lucide-react"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -15,44 +16,81 @@ export default async function DashboardPage() {
     .eq("buyer_id", user!.id)
     .order("created_at", { ascending: false })
 
+  // Fetch user's reviews to show review status
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("template_id, rating")
+    .eq("buyer_id", user!.id)
+
+  const reviewMap = new Map(reviews?.map((r) => [r.template_id, r.rating]) || [])
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">My Downloads</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">My Downloads</h1>
+        <Link href="/templates">
+          <Button variant="outline"><ShoppingBag className="mr-2 h-4 w-4" />Browse Templates</Button>
+        </Link>
+      </div>
 
       {!purchases || purchases.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-12">
             <Package className="h-12 w-12 text-muted-foreground" />
-            <p className="text-muted-foreground">No downloads yet. Browse templates to get started!</p>
-            <Link href="/templates" className="text-primary underline">Browse Templates</Link>
+            <p className="text-lg font-medium">You haven&apos;t downloaded any templates yet</p>
+            <p className="text-sm text-muted-foreground">Browse the marketplace to find agent templates!</p>
+            <Link href="/templates">
+              <Button><ShoppingBag className="mr-2 h-4 w-4" />Browse Marketplace</Button>
+            </Link>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {purchases.map((purchase: any) => (
-            <Card key={purchase.id}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-base">{purchase.template?.title}</CardTitle>
-                  <Badge variant="secondary">{purchase.template?.category}</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {purchase.template?.description}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-2 text-xs text-muted-foreground">
-                  Downloaded {new Date(purchase.created_at).toLocaleDateString()}
-                </div>
-                <DownloadButton
-                  templateId={purchase.template_id}
-                  isLoggedIn={true}
-                  hasPurchased={true}
-                />
-              </CardContent>
-            </Card>
-          ))}
+          {purchases.map((purchase: any) => {
+            const userRating = reviewMap.get(purchase.template_id)
+            return (
+              <Card key={purchase.id}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-base">
+                      <Link href={`/templates/${purchase.template?.slug}`} className="hover:underline">
+                        {purchase.template?.title}
+                      </Link>
+                    </CardTitle>
+                    <Badge variant="secondary">{purchase.template?.category}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {purchase.template?.description}
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="text-xs text-muted-foreground">
+                    Downloaded {new Date(purchase.created_at).toLocaleDateString()}
+                  </div>
+
+                  {userRating !== undefined ? (
+                    <div className="flex items-center gap-1 text-sm">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span>Your rating: {userRating}/5</span>
+                    </div>
+                  ) : (
+                    <Link href={`/templates/${purchase.template?.slug}#reviews`}>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Star className="mr-2 h-3 w-3" />Leave a Review
+                      </Button>
+                    </Link>
+                  )}
+
+                  <DownloadButton
+                    templateId={purchase.template_id}
+                    isLoggedIn={true}
+                    hasPurchased={true}
+                  />
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>

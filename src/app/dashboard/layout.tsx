@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
-import { Download, Store } from "lucide-react"
+import { Download, Store, User } from "lucide-react"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -26,6 +26,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
           >
             <Store className="h-4 w-4" />
             Seller Dashboard
+          </Link>
+          <Link
+            href="/dashboard/profile"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
+          >
+            <User className="h-4 w-4" />
+            Edit Profile
           </Link>
         </nav>
       </aside>

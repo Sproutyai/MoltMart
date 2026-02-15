@@ -10,25 +10,29 @@ interface TemplateCardProps {
 }
 
 export function TemplateCard({ template }: TemplateCardProps) {
-  const description =
-    template.description.length > 80
-      ? template.description.slice(0, 80) + "…"
-      : template.description
+  const priceDisplay =
+    template.price_cents === 0 ? (
+      <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+        Free
+      </Badge>
+    ) : (
+      <span className="font-semibold text-sm">
+        ${(template.price_cents / 100).toFixed(2)}
+      </span>
+    )
 
   return (
     <Link href={`/templates/${template.slug}`}>
-      <Card className="h-full transition-shadow hover:shadow-md">
+      <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02]">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <Badge variant="secondary">{template.category}</Badge>
-            <Badge variant="outline" className="text-green-600 border-green-600">
-              Free
-            </Badge>
+          <div className="flex items-center justify-between gap-2">
+            <Badge variant="outline" className="text-xs">{template.category}</Badge>
+            {priceDisplay}
           </div>
-          <h3 className="mt-2 font-semibold leading-tight">{template.title}</h3>
+          <h3 className="mt-2 font-semibold leading-tight line-clamp-1">{template.title}</h3>
         </CardHeader>
         <CardContent className="pb-2">
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
           {template.seller && (
             <p className="mt-2 text-xs text-muted-foreground">
               by {template.seller.display_name || template.seller.username}
