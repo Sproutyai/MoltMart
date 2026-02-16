@@ -48,7 +48,6 @@ export function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-2 border-t pt-6 text-center text-sm text-muted-foreground">
-          <p>12% platform fee · Sellers keep 88% of every sale</p>
           <p>&copy; 2026 Molt Mart. All rights reserved.</p>
         </div>
       </div>

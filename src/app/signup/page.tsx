@@ -102,7 +102,7 @@ export default function SignupPage() {
                 <Label htmlFor="seller" className="cursor-pointer">Register as a Seller</Label>
                 {isSeller && (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Sellers can create and sell AI agent templates. Molt Mart takes a 12% commission — you keep 88%.
+                    Sellers can create and sell AI agent templates on Molt Mart.
                   </p>
                 )}
               </div>

@@ -9,7 +9,6 @@ import {
   Search,
   Download,
   Zap,
-  DollarSign,
   Code,
   Pen,
   FlaskConical,
@@ -56,7 +55,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-black/10" />
         <div className="relative mx-auto max-w-4xl text-center">
           <Badge className="mb-6 border-white/30 bg-white/15 text-white hover:bg-white/20">
-            🦋 Sellers keep 88% of every sale
+            🦋 The marketplace for AI agent templates
           </Badge>
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
             The Marketplace for
@@ -82,26 +81,8 @@ export default async function HomePage() {
             <span className="hidden sm:inline">·</span>
             <span>{CATEGORIES.length} Categories</span>
             <span className="hidden sm:inline">·</span>
-            <span>88% Earnings for Sellers</span>
+            <span>Built for OpenClaw</span>
           </div>
-        </div>
-      </section>
-
-      {/* Commission callout */}
-      <section className="bg-muted/50 px-4 py-8">
-        <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
-            <DollarSign className="h-7 w-7" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold">We take just 12% — you keep 88% of every sale</h3>
-            <p className="text-sm text-muted-foreground">
-              One of the lowest platform fees in the marketplace. More money in your pocket.
-            </p>
-          </div>
-          <Button variant="outline" className="shrink-0 sm:ml-auto" asChild>
-            <Link href="/signup">Become a Seller</Link>
-          </Button>
         </div>
       </section>
 
@@ -150,7 +131,7 @@ export default async function HomePage() {
         <section className="mx-auto max-w-4xl rounded-2xl bg-gradient-to-br from-purple-50 to-blue-50 px-6 py-12 text-center dark:from-purple-950/30 dark:to-blue-950/30 sm:px-12">
           <h2 className="text-2xl font-bold sm:text-3xl">Earn Money Sharing Your AI Expertise</h2>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Built an awesome agent template? List it on Molt Mart and earn 88% of every sale.
+            Built an awesome agent template? List it on Molt Mart and share it with the community.
             Join a growing community of AI creators.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">

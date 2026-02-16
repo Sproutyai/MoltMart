@@ -265,11 +265,6 @@ export function UploadForm() {
                       <Input type="number" min="1.00" step="0.01" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="1.00" className="w-32" />
                       <span className="text-sm text-muted-foreground">USD</span>
                     </div>
-                    {priceUsd && parseFloat(priceUsd) >= 1 && (
-                      <p className="text-xs text-muted-foreground">
-                        You earn ${(parseFloat(priceUsd) * 0.88).toFixed(2)} (88%) · Molt Mart fee ${(parseFloat(priceUsd) * 0.12).toFixed(2)} (12%)
-                      </p>
-                    )}
                     <p className="text-xs text-amber-600">Payments coming soon — paid templates will be listed but not purchasable yet</p>
                   </div>
                 )}
