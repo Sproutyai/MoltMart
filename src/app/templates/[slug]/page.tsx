@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Badge } from "@/components/ui/badge"
@@ -75,6 +76,17 @@ export default async function TemplateDetailPage({
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+          <span>&gt;</span>
+          <Link href="/templates" className="hover:text-foreground transition-colors">Enhancements</Link>
+          <span>&gt;</span>
+          <Link href={`/templates?category=${encodeURIComponent(t.category)}`} className="hover:text-foreground transition-colors">{t.category}</Link>
+          <span>&gt;</span>
+          <span className="text-foreground font-medium truncate">{t.title}</span>
+        </nav>
+
         {t.screenshots && t.screenshots.length > 0 && (
           <ScreenshotCarousel screenshots={t.screenshots} title={t.title} />
         )}
