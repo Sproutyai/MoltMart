@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
+import { ConnectedAccounts } from "@/components/connected-accounts"
 import type { Profile } from "@/lib/types"
 
 export default function ProfilePage() {
@@ -24,8 +25,6 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState("")
   const [bannerUrl, setBannerUrl] = useState("")
   const [website, setWebsite] = useState("")
-  const [githubUsername, setGithubUsername] = useState("")
-  const [twitterUsername, setTwitterUsername] = useState("")
   const [specialties, setSpecialties] = useState("")
 
   useEffect(() => {
@@ -44,8 +43,6 @@ export default function ProfilePage() {
         setAvatarUrl(prof.avatar_url || "")
         setBannerUrl(prof.banner_url || "")
         setWebsite(prof.website || "")
-        setGithubUsername(prof.github_username || "")
-        setTwitterUsername(prof.twitter_username || "")
         setSpecialties((prof.specialties || []).join(", "))
       }
       setLoading(false)
@@ -72,8 +69,6 @@ export default function ProfilePage() {
           avatar_url: avatarUrl,
           banner_url: bannerUrl || null,
           website: website || null,
-          github_username: githubUsername || null,
-          twitter_username: twitterUsername || null,
           specialties: specialtiesArr,
         }),
       })
@@ -132,14 +127,6 @@ export default function ProfilePage() {
               <Input id="website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://yoursite.com" />
             </div>
             <div>
-              <Label htmlFor="githubUsername">GitHub Username</Label>
-              <Input id="githubUsername" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} placeholder="username" />
-            </div>
-            <div>
-              <Label htmlFor="twitterUsername">X / Twitter Username</Label>
-              <Input id="twitterUsername" value={twitterUsername} onChange={(e) => setTwitterUsername(e.target.value)} placeholder="username" />
-            </div>
-            <div>
               <Label htmlFor="specialties">Specialties (comma-separated)</Label>
               <Input id="specialties" value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="Coding, Automation, Writing" />
             </div>
@@ -150,6 +137,8 @@ export default function ProfilePage() {
           </form>
         </CardContent>
       </Card>
+
+      <ConnectedAccounts />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 import { SellerSocialLinks } from "@/components/seller-social-links"
+import { SellerTrustSection } from "@/components/seller-trust-section"
 import { SellerStatsBar } from "@/components/seller-stats-bar"
 import { FollowButton } from "@/components/follow-button"
 import { CheckCircle } from "lucide-react"
@@ -64,6 +65,22 @@ export function SellerProfileHeader({ profile, stats, isOwnProfile, isFollowing 
           website={profile.website}
           github_username={profile.github_username}
           twitter_username={profile.twitter_username}
+        />
+      </div>
+
+      {/* Trust Section */}
+      <div className="px-4">
+        <SellerTrustSection
+          github_verified={profile.github_verified}
+          github_username={profile.github_username}
+          github_avatar_url={profile.github_avatar_url}
+          github_repos_count={profile.github_repos_count}
+          github_followers_count={profile.github_followers_count}
+          github_created_at={profile.github_created_at}
+          twitter_verified={profile.twitter_verified}
+          twitter_username={profile.twitter_username}
+          twitter_followers_count={profile.twitter_followers_count}
+          twitter_tweet_count={profile.twitter_tweet_count}
         />
       </div>
 

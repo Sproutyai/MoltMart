@@ -5,10 +5,11 @@ import { StarRating } from "@/components/star-rating"
 import { SellerLink } from "@/components/seller-link"
 import { Download, Sparkles } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+import { TrustBadge } from "@/components/trust-badge"
 import type { Template } from "@/lib/types"
 
 interface TemplateCardProps {
-  template: Template & { seller?: { username: string; display_name: string | null } }
+  template: Template & { seller?: { username: string; display_name: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } }
   showTimestamp?: boolean
 }
 
@@ -48,11 +49,14 @@ export function TemplateCard({ template, showTimestamp }: TemplateCardProps) {
         <CardContent className="pb-2">
           <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
           {template.seller && (
-            <div className="mt-2">
+            <div className="mt-2 flex items-center">
               <SellerLink
                 username={template.seller.username}
                 displayName={template.seller.display_name}
               />
+              {template.seller.is_verified && (
+                <TrustBadge githubVerified={template.seller.github_verified} twitterVerified={template.seller.twitter_verified} variant="inline" />
+              )}
             </div>
           )}
         </CardContent>

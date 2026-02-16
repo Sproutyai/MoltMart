@@ -8,6 +8,15 @@ export interface Profile {
   website?: string | null
   github_username?: string | null
   twitter_username?: string | null
+  github_verified?: boolean
+  twitter_verified?: boolean
+  github_avatar_url?: string | null
+  github_repos_count?: number | null
+  github_followers_count?: number | null
+  github_created_at?: string | null
+  twitter_followers_count?: number | null
+  twitter_tweet_count?: number | null
+  social_stats_updated_at?: string | null
   specialties?: string[]
   is_seller: boolean
   is_verified?: boolean

@@ -13,6 +13,7 @@ import { ScreenshotCarousel } from "@/components/screenshot-carousel"
 import { MarkdownContent } from "@/components/markdown-content"
 import { VideoEmbed } from "@/components/video-embed"
 import { Download, Calendar, Shield, BookOpen, Cpu } from "lucide-react"
+import { SellerTrustSection } from "@/components/seller-trust-section"
 import type { Template, Review } from "@/lib/types"
 
 export default async function TemplateDetailPage({
@@ -25,7 +26,7 @@ export default async function TemplateDetailPage({
 
   const { data: template } = await supabase
     .from("templates")
-    .select("*, seller:profiles!seller_id(username, display_name, avatar_url)")
+    .select("*, seller:profiles!seller_id(username, display_name, avatar_url, is_verified, github_verified, github_username, github_avatar_url, github_repos_count, github_followers_count, github_created_at, twitter_verified, twitter_username, twitter_followers_count, twitter_tweet_count)")
     .eq("slug", slug)
     .eq("status", "published")
     .single()
@@ -33,7 +34,7 @@ export default async function TemplateDetailPage({
   if (!template) notFound()
 
   const t = template as Template & {
-    seller: { username: string; display_name: string | null; avatar_url: string | null }
+    seller: { username: string; display_name: string | null; avatar_url: string | null; is_verified?: boolean; github_verified?: boolean; github_username?: string; github_avatar_url?: string; github_repos_count?: number; github_followers_count?: number; github_created_at?: string; twitter_verified?: boolean; twitter_username?: string; twitter_followers_count?: number; twitter_tweet_count?: number }
   }
 
   const { data: reviews } = await supabase
@@ -46,7 +47,7 @@ export default async function TemplateDetailPage({
 
   const { data: moreBySeller } = await supabase
     .from("templates")
-    .select("*, seller:profiles!seller_id(username, display_name)")
+    .select("*, seller:profiles!seller_id(username, display_name, is_verified, github_verified, twitter_verified)")
     .eq("seller_id", t.seller_id)
     .eq("status", "published")
     .neq("id", t.id)
@@ -238,6 +239,27 @@ export default async function TemplateDetailPage({
               openclaw template install {t.slug}
             </code>
           </div>
+
+          {(t.seller.github_verified || t.seller.twitter_verified) && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="mb-2 text-sm font-semibold">About the Seller</h3>
+                <SellerTrustSection
+                  github_verified={t.seller.github_verified}
+                  github_username={t.seller.github_username}
+                  github_avatar_url={t.seller.github_avatar_url}
+                  github_repos_count={t.seller.github_repos_count}
+                  github_followers_count={t.seller.github_followers_count}
+                  github_created_at={t.seller.github_created_at}
+                  twitter_verified={t.seller.twitter_verified}
+                  twitter_username={t.seller.twitter_username}
+                  twitter_followers_count={t.seller.twitter_followers_count}
+                  twitter_tweet_count={t.seller.twitter_tweet_count}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
