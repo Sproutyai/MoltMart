@@ -7,7 +7,17 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Plus, Store, Pencil, Archive, DollarSign, Download, Star, Package, Megaphone, TrendingUp } from "lucide-react"
+import { Loader2, Plus, Store, Pencil, Archive, DollarSign, Download, Star, Package, Megaphone, TrendingUp, AlertTriangle, RefreshCw } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 import type { Profile, Template } from "@/lib/types"
 
@@ -26,9 +36,12 @@ export default function SellerDashboardPage() {
   const [archiving, setArchiving] = useState<string | null>(null)
   const [promotions, setPromotions] = useState<Map<string, { promoted_at: string; position: number; impressions: number; clicks: number }>>(new Map())
   const [promoting, setPromoting] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [archiveTarget, setArchiveTarget] = useState<Template | null>(null)
 
-  useEffect(() => {
-    async function load() {
+  async function load() {
+    setError(null)
+    try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push("/login"); return }
@@ -79,9 +92,13 @@ export default function SellerDashboardPage() {
         toast.success("Enhancement promoted! It's now #1 in Featured.")
         window.history.replaceState({}, "", "/dashboard/seller")
       }
+    } catch {
+      setError("Failed to load seller dashboard. Please try again.")
+      setLoading(false)
     }
-    load()
-  }, [router])
+  }
+
+  useEffect(() => { load() }, [router])
 
   async function becomeSeller() {
     setBecoming(true)
@@ -138,6 +155,16 @@ export default function SellerDashboardPage() {
   }
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-4">
+        <AlertTriangle className="h-10 w-10 text-destructive" />
+        <p className="text-lg font-medium">{error}</p>
+        <Button onClick={() => { setLoading(true); load() }}><RefreshCw className="mr-2 h-4 w-4" />Retry</Button>
+      </div>
+    )
+  }
 
   if (!profile?.is_seller) {
     return (
@@ -248,7 +275,7 @@ export default function SellerDashboardPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleArchive(t)}
+                    onClick={() => t.status === "archived" ? toggleArchive(t) : setArchiveTarget(t)}
                     disabled={archiving === t.id}
                     title={t.status === "archived" ? "Restore" : "Archive"}
                   >
@@ -271,6 +298,23 @@ export default function SellerDashboardPage() {
           ))}
         </div>
       )}
+
+      <AlertDialog open={!!archiveTarget} onOpenChange={(open) => !open && setArchiveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Enhancement</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to archive &ldquo;{archiveTarget?.title}&rdquo;? It will be unpublished and hidden from buyers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (archiveTarget) { toggleArchive(archiveTarget); setArchiveTarget(null) } }}>
+              Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Megaphone, TrendingUp, ArrowLeft, BarChart3, MousePointer } from "lucide-react"
+import { Loader2, Megaphone, TrendingUp, ArrowLeft, BarChart3, MousePointer, AlertTriangle, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import { formatDistanceToNow } from "date-fns"
 import type { Template } from "@/lib/types"
@@ -25,9 +25,11 @@ export default function PromotePage() {
   const [promotions, setPromotions] = useState<Map<string, PromoInfo>>(new Map())
   const [loading, setLoading] = useState(true)
   const [promoting, setPromoting] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function load() {
+  async function load() {
+    setError(null)
+    try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push("/login"); return }
@@ -67,9 +69,13 @@ export default function PromotePage() {
       }
 
       setLoading(false)
+    } catch {
+      setError("Failed to load promotions. Please try again.")
+      setLoading(false)
     }
-    load()
-  }, [router])
+  }
+
+  useEffect(() => { load() }, [router])
 
   async function handlePromote(templateId: string) {
     setPromoting(templateId)
@@ -93,6 +99,16 @@ export default function PromotePage() {
   }
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-4">
+        <AlertTriangle className="h-10 w-10 text-destructive" />
+        <p className="text-lg font-medium">{error}</p>
+        <Button onClick={() => { setLoading(true); load() }}><RefreshCw className="mr-2 h-4 w-4" />Retry</Button>
+      </div>
+    )
+  }
 
   const promoted = templates.filter(t => promotions.has(t.id))
   const unpromoted = templates.filter(t => !promotions.has(t.id))

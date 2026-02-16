@@ -24,7 +24,7 @@ export function DownloadButton({ templateId, isLoggedIn, hasPurchased, priceCent
     }
 
     if (!isLoggedIn) {
-      router.push("/login")
+      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`)
       return
     }
 

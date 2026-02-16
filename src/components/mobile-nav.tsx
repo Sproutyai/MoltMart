@@ -3,7 +3,9 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import { Menu, Search } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -21,7 +23,9 @@ export function MobileNav({ isLoggedIn, isSeller }: MobileNavProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
   const router = useRouter()
+  const pathname = usePathname()
   const close = () => setOpen(false)
+  const linkClass = (match: boolean) => cn("text-lg font-medium", match && "text-foreground font-semibold")
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -55,16 +59,18 @@ export function MobileNav({ isLoggedIn, isSeller }: MobileNavProps) {
             />
           </form>
 
-          <Link href="/" onClick={close} className="text-lg font-medium">Home</Link>
-          <Link href="/templates" onClick={close} className="text-lg font-medium">Browse Enhancements</Link>
-          <Link href="/templates/new" onClick={close} className="text-lg font-medium">New Listings</Link>
-          <Link href="/templates/featured" onClick={close} className="text-lg font-medium">⭐ Featured</Link>
+          <Link href="/" onClick={close} className={linkClass(pathname === "/")}>Home</Link>
+          <Link href="/templates" onClick={close} className={linkClass(pathname === "/templates")}>Browse Enhancements</Link>
+          <Link href="/templates/new" onClick={close} className={linkClass(pathname === "/templates/new")}>New Listings</Link>
+          <Link href="/templates/featured" onClick={close} className={linkClass(pathname === "/templates/featured")}>⭐ Featured</Link>
           {isSeller ? (
-            <Link href="/dashboard/seller" onClick={close} className="text-lg font-medium">Sell</Link>
+            <Link href="/dashboard/seller" onClick={close} className={linkClass(pathname.startsWith("/dashboard/seller"))}>Sell</Link>
           ) : isLoggedIn ? (
-            <Link href="/dashboard/seller" onClick={close} className="text-lg font-medium">Become a Seller</Link>
-          ) : null}
-          <Link href="/affiliate" onClick={close} className="text-lg font-medium">Affiliates</Link>
+            <Link href="/dashboard/seller" onClick={close} className={linkClass(pathname.startsWith("/dashboard/seller"))}>Become a Seller</Link>
+          ) : (
+            <Link href="/sell" onClick={close} className={linkClass(pathname === "/sell")}>Sell</Link>
+          )}
+          <Link href="/affiliate" onClick={close} className={linkClass(pathname === "/affiliate")}>Affiliates</Link>
           {isLoggedIn ? (
             <>
               <Link href="/dashboard" onClick={close} className="text-lg font-medium">Dashboard</Link>

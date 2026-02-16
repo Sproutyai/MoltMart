@@ -1,5 +1,8 @@
+import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { Button } from "@/components/ui/button"
+import { AlertTriangle } from "lucide-react"
 import { AffiliateStatsCards } from "@/components/affiliate/affiliate-stats"
 import { ReferralLinkCard } from "@/components/affiliate/referral-link-card"
 import { PayoutPlaceholder } from "@/components/affiliate/payout-placeholder"
@@ -9,15 +12,34 @@ import { BecomeAffiliateCard } from "@/components/affiliate/become-affiliate-car
 import type { AffiliateStats } from "@/lib/types"
 
 export default async function AffiliateDashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("/login")
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let affiliate: any = null
+  let user: { id: string } | null = null
 
-  const { data: affiliate } = await supabase
-    .from("affiliates")
-    .select("*")
-    .eq("user_id", user.id)
-    .single()
+  try {
+    const supabase = await createClient()
+    const { data: { user: u } } = await supabase.auth.getUser()
+    if (!u) redirect("/login")
+    user = u
+
+    const { data: a } = await supabase
+      .from("affiliates")
+      .select("*")
+      .eq("user_id", u.id)
+      .single()
+    affiliate = a
+  } catch {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-4">
+        <AlertTriangle className="h-10 w-10 text-destructive" />
+        <p className="text-lg font-medium">Failed to load affiliate dashboard</p>
+        <p className="text-sm text-muted-foreground">Please refresh the page to try again.</p>
+        <Link href="/dashboard/affiliate">
+          <Button>Refresh</Button>
+        </Link>
+      </div>
+    )
+  }
 
   if (!affiliate) {
     return (
@@ -30,6 +52,8 @@ export default async function AffiliateDashboardPage() {
       </div>
     )
   }
+
+  const supabase = await createClient()
 
   // Get earnings breakdown
   const { data: earningsData } = await supabase

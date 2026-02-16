@@ -64,6 +64,9 @@ export async function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-2 border-t pt-6 text-center text-sm text-muted-foreground">
+          <div className="flex gap-4 mb-2">
+            <Link href="/faq" className="hover:text-foreground">FAQ</Link>
+          </div>
           <p>&copy; 2026 Molt Mart. All rights reserved.</p>
         </div>
       </div>

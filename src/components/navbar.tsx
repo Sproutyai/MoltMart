@@ -14,6 +14,7 @@ import { SignOutButton } from "@/components/sign-out-button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { MobileNav } from "@/components/mobile-nav"
 import { NavbarSearch } from "@/components/navbar-search"
+import { NavLinks } from "@/components/nav-links"
 
 export async function Navbar() {
   const supabase = await createClient()
@@ -39,30 +40,7 @@ export async function Navbar() {
             <span>Molt Mart</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              Home
-            </Link>
-            <Link href="/templates" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              Enhancements
-            </Link>
-            <Link href="/templates/new" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              New
-            </Link>
-            <Link href="/templates/featured" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              ⭐ Featured
-            </Link>
-            {profile?.is_seller ? (
-              <Link href="/dashboard/seller" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-                Sell
-              </Link>
-            ) : user ? (
-              <Link href="/dashboard/seller" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-                Become a Seller
-              </Link>
-            ) : null}
-            <Link href="/affiliate" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              Affiliates
-            </Link>
+            <NavLinks isSeller={!!profile?.is_seller} isLoggedIn={!!user} />
           </nav>
         </div>
 

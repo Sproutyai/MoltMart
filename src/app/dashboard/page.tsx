@@ -4,25 +4,41 @@ import { DownloadButton } from "@/components/download-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Package, Star, ShoppingBag } from "lucide-react"
+import { Package, Star, ShoppingBag, AlertTriangle } from "lucide-react"
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  let purchases: unknown[] | null = null
+  let reviewMap = new Map<string, number>()
 
-  const { data: purchases } = await supabase
-    .from("purchases")
-    .select("*, template:templates(*)")
-    .eq("buyer_id", user!.id)
-    .order("created_at", { ascending: false })
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch user's reviews to show review status
-  const { data: reviews } = await supabase
-    .from("reviews")
-    .select("template_id, rating")
-    .eq("buyer_id", user!.id)
+    const { data: p } = await supabase
+      .from("purchases")
+      .select("*, template:templates(*)")
+      .eq("buyer_id", user!.id)
+      .order("created_at", { ascending: false })
+    purchases = p
 
-  const reviewMap = new Map(reviews?.map((r) => [r.template_id, r.rating]) || [])
+    const { data: reviews } = await supabase
+      .from("reviews")
+      .select("template_id, rating")
+      .eq("buyer_id", user!.id)
+
+    reviewMap = new Map(reviews?.map((r) => [r.template_id, r.rating]) || [])
+  } catch {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-4">
+        <AlertTriangle className="h-10 w-10 text-destructive" />
+        <p className="text-lg font-medium">Failed to load your downloads</p>
+        <p className="text-sm text-muted-foreground">Please refresh the page to try again.</p>
+        <Link href="/dashboard">
+          <Button>Refresh</Button>
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <div>

@@ -73,7 +73,10 @@ export default async function AffiliatePage() {
 
       {/* FAQ */}
       <section className="max-w-2xl mx-auto py-16 px-4">
-        <h2 className="text-2xl font-bold text-center mb-10">Frequently asked questions</h2>
+        <h2 className="text-2xl font-bold text-center mb-2">Frequently asked questions</h2>
+        <p className="text-center text-muted-foreground mb-10">
+          For general questions about Molt Mart, visit our <Link href="/faq" className="underline hover:text-foreground">FAQ page</Link>.
+        </p>
         <Accordion type="single" collapsible className="w-full">
           {[
             { q: "How much can I earn?", a: "7.5% of every sale. A $25 template earns you $1.88. Refer 20 active buyers and it compounds into real passive income." },
