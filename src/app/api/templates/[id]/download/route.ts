@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import JSZip from "jszip"
 
 export async function POST(
   _request: Request,
@@ -16,10 +17,10 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  // Verify template exists
+  // Fetch template with seller info
   const { data: template } = await supabase
     .from("templates")
-    .select("id, file_path")
+    .select("id, title, slug, description, category, version, file_path, preview_data, seller:profiles!seller_id(username)")
     .eq("id", id)
     .eq("status", "published")
     .single()
@@ -41,14 +42,135 @@ export async function POST(
   // Increment download count
   await supabase.rpc("increment_download_count", { tid: id })
 
-  // Create signed URL
-  const { data: signedUrl, error: storageError } = await supabase.storage
+  // Download the original zip from storage
+  const { data: fileData, error: storageError } = await supabase.storage
     .from("templates")
-    .createSignedUrl(template.file_path, 60)
+    .download(template.file_path)
 
-  if (storageError || !signedUrl) {
-    return NextResponse.json({ error: "Could not generate download URL" }, { status: 500 })
+  if (storageError || !fileData) {
+    return NextResponse.json({ error: "Could not download template file" }, { status: 500 })
   }
 
-  return NextResponse.json({ url: signedUrl.signedUrl })
+  const seller = template.seller as unknown as { username: string }
+  const fileList = (template.preview_data as { file_list?: string[] })?.file_list || []
+  const templateName = template.title
+  const templateSlug = template.slug
+  const sourceUrl = `https://molt-mart.vercel.app/templates/${templateSlug}`
+
+  // Build enhanced zip
+  const originalZip = await JSZip.loadAsync(await fileData.arrayBuffer())
+  const newZip = new JSZip()
+
+  // Copy all original files into a folder
+  for (const [path, zipEntry] of Object.entries(originalZip.files)) {
+    if (!zipEntry.dir) {
+      const content = await zipEntry.async("uint8array")
+      newZip.file(path, content)
+    }
+  }
+
+  // Add molt-mart.json manifest
+  const manifest = {
+    name: templateName,
+    slug: templateSlug,
+    version: template.version || "1.0.0",
+    author: seller.username,
+    description: template.description,
+    category: template.category,
+    source: sourceUrl,
+    installed_at: null,
+    files: fileList,
+  }
+  newZip.file("molt-mart.json", JSON.stringify(manifest, null, 2))
+
+  // Add README.md
+  const readme = `# ${templateName}
+
+> Downloaded from [Molt Mart](${sourceUrl})
+
+## Installation
+
+### Method 1: Run the installer
+\`\`\`bash
+cd ~/Downloads
+unzip ${templateSlug}.zip
+cd ${templateSlug}
+bash install.sh
+\`\`\`
+
+### Method 2: Manual copy
+Copy the template files to your OpenClaw workspace:
+\`\`\`bash
+cp -r SOUL.md AGENTS.md TOOLS.md ~/.openclaw/workspace/
+\`\`\`
+
+### Method 3: Tell your AI agent
+Just say:
+> "Install the ${templateName} template I just downloaded"
+
+Your agent will find the zip in your Downloads folder and handle the rest.
+
+## What's Included
+${fileList.map((f) => `- ${f}`).join("\n")}
+
+## About
+- **Author:** ${seller.username}
+- **Category:** ${template.category}
+- **Version:** ${template.version || "1.0.0"}
+- **Source:** ${sourceUrl}
+`
+  newZip.file("README.md", readme)
+
+  // Add install.sh
+  const installScript = `#!/bin/bash
+# Molt Mart Enhancement Installer
+# ${templateName}
+
+TARGET="\${OPENCLAW_WORKSPACE:-\$HOME/.openclaw/workspace}"
+BACKUP_DIR="\$TARGET/.molt-mart-backup/\$(date +%Y%m%d-%H%M%S)"
+
+echo "🦎 Installing ${templateName} to \$TARGET..."
+echo ""
+
+# Create backup
+if [ -f "\$TARGET/SOUL.md" ] || [ -f "\$TARGET/AGENTS.md" ] || [ -f "\$TARGET/TOOLS.md" ]; then
+  echo "📦 Backing up existing files to \$BACKUP_DIR..."
+  mkdir -p "\$BACKUP_DIR"
+  for f in SOUL.md AGENTS.md TOOLS.md MEMORY.md; do
+    if [ -f "\$TARGET/\$f" ]; then
+      cp "\$TARGET/\$f" "\$BACKUP_DIR/\$f"
+      echo "   Backed up \$f"
+    fi
+  done
+  echo ""
+fi
+
+# Copy template files
+SCRIPT_DIR="\$(cd "\$(dirname "\$0")" && pwd)"
+${fileList.map((f) => `if [ -f "\$SCRIPT_DIR/${f}" ]; then
+  mkdir -p "\$TARGET/\$(dirname "${f}")"
+  cp "\$SCRIPT_DIR/${f}" "\$TARGET/${f}"
+  echo "   ✅ Installed ${f}"
+fi`).join("\n")}
+
+echo ""
+echo "✅ ${templateName} installed successfully!"
+echo "   Restart your OpenClaw agent to apply changes."
+${fileList.length === 0 ? '# No files detected in manifest' : ''}
+`
+  newZip.file("install.sh", installScript)
+
+  // Generate the zip
+  const zipBuffer = await newZip.generateAsync({
+    type: "nodebuffer",
+    compression: "DEFLATE",
+    compressionOptions: { level: 6 },
+  })
+
+  return new NextResponse(new Uint8Array(zipBuffer), {
+    headers: {
+      "Content-Type": "application/zip",
+      "Content-Disposition": `attachment; filename="${templateSlug}.zip"`,
+    },
+  })
 }

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
-import { Download, Store, Upload, Receipt, ExternalLink, Pencil, DollarSign, Megaphone, UserPlus } from "lucide-react"
+import { Download, Store, Upload, Receipt, ExternalLink, Pencil, DollarSign, Megaphone, UserPlus, Heart } from "lucide-react"
 import { SellerIntentHandler } from "@/components/seller-intent-handler"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -20,6 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const buyerLinks = [
     { href: "/dashboard", label: "My Downloads", icon: Download },
+    { href: "/dashboard/bookmarks", label: "Bookmarks", icon: Heart },
   ]
 
   const sellerLinks = [

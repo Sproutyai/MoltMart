@@ -110,7 +110,8 @@ export function UploadForm() {
 
       if (!res.ok) { toast.error(data.error || "Upload failed"); return }
       toast.success("Enhancement uploaded!")
-      router.push("/dashboard/seller")
+      const uploadedSlug = data.template?.slug || slugify(title)
+      router.push(`/dashboard/seller/upload/success?slug=${encodeURIComponent(uploadedSlug)}`)
     } catch {
       toast.error("Something went wrong")
     } finally {

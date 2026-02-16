@@ -13,6 +13,8 @@ import { TemplateCard } from "@/components/template-card"
 import { ScreenshotCarousel } from "@/components/screenshot-carousel"
 import { MarkdownContent } from "@/components/markdown-content"
 import { VideoEmbed } from "@/components/video-embed"
+import { SimilarTemplates } from "@/components/similar-templates"
+import { BookmarkButton } from "@/components/bookmark-button"
 import { Download, Calendar, Shield, BookOpen, Cpu } from "lucide-react"
 import { SellerTrustSection } from "@/components/seller-trust-section"
 import type { Template, Review } from "@/lib/types"
@@ -56,6 +58,7 @@ export default async function TemplateDetailPage({
     .limit(3)
 
   let hasPurchased = false
+  let isBookmarked = false
   if (user) {
     const { data: purchase } = await supabase
       .from("purchases")
@@ -64,6 +67,14 @@ export default async function TemplateDetailPage({
       .eq("template_id", t.id)
       .maybeSingle()
     hasPurchased = !!purchase
+
+    const { data: bookmark } = await supabase
+      .from("bookmarks")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("template_id", t.id)
+      .maybeSingle()
+    isBookmarked = !!bookmark
   }
 
   const difficultyConfig: Record<string, { emoji: string; color: string }> = {
@@ -98,7 +109,10 @@ export default async function TemplateDetailPage({
               <Badge key={tag} variant="outline">{tag}</Badge>
             ))}
           </div>
-          <h1 className="mt-3 text-3xl font-bold">{t.title}</h1>
+          <div className="mt-3 flex items-center gap-2">
+            <h1 className="text-3xl font-bold">{t.title}</h1>
+            <BookmarkButton templateId={t.id} initialBookmarked={isBookmarked} size={24} />
+          </div>
           <div className="mt-1">
             <SellerLink
               username={t.seller.username}
@@ -187,6 +201,8 @@ export default async function TemplateDetailPage({
             </div>
           </>
         )}
+        <Separator />
+        <SimilarTemplates category={t.category} currentTemplateId={t.id} />
       </div>
 
       <div>
@@ -201,6 +217,8 @@ export default async function TemplateDetailPage({
 
           <DownloadButton
             templateId={t.id}
+            templateSlug={t.slug}
+            templateName={t.title}
             isLoggedIn={!!user}
             hasPurchased={hasPurchased}
             priceCents={t.price_cents}

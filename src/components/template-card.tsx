@@ -8,6 +8,7 @@ import { SellerLink } from "@/components/seller-link"
 import { Download, Sparkles, Star } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { TrustBadge } from "@/components/trust-badge"
+import { BookmarkButton } from "@/components/bookmark-button"
 import type { Template } from "@/lib/types"
 
 interface TemplateCardProps {
@@ -61,9 +62,12 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
           )}
           {priceDisplay}
         </div>
-        <Link href={templateUrl} onClick={handleBeacon} className="mt-2 block">
-          <h3 className="font-semibold leading-tight line-clamp-1 hover:underline">{template.title}</h3>
-        </Link>
+        <div className="mt-2 flex items-center justify-between gap-1">
+          <Link href={templateUrl} onClick={handleBeacon} className="block min-w-0">
+            <h3 className="font-semibold leading-tight line-clamp-1 hover:underline">{template.title}</h3>
+          </Link>
+          <BookmarkButton templateId={template.id} size={16} />
+        </div>
       </CardHeader>
       <CardContent className="pb-2">
         <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
