@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { UserAvatar } from "@/components/user-avatar"
 
 interface SellerLinkProps {
   username: string
@@ -16,8 +17,8 @@ export function SellerLink({ username, displayName, avatarUrl, showAvatar }: Sel
       className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
       onClick={(e) => e.stopPropagation()}
     >
-      {showAvatar && avatarUrl && (
-        <img src={avatarUrl} alt="" className="h-4 w-4 rounded-full object-cover" />
+      {showAvatar && (
+        <UserAvatar avatarUrl={avatarUrl} displayName={displayName || username} size="xs" />
       )}
       <span>by {displayName || username}</span>
     </Link>

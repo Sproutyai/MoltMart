@@ -47,7 +47,7 @@ export default async function TemplateDetailPage({
 
   const { data: moreBySeller } = await supabase
     .from("templates")
-    .select("*, seller:profiles!seller_id(username, display_name, is_verified, github_verified, twitter_verified)")
+    .select("*, seller:profiles!seller_id(username, display_name, avatar_url, is_verified, github_verified, twitter_verified)")
     .eq("seller_id", t.seller_id)
     .eq("status", "published")
     .neq("id", t.id)

@@ -33,7 +33,7 @@ export default async function TemplatesPage({
   // Build query
   let query = supabase
     .from("templates")
-    .select("*, seller:profiles!seller_id(username, display_name)", { count: "exact" })
+    .select("*, seller:profiles!seller_id(username, display_name, avatar_url, is_verified, github_verified, twitter_verified)", { count: "exact" })
     .eq("status", "published")
 
   // Search: title, description, tags

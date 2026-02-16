@@ -38,7 +38,7 @@ export default async function HomePage() {
   const supabase = await createClient()
   const { data: templates } = await supabase
     .from("templates")
-    .select("*, seller:profiles!seller_id(username, display_name)")
+    .select("*, seller:profiles!seller_id(username, display_name, avatar_url)")
     .eq("status", "published")
     .order("download_count", { ascending: false })
     .limit(6)

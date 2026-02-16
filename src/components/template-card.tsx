@@ -9,7 +9,7 @@ import { TrustBadge } from "@/components/trust-badge"
 import type { Template } from "@/lib/types"
 
 interface TemplateCardProps {
-  template: Template & { seller?: { username: string; display_name: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } }
+  template: Template & { seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } }
   showTimestamp?: boolean
 }
 
@@ -53,6 +53,8 @@ export function TemplateCard({ template, showTimestamp }: TemplateCardProps) {
               <SellerLink
                 username={template.seller.username}
                 displayName={template.seller.display_name}
+                avatarUrl={template.seller.avatar_url}
+                showAvatar
               />
               {template.seller.is_verified && (
                 <TrustBadge githubVerified={template.seller.github_verified} twitterVerified={template.seller.twitter_verified} variant="inline" />

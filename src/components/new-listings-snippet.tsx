@@ -10,7 +10,7 @@ export async function NewListingsSnippet() {
 
   const { data: templates } = await supabase
     .from("templates")
-    .select("*, seller:profiles!seller_id(username, display_name)")
+    .select("*, seller:profiles!seller_id(username, display_name, avatar_url)")
     .eq("status", "published")
     .gte("created_at", weekAgo)
     .order("created_at", { ascending: false })

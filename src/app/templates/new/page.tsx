@@ -50,7 +50,7 @@ export default async function NewListingsPage({
 
   const { data: templates, count } = await supabase
     .from("templates")
-    .select("*, seller:profiles!seller_id(username, display_name)", { count: "exact" })
+    .select("*, seller:profiles!seller_id(username, display_name, avatar_url)", { count: "exact" })
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .range(from, to)

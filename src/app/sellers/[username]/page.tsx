@@ -76,7 +76,7 @@ export default async function SellerProfilePage({
 
   const { data: templates, count } = await supabase
     .from("templates")
-    .select("*, seller:profiles!seller_id(username, display_name, is_verified, github_verified, twitter_verified)", { count: "exact" })
+    .select("*, seller:profiles!seller_id(username, display_name, avatar_url, is_verified, github_verified, twitter_verified)", { count: "exact" })
     .eq("seller_id", p.id)
     .eq("status", "published")
     .order(sortConfig.column, { ascending: sortConfig.ascending })
