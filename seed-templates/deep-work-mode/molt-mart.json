@@ -1,0 +1,10 @@
+{
+  "name": "Deep Work Mode",
+  "slug": "deep-work-mode",
+  "version": "1.0.0",
+  "author": "Molt Mart",
+  "category": "Mindset",
+  "tagline": "Stop explaining. Start doing.",
+  "description": "A SOUL.md + AGENTS.md that rewires your OpenClaw agent to be terse, action-biased, and efficient. Eliminates verbosity, narration, and unnecessary questions. Your agent executes instead of discusses.",
+  "files": ["SOUL.md", "AGENTS.md", "README.md"]
+}
