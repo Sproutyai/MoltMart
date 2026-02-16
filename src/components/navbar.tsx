@@ -51,9 +51,15 @@ export async function Navbar() {
             <Link href="/templates/featured" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
               ⭐ Featured
             </Link>
-            <Link href="/dashboard/seller" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              Sell
-            </Link>
+            {profile?.is_seller ? (
+              <Link href="/dashboard/seller" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                Sell
+              </Link>
+            ) : user ? (
+              <Link href="/dashboard/seller" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                Become a Seller
+              </Link>
+            ) : null}
             <Link href="/affiliate" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
               Affiliates
             </Link>
@@ -83,12 +89,20 @@ export async function Navbar() {
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard">Dashboard</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/seller">Seller Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/seller/upload">Upload Enhancement</Link>
-                  </DropdownMenuItem>
+                  {profile.is_seller ? (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/seller">Seller Dashboard</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/seller/upload">Upload Enhancement</Link>
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/seller">Become a Seller</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/affiliate">Affiliate Program</Link>
                   </DropdownMenuItem>

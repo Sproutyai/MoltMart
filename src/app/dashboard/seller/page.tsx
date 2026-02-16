@@ -166,19 +166,19 @@ export default function SellerDashboardPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold">Seller Dashboard</h1>
         <div className="flex gap-2">
-          <Link href="/dashboard/seller/promote">
-            <Button variant="outline"><Megaphone className="mr-2 h-4 w-4" />Promote Enhancements</Button>
+          <Link href="/dashboard/seller/promote" className="flex-1 sm:flex-none">
+            <Button variant="outline" className="w-full sm:w-auto text-sm"><Megaphone className="mr-2 h-4 w-4" />Promote</Button>
           </Link>
-          <Link href="/dashboard/seller/upload">
-            <Button><Plus className="mr-2 h-4 w-4" />Upload New Enhancement</Button>
+          <Link href="/dashboard/seller/upload" className="flex-1 sm:flex-none">
+            <Button className="w-full sm:w-auto text-sm"><Plus className="mr-2 h-4 w-4" />Upload</Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
         <Card>
           <CardContent className="pt-6 text-center">
             <Package className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
@@ -223,23 +223,25 @@ export default function SellerDashboardPage() {
         <div className="space-y-2">
           {templates.map((t) => (
             <Card key={t.id}>
-              <CardContent className="flex items-center gap-4 py-3">
+              <CardContent className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 py-3">
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{t.title}</div>
                   <div className="text-xs text-muted-foreground">{t.category}</div>
                 </div>
-                <Badge variant={statusColors[t.status] || "secondary"}>{t.status}</Badge>
-                {promotions.has(t.id) && (
-                  <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-xs">
-                    ⭐ #{promotions.get(t.id)!.position}
-                  </Badge>
-                )}
-                <div className="text-sm text-muted-foreground w-16 text-right">{t.download_count} DLs</div>
-                <div className="text-sm text-muted-foreground w-14 text-right">★ {t.avg_rating.toFixed(1)}</div>
-                <div className="text-sm font-medium w-16 text-right">
-                  {t.price_cents > 0 ? `$${(t.price_cents / 100).toFixed(2)}` : "Free"}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={statusColors[t.status] || "secondary"}>{t.status}</Badge>
+                  {promotions.has(t.id) && (
+                    <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-xs">
+                      ⭐ #{promotions.get(t.id)!.position}
+                    </Badge>
+                  )}
+                  <span className="text-sm text-muted-foreground">{t.download_count} DLs</span>
+                  <span className="text-sm text-muted-foreground">★ {t.avg_rating.toFixed(1)}</span>
+                  <span className="text-sm font-medium">
+                    {t.price_cents > 0 ? `$${(t.price_cents / 100).toFixed(2)}` : "Free"}
+                  </span>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 shrink-0">
                   <Link href={`/dashboard/seller/edit/${t.id}`}>
                     <Button variant="ghost" size="sm"><Pencil className="h-4 w-4" /></Button>
                   </Link>

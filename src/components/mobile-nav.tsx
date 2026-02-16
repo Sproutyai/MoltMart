@@ -59,7 +59,11 @@ export function MobileNav({ isLoggedIn, isSeller }: MobileNavProps) {
           <Link href="/templates" onClick={close} className="text-lg font-medium">Browse Enhancements</Link>
           <Link href="/templates/new" onClick={close} className="text-lg font-medium">New Listings</Link>
           <Link href="/templates/featured" onClick={close} className="text-lg font-medium">⭐ Featured</Link>
-          <Link href="/dashboard/seller" onClick={close} className="text-lg font-medium">Sell</Link>
+          {isSeller ? (
+            <Link href="/dashboard/seller" onClick={close} className="text-lg font-medium">Sell</Link>
+          ) : isLoggedIn ? (
+            <Link href="/dashboard/seller" onClick={close} className="text-lg font-medium">Become a Seller</Link>
+          ) : null}
           <Link href="/affiliate" onClick={close} className="text-lg font-medium">Affiliates</Link>
           {isLoggedIn ? (
             <>
