@@ -5,16 +5,20 @@ import { useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Github, Twitter, CheckCircle, Loader2, RefreshCw } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Github, Twitter, CheckCircle, Loader2, RefreshCw, Camera } from "lucide-react"
 import { toast } from "sonner"
 
 interface SocialState {
+  avatar_url: string | null
   github_username: string | null
   github_verified: boolean
+  github_avatar_url: string | null
   github_repos_count: number | null
   github_followers_count: number | null
   twitter_username: string | null
   twitter_verified: boolean
+  twitter_avatar_url: string | null
   twitter_followers_count: number | null
   twitter_tweet_count: number | null
   social_stats_updated_at: string | null
@@ -25,13 +29,14 @@ export function ConnectedAccounts() {
   const [state, setState] = useState<SocialState | null>(null)
   const [loading, setLoading] = useState(true)
   const [connecting, setConnecting] = useState<string | null>(null)
+  const [settingAvatar, setSettingAvatar] = useState<string | null>(null)
 
   const loadState = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data } = await supabase.from("profiles")
-      .select("github_username, github_verified, github_repos_count, github_followers_count, twitter_username, twitter_verified, twitter_followers_count, twitter_tweet_count, social_stats_updated_at")
+      .select("avatar_url, github_username, github_verified, github_avatar_url, github_repos_count, github_followers_count, twitter_username, twitter_verified, twitter_avatar_url, twitter_followers_count, twitter_tweet_count, social_stats_updated_at")
       .eq("id", user.id)
       .single()
     if (data) setState(data as SocialState)
@@ -60,6 +65,9 @@ export function ConnectedAccounts() {
       const data = await res.json()
       if (res.ok) {
         toast.success(`${provider === "github" ? "GitHub" : "X"} connected! Your verified badge is now live.`)
+        if (data.avatar_auto_set) {
+          toast.success("Profile photo set from your social account!")
+        }
         await loadState()
       } else {
         toast.error(data.error || `Failed to link ${provider}`)
@@ -113,6 +121,48 @@ export function ConnectedAccounts() {
     }
   }
 
+  async function handleSetAvatar(provider: "github" | "twitter") {
+    const avatarUrl = provider === "github"
+      ? (state?.github_avatar_url || `https://github.com/${state?.github_username}.png`)
+      : state?.twitter_avatar_url
+
+    if (!avatarUrl) {
+      toast.error("No avatar available from this account")
+      return
+    }
+
+    setSettingAvatar(provider)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { error } = await supabase.from("profiles")
+        .update({ avatar_url: avatarUrl })
+        .eq("id", user.id)
+
+      if (error) {
+        toast.error("Failed to update profile photo")
+      } else {
+        toast.success("Profile photo updated!")
+        await loadState()
+      }
+    } catch {
+      toast.error("Something went wrong")
+    } finally {
+      setSettingAvatar(null)
+    }
+  }
+
+  function isActiveAvatar(provider: "github" | "twitter"): boolean {
+    if (!state?.avatar_url) return false
+    if (provider === "github") {
+      const ghUrl = state.github_avatar_url || `https://github.com/${state.github_username}.png`
+      return state.avatar_url === ghUrl
+    }
+    return state.avatar_url === state.twitter_avatar_url
+  }
+
   if (loading) return null
 
   function formatCount(n: number | null): string {
@@ -157,14 +207,34 @@ export function ConnectedAccounts() {
               )}
             </div>
           </div>
-          {state?.github_verified ? (
-            <Button variant="outline" size="sm" onClick={() => handleDisconnect("github")}>Disconnect</Button>
-          ) : (
-            <Button size="sm" onClick={() => handleConnect("github")} disabled={connecting === "github"}>
-              {connecting === "github" && <Loader2 size={14} className="mr-1 animate-spin" />}
-              Connect GitHub
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {state?.github_verified && (
+              isActiveAvatar("github") ? (
+                <Badge variant="secondary" className="text-xs">
+                  <Camera size={12} className="mr-1" /> Active photo
+                </Badge>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => handleSetAvatar("github")}
+                  disabled={settingAvatar === "github"}
+                >
+                  {settingAvatar === "github" ? <Loader2 size={12} className="mr-1 animate-spin" /> : <Camera size={12} className="mr-1" />}
+                  Use as photo
+                </Button>
+              )
+            )}
+            {state?.github_verified ? (
+              <Button variant="outline" size="sm" onClick={() => handleDisconnect("github")}>Disconnect</Button>
+            ) : (
+              <Button size="sm" onClick={() => handleConnect("github")} disabled={connecting === "github"}>
+                {connecting === "github" && <Loader2 size={14} className="mr-1 animate-spin" />}
+                Connect GitHub
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Twitter */}
@@ -190,14 +260,34 @@ export function ConnectedAccounts() {
               )}
             </div>
           </div>
-          {state?.twitter_verified ? (
-            <Button variant="outline" size="sm" onClick={() => handleDisconnect("twitter")}>Disconnect</Button>
-          ) : (
-            <Button size="sm" onClick={() => handleConnect("twitter")} disabled={connecting === "twitter"}>
-              {connecting === "twitter" && <Loader2 size={14} className="mr-1 animate-spin" />}
-              Connect X
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {state?.twitter_verified && state?.twitter_avatar_url && (
+              isActiveAvatar("twitter") ? (
+                <Badge variant="secondary" className="text-xs">
+                  <Camera size={12} className="mr-1" /> Active photo
+                </Badge>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => handleSetAvatar("twitter")}
+                  disabled={settingAvatar === "twitter"}
+                >
+                  {settingAvatar === "twitter" ? <Loader2 size={12} className="mr-1 animate-spin" /> : <Camera size={12} className="mr-1" />}
+                  Use as photo
+                </Button>
+              )
+            )}
+            {state?.twitter_verified ? (
+              <Button variant="outline" size="sm" onClick={() => handleDisconnect("twitter")}>Disconnect</Button>
+            ) : (
+              <Button size="sm" onClick={() => handleConnect("twitter")} disabled={connecting === "twitter"}>
+                {connecting === "twitter" && <Loader2 size={14} className="mr-1 animate-spin" />}
+                Connect X
+              </Button>
+            )}
+          </div>
         </div>
 
         {state?.social_stats_updated_at && (

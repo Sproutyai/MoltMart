@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     await supabase.from("profiles").update({
       twitter_username: null,
       twitter_verified: false,
+      twitter_avatar_url: null,
       twitter_followers_count: null,
       twitter_tweet_count: null,
     }).eq("id", user.id)

@@ -7,6 +7,7 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS github_repos_count integer,
   ADD COLUMN IF NOT EXISTS github_followers_count integer,
   ADD COLUMN IF NOT EXISTS github_created_at timestamptz,
+  ADD COLUMN IF NOT EXISTS twitter_avatar_url text,
   ADD COLUMN IF NOT EXISTS twitter_followers_count integer,
   ADD COLUMN IF NOT EXISTS twitter_tweet_count integer,
   ADD COLUMN IF NOT EXISTS social_stats_updated_at timestamptz;

@@ -14,6 +14,7 @@ export interface Profile {
   github_repos_count?: number | null
   github_followers_count?: number | null
   github_created_at?: string | null
+  twitter_avatar_url?: string | null
   twitter_followers_count?: number | null
   twitter_tweet_count?: number | null
   social_stats_updated_at?: string | null

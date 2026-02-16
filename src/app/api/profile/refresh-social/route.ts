@@ -25,6 +25,7 @@ export async function POST() {
   if (profile.twitter_verified && profile.twitter_username) {
     const stats = await fetchTwitterStats(profile.twitter_username)
     if (stats) {
+      updates.twitter_avatar_url = stats.profile_image_url
       updates.twitter_followers_count = stats.followers_count
       updates.twitter_tweet_count = stats.tweet_count
     }
