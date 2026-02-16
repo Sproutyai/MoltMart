@@ -48,13 +48,14 @@ export default async function HomePage() {
       <section className="bg-gradient-to-b from-muted/50 to-transparent px-4 py-20 sm:py-28">
         <div className="mx-auto max-w-4xl text-center">
           <div className="mb-6 flex justify-center">
+            <div className="animate-float">
             <Image
               src="/logo/Moltmartlogo.png"
               alt="Molt Mart Logo"
               width={140}
               height={140}
               priority
-            />
+            /></div>
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl">
             The Marketplace for
