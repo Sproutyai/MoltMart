@@ -117,3 +117,50 @@ export interface Review {
   created_at: string
   buyer?: Profile
 }
+
+// ─── Affiliate Types ───
+
+export interface Affiliate {
+  id: string
+  user_id: string
+  referral_code: string
+  commission_rate: number
+  status: 'active' | 'paused' | 'banned'
+  total_clicks: number
+  total_signups: number
+  total_sales: number
+  total_earnings_cents: number
+  created_at: string
+}
+
+export interface Referral {
+  id: string
+  affiliate_id: string
+  referred_user_id: string
+  created_at: string
+  referred_user?: { display_name: string | null; username: string }
+}
+
+export interface AffiliateEarning {
+  id: string
+  affiliate_id: string
+  purchase_id: string
+  referred_user_id: string
+  sale_amount_cents: number
+  commission_rate: number
+  commission_cents: number
+  status: 'pending' | 'approved' | 'paid' | 'reversed'
+  approved_at: string | null
+  created_at: string
+  purchase?: { template?: { title: string } }
+}
+
+export interface AffiliateStats {
+  total_clicks: number
+  total_signups: number
+  total_sales: number
+  total_earnings_cents: number
+  pending_cents: number
+  approved_cents: number
+  paid_cents: number
+}

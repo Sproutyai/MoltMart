@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
-import { Download, Store, User, Upload, Receipt, ExternalLink, Pencil } from "lucide-react"
+import { Download, Store, User, Upload, Receipt, ExternalLink, Pencil, DollarSign } from "lucide-react"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -59,6 +59,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
               Public Profile
             </Link>
           )}
+
+          <p className="px-3 py-2 mt-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider">Affiliate</p>
+          <Link
+            href="/dashboard/affiliate"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
+          >
+            <DollarSign className="h-4 w-4" />
+            Affiliate Program
+          </Link>
 
           <p className="px-3 py-2 mt-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider">Account</p>
           <Link

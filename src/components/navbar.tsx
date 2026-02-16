@@ -51,6 +51,9 @@ export async function Navbar() {
             <Link href="/dashboard/seller" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
               Sell
             </Link>
+            <Link href="/affiliate" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+              Affiliates
+            </Link>
           </nav>
         </div>
 
@@ -82,6 +85,9 @@ export async function Navbar() {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/seller/upload">Upload Template</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/affiliate">Affiliate Program</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <SignOutButton />

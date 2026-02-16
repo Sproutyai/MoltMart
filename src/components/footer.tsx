@@ -34,6 +34,7 @@ export function Footer() {
               <Link href="/dashboard/seller" className="hover:text-foreground">Sell Templates</Link>
               <Link href="/dashboard/seller/upload" className="hover:text-foreground">Upload</Link>
               <Link href="/signup" className="hover:text-foreground">Get Started</Link>
+              <Link href="/affiliate" className="hover:text-foreground">Affiliate Program</Link>
             </nav>
           </div>
 

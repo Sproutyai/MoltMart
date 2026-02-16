@@ -18,6 +18,17 @@ export async function middleware(request: NextRequest) {
       },
     }
   )
+  // Affiliate referral tracking
+  const refCode = request.nextUrl.searchParams.get('ref')
+  if (refCode && !request.cookies.get('molt_ref')) {
+    response.cookies.set('molt_ref', refCode, {
+      maxAge: 60 * 60 * 24 * 30,
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+    })
+  }
+
   await supabase.auth.getUser()
   return response
 }

@@ -60,6 +60,9 @@ export default function SignupPage() {
         await fetch("/api/profile/become-seller", { method: "POST" })
       }
 
+      // Attribute referral (cookie is httpOnly, handled server-side)
+      await fetch("/api/affiliate/attribute", { method: "POST" }).catch(() => {})
+
       toast.success("Account created! Check your email to confirm.")
       router.push("/dashboard")
       router.refresh()
