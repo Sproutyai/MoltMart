@@ -45,6 +45,9 @@ export async function Navbar() {
             <Link href="/templates" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
               Browse Templates
             </Link>
+            <Link href="/templates/new" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+              New
+            </Link>
             <Link href="/dashboard/seller" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
               Sell
             </Link>

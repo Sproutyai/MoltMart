@@ -33,6 +33,7 @@ export function MobileNav({ isLoggedIn, isSeller }: MobileNavProps) {
         <nav className="flex flex-col gap-4">
           <Link href="/" onClick={close} className="text-lg font-medium">Home</Link>
           <Link href="/templates" onClick={close} className="text-lg font-medium">Browse Templates</Link>
+          <Link href="/templates/new" onClick={close} className="text-lg font-medium">New Listings</Link>
           <Link href="/dashboard/seller" onClick={close} className="text-lg font-medium">Sell</Link>
           {isLoggedIn ? (
             <>

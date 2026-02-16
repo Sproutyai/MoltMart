@@ -3,14 +3,17 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { StarRating } from "@/components/star-rating"
 import { SellerLink } from "@/components/seller-link"
-import { Download } from "lucide-react"
+import { Download, Sparkles } from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
 import type { Template } from "@/lib/types"
 
 interface TemplateCardProps {
   template: Template & { seller?: { username: string; display_name: string | null } }
+  showTimestamp?: boolean
 }
 
-export function TemplateCard({ template }: TemplateCardProps) {
+export function TemplateCard({ template, showTimestamp }: TemplateCardProps) {
+  const isNew = Date.now() - new Date(template.created_at).getTime() < 48 * 60 * 60 * 1000
   const priceDisplay =
     template.price_cents === 0 ? (
       <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
@@ -53,14 +56,27 @@ export function TemplateCard({ template }: TemplateCardProps) {
             </div>
           )}
         </CardContent>
-        <CardFooter className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <StarRating value={template.avg_rating} size={12} />
-            <span>({template.review_count})</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Download size={12} />
-            <span>{template.download_count}</span>
+        <CardFooter className="flex flex-col items-stretch gap-1 text-xs text-muted-foreground">
+          {showTimestamp && (
+            <div className="flex items-center gap-2">
+              {isNew && (
+                <Badge className="bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-4 gap-0.5">
+                  <Sparkles size={10} />
+                  NEW
+                </Badge>
+              )}
+              <span>{formatDistanceToNow(new Date(template.created_at), { addSuffix: true })}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <StarRating value={template.avg_rating} size={12} />
+              <span>({template.review_count})</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Download size={12} />
+              <span>{template.download_count}</span>
+            </div>
           </div>
         </CardFooter>
       </Card>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { TemplateCard } from "@/components/template-card"
 import { SearchInput } from "@/components/search-input"
+import { NewListingsSnippet } from "@/components/new-listings-snippet"
 import { createClient } from "@/lib/supabase/server"
 import { CATEGORIES } from "@/lib/constants"
 import {
@@ -122,6 +123,11 @@ export default async function HomePage() {
             })}
           </div>
         </section>
+
+        {/* New Listings */}
+        <Suspense fallback={null}>
+          <NewListingsSnippet />
+        </Suspense>
 
         {/* How it works */}
         <section className="mx-auto max-w-4xl">
