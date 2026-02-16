@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -12,6 +13,7 @@ import {
 import { SignOutButton } from "@/components/sign-out-button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { MobileNav } from "@/components/mobile-nav"
+import { NavbarSearch } from "@/components/navbar-search"
 
 export async function Navbar() {
   const supabase = await createClient()
@@ -33,7 +35,7 @@ export async function Navbar() {
         {/* Left: Logo + Nav */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
-            <span className="text-2xl">🦋</span>
+            <Image src="/logo/Moltmartlogo.png" alt="Molt Mart" width={28} height={28} />
             <span>Molt Mart</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
@@ -48,6 +50,9 @@ export async function Navbar() {
             </Link>
           </nav>
         </div>
+
+        {/* Search */}
+        <NavbarSearch />
 
         {/* Right: Auth */}
         <div className="flex items-center gap-3">

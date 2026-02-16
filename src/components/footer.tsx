@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 
 export function Footer() {
   return (
@@ -8,7 +9,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-3">
             <Link href="/" className="flex items-center gap-2 text-lg font-bold">
-              <span className="text-xl">🦋</span> Molt Mart
+              <Image src="/logo/Moltmartlogo.png" alt="Molt Mart" width={24} height={24} /> Molt Mart
             </Link>
             <p className="text-sm text-muted-foreground">
               The marketplace for AI agent templates. Built for OpenClaw.

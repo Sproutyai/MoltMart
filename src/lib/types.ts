@@ -65,6 +65,39 @@ export interface Purchase {
   template?: Template
 }
 
+export interface SellerTransaction {
+  id: string
+  price_cents: number
+  platform_fee_cents: number
+  seller_earnings_cents: number
+  status: 'completed' | 'pending' | 'refunded'
+  created_at: string
+  template_id: string
+  template_title: string
+  template_slug: string
+  buyer_username: string
+  buyer_display_name: string | null
+}
+
+export interface TransactionSummary {
+  total_earnings_cents: number
+  earnings_this_month_cents: number
+  earnings_this_week_cents: number
+  total_transactions: number
+  avg_sale_cents: number
+  top_template: { id: string; title: string; sales_count: number } | null
+}
+
+export interface TransactionFilters {
+  period: 'week' | 'month' | 'year' | 'all'
+  template_id?: string
+  status?: 'completed' | 'pending' | 'refunded'
+  sort: 'date' | 'amount' | 'template'
+  order: 'asc' | 'desc'
+  page: number
+  per_page: number
+}
+
 export interface Review {
   id: string
   buyer_id: string

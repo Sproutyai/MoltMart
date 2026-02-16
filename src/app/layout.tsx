@@ -13,6 +13,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Molt Mart",
   description: "The marketplace for OpenClaw AI agent templates",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
