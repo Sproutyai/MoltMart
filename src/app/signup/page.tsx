@@ -55,9 +55,9 @@ export default function SignupPage() {
         return
       }
 
-      // If seller, set is_seller via API
+      // Store seller intent for after email confirmation (profile may not exist yet)
       if (isSeller) {
-        await fetch("/api/profile/become-seller", { method: "POST" })
+        localStorage.setItem("molt_seller_intent", "true")
       }
 
       // Attribute referral (cookie is httpOnly, handled server-side)

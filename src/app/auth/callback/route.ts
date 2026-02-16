@@ -10,5 +10,6 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  return NextResponse.redirect(`${origin}/dashboard`)
+  // Seller intent is checked client-side after redirect (see layout/dashboard)
+  return NextResponse.redirect(`${origin}/dashboard?check_seller=1`)
 }

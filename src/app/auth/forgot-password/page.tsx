@@ -1,39 +1,36 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
-import { toast } from "sonner"
+import { Loader2, ArrowLeft, CheckCircle2 } from "lucide-react"
 
-export default function LoginPage() {
-  const router = useRouter()
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
   const [error, setError] = useState("")
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
-    if (!email || !password) { setError("Please fill in all fields"); return }
+    if (!email) { setError("Please enter your email"); return }
 
     setLoading(true)
     try {
       const supabase = createClient()
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
-      if (authError) {
-        setError(authError.message)
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: "https://molt-mart.vercel.app/auth/reset-password",
+      })
+      if (resetError) {
+        setError(resetError.message)
         return
       }
-      toast.success("Logged in!")
-      router.push("/dashboard")
-      router.refresh()
+      setSent(true)
     } catch {
       setError("Something went wrong")
     } finally {
@@ -41,12 +38,33 @@ export default function LoginPage() {
     }
   }
 
+  if (sent) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center space-y-4">
+            <CheckCircle2 className="mx-auto h-12 w-12 text-green-500" />
+            <h2 className="text-xl font-semibold">Check your email</h2>
+            <p className="text-sm text-muted-foreground">
+              We sent a password reset link to <strong>{email}</strong>. Check your inbox and spam folder.
+            </p>
+            <Link href="/login">
+              <Button variant="outline" className="mt-2">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Login
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Log In</CardTitle>
-          <CardDescription>Welcome back to Molt Mart</CardDescription>
+          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <CardDescription>Enter your email and we&apos;ll send you a reset link</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -55,21 +73,15 @@ export default function LoginPage() {
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
             </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
-            </div>
-            <div className="text-right">
-              <Link href="/auth/forgot-password" className="text-xs text-muted-foreground hover:underline">Forgot password?</Link>
-            </div>
             <Button type="submit" disabled={loading} className="w-full">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Log In
+              Send Reset Link
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="font-medium text-foreground hover:underline">Sign Up</Link>
+            <Link href="/login" className="font-medium text-foreground hover:underline">
+              <ArrowLeft className="inline mr-1 h-3 w-3" />Back to Login
+            </Link>
           </p>
         </CardContent>
       </Card>

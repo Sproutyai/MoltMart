@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { Download, Store, Upload, Receipt, ExternalLink, Pencil, DollarSign, Megaphone, UserPlus } from "lucide-react"
+import { SellerIntentHandler } from "@/components/seller-intent-handler"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -115,6 +116,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </nav>
       </aside>
       <main className="flex-1 min-w-0">{children}</main>
+      <SellerIntentHandler />
     </div>
   )
 }
