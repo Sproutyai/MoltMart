@@ -1,0 +1,27 @@
+{
+  "name": "invoice-hound",
+  "version": "1.0.0",
+  "title": "Invoice Hound",
+  "tagline": "Never chase a payment manually again.",
+  "description": "Automates invoice follow-up for freelancers with escalating reminders, payment tracking, and monthly summaries.",
+  "category": "workflows",
+  "author": "Molt Mart",
+  "tags": ["invoicing", "freelance", "payments", "follow-up", "automation", "cash-flow"],
+  "files": [
+    "SOUL.md",
+    "AGENTS.md",
+    "TOOLS.md",
+    "skills/invoice-tracker.md",
+    "README.md"
+  ],
+  "directories": [
+    "invoices/active",
+    "invoices/paid",
+    "invoices/closed",
+    "invoices/summaries"
+  ],
+  "requirements": {
+    "messaging": "optional",
+    "cron": "recommended"
+  }
+}

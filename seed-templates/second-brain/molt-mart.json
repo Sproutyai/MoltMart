@@ -1,0 +1,22 @@
+{
+  "name": "second-brain",
+  "version": "1.0.0",
+  "displayName": "Second Brain",
+  "tagline": "An agent that actually remembers.",
+  "description": "A structured memory system for OpenClaw. Auto-captures preferences, maintains daily session notes, consolidates weekly, and references past context naturally across every session.",
+  "category": "Workflows",
+  "author": "Molt Mart",
+  "tags": ["memory", "productivity", "context", "preferences", "workflow"],
+  "files": [
+    "SOUL.md",
+    "AGENTS.md",
+    "TOOLS.md"
+  ],
+  "creates": [
+    "memory/",
+    "memory/preferences.md",
+    "memory/projects/",
+    "memory/archive/",
+    "MEMORY.md"
+  ]
+}
