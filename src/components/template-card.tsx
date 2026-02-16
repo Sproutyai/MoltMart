@@ -27,71 +27,81 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
       </span>
     )
 
+  const templateUrl = `/templates/${template.slug}`
+
+  function handleBeacon() {
+    if (isFeatured) {
+      navigator.sendBeacon("/api/promote/track", JSON.stringify({ templateId: template.id, type: "click" }))
+    }
+  }
+
   return (
-    <Link href={`/templates/${template.slug}`} onClick={isFeatured ? () => { navigator.sendBeacon("/api/promote/track", JSON.stringify({ templateId: template.id, type: "click" })) } : undefined}>
-      <Card className={`h-full transition-all hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] overflow-hidden ${isFeatured ? 'ring-1 ring-amber-300 dark:ring-amber-700' : ''}`}>
-        {template.screenshots && template.screenshots.length > 0 && (
+    <Card className={`h-full transition-all hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] overflow-hidden ${isFeatured ? 'ring-1 ring-amber-300 dark:ring-amber-700' : ''}`}>
+      {template.screenshots && template.screenshots.length > 0 && (
+        <Link href={templateUrl} onClick={handleBeacon}>
           <div className="aspect-video w-full overflow-hidden bg-muted">
             <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
           </div>
+        </Link>
+      )}
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-2">
+          <Badge variant="outline" className="text-xs">{template.category}</Badge>
+          {template.difficulty && (
+            <Badge variant="outline" className={`text-xs ${template.difficulty === 'beginner' ? 'border-green-500 text-green-600' : template.difficulty === 'intermediate' ? 'border-yellow-500 text-yellow-600' : 'border-red-500 text-red-600'}`}>
+              {template.difficulty === 'beginner' ? '🟢' : template.difficulty === 'intermediate' ? '🟡' : '🔴'} {template.difficulty}
+            </Badge>
+          )}
+          {isFeatured && (
+            <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-xs gap-0.5">
+              <Star size={10} className="fill-amber-500 text-amber-500" /> Featured
+            </Badge>
+          )}
+          {priceDisplay}
+        </div>
+        <Link href={templateUrl} onClick={handleBeacon} className="mt-2 block">
+          <h3 className="font-semibold leading-tight line-clamp-1 hover:underline">{template.title}</h3>
+        </Link>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
+        {template.seller && (
+          <div className="mt-2 flex items-center">
+            <SellerLink
+              username={template.seller.username}
+              displayName={template.seller.display_name}
+              avatarUrl={template.seller.avatar_url}
+              showAvatar
+            />
+            {template.seller.is_verified && (
+              <TrustBadge githubVerified={template.seller.github_verified} twitterVerified={template.seller.twitter_verified} variant="inline" />
+            )}
+          </div>
         )}
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between gap-2">
-            <Badge variant="outline" className="text-xs">{template.category}</Badge>
-            {template.difficulty && (
-              <Badge variant="outline" className={`text-xs ${template.difficulty === 'beginner' ? 'border-green-500 text-green-600' : template.difficulty === 'intermediate' ? 'border-yellow-500 text-yellow-600' : 'border-red-500 text-red-600'}`}>
-                {template.difficulty === 'beginner' ? '🟢' : template.difficulty === 'intermediate' ? '🟡' : '🔴'} {template.difficulty}
+      </CardContent>
+      <CardFooter className="flex flex-col items-stretch gap-1 text-xs text-muted-foreground">
+        {showTimestamp && (
+          <div className="flex items-center gap-2">
+            {isNew && (
+              <Badge className="bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-4 gap-0.5">
+                <Sparkles size={10} />
+                NEW
               </Badge>
             )}
-            {isFeatured && (
-              <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-xs gap-0.5">
-                <Star size={10} className="fill-amber-500 text-amber-500" /> Featured
-              </Badge>
-            )}
-            {priceDisplay}
+            <span>{formatDistanceToNow(new Date(template.created_at), { addSuffix: true })}</span>
           </div>
-          <h3 className="mt-2 font-semibold leading-tight line-clamp-1">{template.title}</h3>
-        </CardHeader>
-        <CardContent className="pb-2">
-          <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
-          {template.seller && (
-            <div className="mt-2 flex items-center">
-              <SellerLink
-                username={template.seller.username}
-                displayName={template.seller.display_name}
-                avatarUrl={template.seller.avatar_url}
-                showAvatar
-              />
-              {template.seller.is_verified && (
-                <TrustBadge githubVerified={template.seller.github_verified} twitterVerified={template.seller.twitter_verified} variant="inline" />
-              )}
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex flex-col items-stretch gap-1 text-xs text-muted-foreground">
-          {showTimestamp && (
-            <div className="flex items-center gap-2">
-              {isNew && (
-                <Badge className="bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-4 gap-0.5">
-                  <Sparkles size={10} />
-                  NEW
-                </Badge>
-              )}
-              <span>{formatDistanceToNow(new Date(template.created_at), { addSuffix: true })}</span>
-            </div>
-          )}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <StarRating value={template.avg_rating} size={12} />
-              <span>({template.review_count})</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Download size={12} />
-              <span>{template.download_count}</span>
-            </div>
+        )}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <StarRating value={template.avg_rating} size={12} />
+            <span>({template.review_count})</span>
           </div>
-        </CardFooter>
-      </Card>
-    </Link>
+          <div className="flex items-center gap-1">
+            <Download size={12} />
+            <span>{template.download_count}</span>
+          </div>
+        </div>
+      </CardFooter>
+    </Card>
   )
 }

@@ -191,6 +191,7 @@ export default async function TemplateDetailPage({
             templateId={t.id}
             isLoggedIn={!!user}
             hasPurchased={hasPurchased}
+            priceCents={t.price_cents}
           />
 
           <Separator />

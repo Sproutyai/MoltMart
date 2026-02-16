@@ -10,13 +10,19 @@ interface DownloadButtonProps {
   templateId: string
   isLoggedIn: boolean
   hasPurchased: boolean
+  priceCents?: number
 }
 
-export function DownloadButton({ templateId, isLoggedIn, hasPurchased }: DownloadButtonProps) {
+export function DownloadButton({ templateId, isLoggedIn, hasPurchased, priceCents = 0 }: DownloadButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
   async function handleDownload() {
+    if (priceCents > 0 && !hasPurchased) {
+      toast.info("Paid downloads coming soon!")
+      return
+    }
+
     if (!isLoggedIn) {
       router.push("/login")
       return
@@ -49,7 +55,11 @@ export function DownloadButton({ templateId, isLoggedIn, hasPurchased }: Downloa
       ) : (
         <Download className="mr-2 h-4 w-4" />
       )}
-      {hasPurchased ? "Download Again" : "Download Free"}
+      {hasPurchased
+        ? "Download Again"
+        : priceCents > 0
+          ? `Purchase — $${(priceCents / 100).toFixed(2)}`
+          : "Download Free"}
     </Button>
   )
 }

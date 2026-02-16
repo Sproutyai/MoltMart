@@ -161,7 +161,8 @@ export default function SellerDashboardPage() {
 
   const totalDownloads = templates.reduce((s, t) => s + t.download_count, 0)
   const avgRating = templates.length ? (templates.reduce((s, t) => s + t.avg_rating, 0) / templates.length).toFixed(1) : "—"
-  const estimatedEarnings = templates.reduce((s, t) => s + (t.price_cents > 0 ? t.download_count * t.price_cents : 0), 0) / 100
+  // Earnings should come from actual purchases (Stripe not live yet), so show $0.00
+  const estimatedEarnings = 0
 
   return (
     <div>
