@@ -29,7 +29,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">My Downloads</h1>
         <Link href="/templates">
-          <Button variant="outline"><ShoppingBag className="mr-2 h-4 w-4" />Browse Templates</Button>
+          <Button variant="outline"><ShoppingBag className="mr-2 h-4 w-4" />Browse Enhancements</Button>
         </Link>
       </div>
 
@@ -37,8 +37,8 @@ export default async function DashboardPage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-12">
             <Package className="h-12 w-12 text-muted-foreground" />
-            <p className="text-lg font-medium">You haven&apos;t downloaded any templates yet</p>
-            <p className="text-sm text-muted-foreground">Browse the marketplace to find agent templates!</p>
+            <p className="text-lg font-medium">You haven&apos;t downloaded any enhancements yet</p>
+            <p className="text-sm text-muted-foreground">Browse the marketplace to find agent enhancements!</p>
             <Link href="/templates">
               <Button><ShoppingBag className="mr-2 h-4 w-4" />Browse Marketplace</Button>
             </Link>

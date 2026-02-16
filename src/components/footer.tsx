@@ -1,7 +1,11 @@
 import Link from "next/link"
 import Image from "next/image"
+import { createClient } from "@/lib/supabase/server"
 
-export function Footer() {
+export async function Footer() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <footer className="border-t bg-muted/30">
       <div className="container mx-auto px-4 py-10">
@@ -42,9 +46,19 @@ export function Footer() {
           <div className="space-y-3">
             <h4 className="text-sm font-semibold">Account</h4>
             <nav className="flex flex-col gap-2 text-sm text-muted-foreground">
-              <Link href="/login" className="hover:text-foreground">Log In</Link>
-              <Link href="/signup" className="hover:text-foreground">Sign Up</Link>
-              <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
+              {user ? (
+                <>
+                  <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
+                  <Link href="/dashboard/profile" className="hover:text-foreground">Profile</Link>
+                  <Link href="/dashboard/transactions" className="hover:text-foreground">Transactions</Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="hover:text-foreground">Log In</Link>
+                  <Link href="/signup" className="hover:text-foreground">Sign Up</Link>
+                  <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
+                </>
+              )}
             </nav>
           </div>
         </div>

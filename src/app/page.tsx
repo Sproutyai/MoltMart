@@ -4,7 +4,6 @@ import { Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { TemplateCard } from "@/components/template-card"
-import { SearchInput } from "@/components/search-input"
 import { FeaturedSection } from "@/components/featured-section"
 import { NewListingsSnippet } from "@/components/new-listings-snippet"
 import { createClient } from "@/lib/supabase/server"
@@ -30,6 +29,16 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 
 export default async function HomePage() {
   const supabase = await createClient()
+
+  // Real hero stats
+  const [{ count: enhancementCount }, { data: creatorsData }, { data: downloadsData }] = await Promise.all([
+    supabase.from("templates").select("*", { count: "exact", head: true }).eq("status", "published"),
+    supabase.from("templates").select("seller_id").eq("status", "published"),
+    supabase.from("templates").select("download_count").eq("status", "published"),
+  ])
+  const creatorCount = new Set(creatorsData?.map((t) => t.seller_id)).size
+  const totalDownloads = downloadsData?.reduce((sum, t) => sum + (t.download_count || 0), 0) ?? 0
+
   const { data: templates } = await supabase
     .from("templates")
     .select("*, seller:profiles!seller_id(username, display_name, avatar_url)")
@@ -73,11 +82,11 @@ export default async function HomePage() {
             </Button>
           </div>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-            <span><strong className="text-foreground">2,000+</strong> Enhancements</span>
+            <span><strong className="text-foreground">{(enhancementCount ?? 0).toLocaleString()}</strong> Enhancements</span>
             <span className="text-border">•</span>
-            <span><strong className="text-foreground">500+</strong> Creators</span>
+            <span><strong className="text-foreground">{creatorCount.toLocaleString()}</strong> Creators</span>
             <span className="text-border">•</span>
-            <span><strong className="text-foreground">50K+</strong> Downloads</span>
+            <span><strong className="text-foreground">{totalDownloads.toLocaleString()}</strong> Downloads</span>
           </div>
         </div>
       </section>
@@ -96,11 +105,6 @@ export default async function HomePage() {
               <Button variant="ghost" asChild>
                 <Link href="/templates">View All →</Link>
               </Button>
-            </div>
-            <div className="mb-8">
-              <Suspense fallback={null}>
-                <SearchInput />
-              </Suspense>
             </div>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {(templates as (Template & { seller: { username: string; display_name: string | null } })[]).map((t) => (

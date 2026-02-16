@@ -19,7 +19,7 @@ export default async function EditTemplatePage({ params }: { params: Promise<{ i
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Edit Template</h1>
+      <h1 className="text-2xl font-bold mb-6">Edit Enhancement</h1>
       <EditTemplateForm template={template} />
     </div>
   )

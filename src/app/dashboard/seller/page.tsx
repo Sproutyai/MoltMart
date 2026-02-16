@@ -76,7 +76,7 @@ export default function SellerDashboardPage() {
       // Handle success redirect
       const params = new URLSearchParams(window.location.search)
       if (params.get("promoted")) {
-        toast.success("Template promoted! It's now #1 in Featured.")
+        toast.success("Enhancement promoted! It's now #1 in Featured.")
         window.history.replaceState({}, "", "/dashboard/seller")
       }
     }
@@ -129,7 +129,7 @@ export default function SellerDashboardPage() {
       })
       if (!res.ok) { toast.error("Failed to update"); return }
       setTemplates((prev) => prev.map((x) => x.id === t.id ? { ...x, status: newStatus } : x))
-      toast.success(newStatus === "archived" ? "Template archived" : "Template restored")
+      toast.success(newStatus === "archived" ? "Enhancement archived" : "Enhancement restored")
     } catch {
       toast.error("Something went wrong")
     } finally {
@@ -148,7 +148,7 @@ export default function SellerDashboardPage() {
             <CardTitle>Become a Seller</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-sm text-muted-foreground mb-4">Start selling your OpenClaw agent templates to the community.</p>
+            <p className="text-sm text-muted-foreground mb-4">Start selling your OpenClaw agent enhancements to the community.</p>
             <Button onClick={becomeSeller} disabled={becoming}>
               {becoming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Become a Seller
@@ -169,10 +169,10 @@ export default function SellerDashboardPage() {
         <h1 className="text-2xl font-bold">Seller Dashboard</h1>
         <div className="flex gap-2">
           <Link href="/dashboard/seller/promote">
-            <Button variant="outline"><Megaphone className="mr-2 h-4 w-4" />Promote Templates</Button>
+            <Button variant="outline"><Megaphone className="mr-2 h-4 w-4" />Promote Enhancements</Button>
           </Link>
           <Link href="/dashboard/seller/upload">
-            <Button><Plus className="mr-2 h-4 w-4" />Upload New Template</Button>
+            <Button><Plus className="mr-2 h-4 w-4" />Upload New Enhancement</Button>
           </Link>
         </div>
       </div>
@@ -182,7 +182,7 @@ export default function SellerDashboardPage() {
           <CardContent className="pt-6 text-center">
             <Package className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
             <div className="text-2xl font-bold">{templates.length}</div>
-            <div className="text-xs text-muted-foreground">Templates</div>
+            <div className="text-xs text-muted-foreground">Enhancements</div>
           </CardContent>
         </Card>
         <Card>
@@ -212,9 +212,9 @@ export default function SellerDashboardPage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-12">
             <Package className="h-12 w-12 text-muted-foreground" />
-            <p className="text-muted-foreground">You haven&apos;t uploaded any templates yet</p>
+            <p className="text-muted-foreground">You haven&apos;t uploaded any enhancements yet</p>
             <Link href="/dashboard/seller/upload">
-              <Button><Plus className="mr-2 h-4 w-4" />Upload Your First Template</Button>
+              <Button><Plus className="mr-2 h-4 w-4" />Upload Your First Enhancement</Button>
             </Link>
           </CardContent>
         </Card>

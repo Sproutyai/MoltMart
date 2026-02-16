@@ -103,7 +103,7 @@ export default function PromotePage() {
         <Link href="/dashboard/seller">
           <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
         </Link>
-        <h1 className="text-2xl font-bold">Promote Templates</h1>
+        <h1 className="text-2xl font-bold">Promote Enhancements</h1>
       </div>
 
       <Card className="mb-8">
@@ -123,7 +123,7 @@ export default function PromotePage() {
 
       {promoted.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Your Promoted Templates</h2>
+          <h2 className="text-lg font-semibold mb-4">Your Promoted Enhancements</h2>
           <div className="space-y-3">
             {promoted.map(t => {
               const promo = promotions.get(t.id)!
@@ -177,7 +177,7 @@ export default function PromotePage() {
 
       {unpromoted.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold mb-4">Promote a Template</h2>
+          <h2 className="text-lg font-semibold mb-4">Promote an Enhancement</h2>
           <div className="space-y-2">
             {unpromoted.map(t => (
               <Card key={t.id}>
@@ -210,9 +210,9 @@ export default function PromotePage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-12">
             <Megaphone className="h-12 w-12 text-muted-foreground" />
-            <p className="text-muted-foreground">You don&apos;t have any published templates to promote yet.</p>
+            <p className="text-muted-foreground">You don&apos;t have any published enhancements to promote yet.</p>
             <Link href="/dashboard/seller/upload">
-              <Button>Upload a Template</Button>
+              <Button>Upload an Enhancement</Button>
             </Link>
           </CardContent>
         </Card>

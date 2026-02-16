@@ -26,7 +26,7 @@ export function SearchInput() {
     <form onSubmit={handleSubmit} className="relative w-full">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
       <Input
-        placeholder="Search templates by name, description, or tags..."
+        placeholder="Search enhancements by name, description, or tags..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         className="pl-10 h-11"

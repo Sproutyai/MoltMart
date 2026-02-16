@@ -8,7 +8,7 @@ import type { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "New Listings | Molt Mart",
-  description: "Discover the latest AI agent templates added to Molt Mart.",
+  description: "Discover the latest AI agent enhancements added to Molt Mart.",
 }
 
 export const revalidate = 60
@@ -63,13 +63,13 @@ export default async function NewListingsPage({
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">New Listings</h1>
-          <p className="mt-1 text-muted-foreground">Fresh templates added to Molt Mart</p>
+          <p className="mt-1 text-muted-foreground">Fresh enhancements added to Molt Mart</p>
         </div>
         <div className="flex flex-col items-center gap-2 py-16 text-center">
-          <p className="text-lg font-medium">No templates yet</p>
+          <p className="text-lg font-medium">No enhancements yet</p>
           <p className="text-sm text-muted-foreground">Check back soon for new listings!</p>
           <Button asChild className="mt-4">
-            <Link href="/templates">Browse All Templates</Link>
+            <Link href="/templates">Browse All Enhancements</Link>
           </Button>
         </div>
       </div>
@@ -83,7 +83,7 @@ export default async function NewListingsPage({
       <div>
         <h1 className="text-3xl font-bold">New Listings</h1>
         <p className="mt-1 text-muted-foreground">
-          Fresh templates added to Molt Mart · {totalCount} total
+          Fresh enhancements added to Molt Mart · {totalCount} total
         </p>
       </div>
 

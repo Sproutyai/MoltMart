@@ -22,7 +22,7 @@ export function NavbarSearch() {
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Search templates..."
+          placeholder="Search enhancements..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="h-9 w-64 rounded-full border border-input bg-muted/50 pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring lg:w-80"

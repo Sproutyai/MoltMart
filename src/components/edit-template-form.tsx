@@ -122,7 +122,7 @@ export function EditTemplateForm({ template }: { template: Template }) {
         toast.error(data.error || "Update failed")
         return
       }
-      toast.success("Template updated!")
+      toast.success("Enhancement updated!")
       router.push("/dashboard/seller")
     } catch {
       toast.error("Something went wrong")
@@ -140,7 +140,7 @@ export function EditTemplateForm({ template }: { template: Template }) {
         toast.error(data.error || "Delete failed")
         return
       }
-      toast.success("Template deleted")
+      toast.success("Enhancement deleted")
       router.push("/dashboard/seller")
     } catch {
       toast.error("Something went wrong")

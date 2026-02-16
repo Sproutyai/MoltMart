@@ -78,7 +78,7 @@ export default function SignupPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Create Account</CardTitle>
-          <CardDescription>Join Molt Mart — the marketplace for AI agent templates</CardDescription>
+          <CardDescription>Join Molt Mart — the marketplace for AI agent enhancements</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

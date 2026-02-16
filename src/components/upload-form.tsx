@@ -109,7 +109,7 @@ export function UploadForm() {
       const data = await res.json()
 
       if (!res.ok) { toast.error(data.error || "Upload failed"); return }
-      toast.success("Template uploaded!")
+      toast.success("Enhancement uploaded!")
       router.push("/dashboard/seller")
     } catch {
       toast.error("Something went wrong")
@@ -130,7 +130,7 @@ export function UploadForm() {
             <div className="space-y-4 pl-1">
               <div>
                 <Label htmlFor="title">Title *</Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="My Agent Template" required />
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="My Agent Enhancement" required />
                 {title && <p className="text-xs text-muted-foreground mt-1">Slug: {slugify(title)}</p>}
               </div>
               <div>
@@ -265,7 +265,7 @@ export function UploadForm() {
                       <Input type="number" min="1.00" step="0.01" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="1.00" className="w-32" />
                       <span className="text-sm text-muted-foreground">USD</span>
                     </div>
-                    <p className="text-xs text-amber-600">Payments coming soon — paid templates will be listed but not purchasable yet</p>
+                    <p className="text-xs text-amber-600">Payments coming soon — paid enhancements will be listed but not purchasable yet</p>
                   </div>
                 )}
               </div>

@@ -87,7 +87,7 @@ export async function Navbar() {
                     <Link href="/dashboard/seller">Seller Dashboard</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/seller/upload">Upload Template</Link>
+                    <Link href="/dashboard/seller/upload">Upload Enhancement</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/affiliate">Affiliate Program</Link>

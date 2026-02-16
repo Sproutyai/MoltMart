@@ -121,13 +121,13 @@ export default async function TemplatesPage({
   // Result summary
   const resultSummary = q
     ? `${totalCount} result${totalCount !== 1 ? "s" : ""} for "${q}"`
-    : `${totalCount} template${totalCount !== 1 ? "s" : ""}`
+    : `${totalCount} enhancement${totalCount !== 1 ? "s" : ""}`
 
   return (
     <div className="space-y-6">
       {/* Header + Search */}
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Browse Templates</h1>
+        <h1 className="text-3xl font-bold">Browse Enhancements</h1>
         <SearchInput />
       </div>
 

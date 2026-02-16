@@ -21,7 +21,7 @@ export default async function FeaturedPage() {
       <div className="flex flex-col items-center gap-4 py-24 text-center">
         <Sparkles className="h-12 w-12 text-muted-foreground" />
         <h1 className="text-2xl font-bold">No Featured Enhancements Yet</h1>
-        <p className="text-muted-foreground">Be the first to promote your template!</p>
+        <p className="text-muted-foreground">Be the first to promote your enhancement!</p>
         <Button asChild><Link href="/dashboard/seller">Promote Yours →</Link></Button>
       </div>
     )
@@ -40,7 +40,7 @@ export default async function FeaturedPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">⭐ Featured Enhancements</h1>
-      <p className="text-muted-foreground">Templates promoted by their creators. Ordered by most recently promoted.</p>
+      <p className="text-muted-foreground">Enhancements promoted by their creators. Ordered by most recently promoted.</p>
       <FeaturedGrid initialTemplates={sorted as (Template & { seller: { username: string; display_name: string | null } })[]} pageSize={PAGE_SIZE} />
     </div>
   )
