@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Plus, Store, Pencil, Archive, DollarSign, Download, Star, Package } from "lucide-react"
+import { Loader2, Plus, Store, Pencil, Archive, DollarSign, Download, Star, Package, Megaphone, TrendingUp } from "lucide-react"
 import { toast } from "sonner"
 import type { Profile, Template } from "@/lib/types"
 
@@ -24,6 +24,8 @@ export default function SellerDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [becoming, setBecoming] = useState(false)
   const [archiving, setArchiving] = useState<string | null>(null)
+  const [promotions, setPromotions] = useState<Map<string, { promoted_at: string; position: number; impressions: number; clicks: number }>>(new Map())
+  const [promoting, setPromoting] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -41,8 +43,42 @@ export default function SellerDashboardPage() {
           .eq("seller_id", user.id)
           .order("created_at", { ascending: false })
         setTemplates(t || [])
+
+        // Fetch promotions
+        const { data: promos } = await supabase
+          .from("promotions")
+          .select("template_id, promoted_at, impressions, clicks")
+          .eq("seller_id", user.id)
+
+        if (promos) {
+          const { data: allPromos } = await supabase
+            .from("promotions")
+            .select("template_id, promoted_at")
+            .order("promoted_at", { ascending: false })
+
+          const posMap = new Map<string, number>()
+          allPromos?.forEach((p, i) => posMap.set(p.template_id, i + 1))
+
+          const promoMap = new Map<string, { promoted_at: string; position: number; impressions: number; clicks: number }>()
+          promos.forEach(p => {
+            promoMap.set(p.template_id, {
+              promoted_at: p.promoted_at,
+              position: posMap.get(p.template_id) ?? 0,
+              impressions: p.impressions,
+              clicks: p.clicks,
+            })
+          })
+          setPromotions(promoMap)
+        }
       }
       setLoading(false)
+
+      // Handle success redirect
+      const params = new URLSearchParams(window.location.search)
+      if (params.get("promoted")) {
+        toast.success("Template promoted! It's now #1 in Featured.")
+        window.history.replaceState({}, "", "/dashboard/seller")
+      }
     }
     load()
   }, [router])
@@ -58,6 +94,27 @@ export default function SellerDashboardPage() {
       toast.error("Something went wrong")
     } finally {
       setBecoming(false)
+    }
+  }
+
+  async function handlePromote(templateId: string) {
+    setPromoting(templateId)
+    try {
+      const res = await fetch("/api/promote/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateId }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error || "Failed to start promotion")
+        return
+      }
+      window.location.href = data.url
+    } catch {
+      toast.error("Something went wrong")
+    } finally {
+      setPromoting(null)
     }
   }
 
@@ -110,9 +167,14 @@ export default function SellerDashboardPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Seller Dashboard</h1>
-        <Link href="/dashboard/seller/upload">
-          <Button><Plus className="mr-2 h-4 w-4" />Upload New Template</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/dashboard/seller/promote">
+            <Button variant="outline"><Megaphone className="mr-2 h-4 w-4" />Promote Templates</Button>
+          </Link>
+          <Link href="/dashboard/seller/upload">
+            <Button><Plus className="mr-2 h-4 w-4" />Upload New Template</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -166,6 +228,11 @@ export default function SellerDashboardPage() {
                   <div className="text-xs text-muted-foreground">{t.category}</div>
                 </div>
                 <Badge variant={statusColors[t.status] || "secondary"}>{t.status}</Badge>
+                {promotions.has(t.id) && (
+                  <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-xs">
+                    ⭐ #{promotions.get(t.id)!.position}
+                  </Badge>
+                )}
                 <div className="text-sm text-muted-foreground w-16 text-right">{t.download_count} DLs</div>
                 <div className="text-sm text-muted-foreground w-14 text-right">★ {t.avg_rating.toFixed(1)}</div>
                 <div className="text-sm font-medium w-16 text-right">
@@ -184,6 +251,17 @@ export default function SellerDashboardPage() {
                   >
                     {archiving === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Archive className="h-4 w-4" />}
                   </Button>
+                  {t.status === "published" && (
+                    promotions.has(t.id) ? (
+                      <Button variant="ghost" size="sm" onClick={() => handlePromote(t.id)} disabled={promoting === t.id} title="Re-promote to #1">
+                        {promoting === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <TrendingUp className="h-4 w-4 text-amber-500" />}
+                      </Button>
+                    ) : (
+                      <Button variant="ghost" size="sm" onClick={() => handlePromote(t.id)} disabled={promoting === t.id} title="Promote for $25">
+                        {promoting === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Megaphone className="h-4 w-4" />}
+                      </Button>
+                    )
+                  )}
                 </div>
               </CardContent>
             </Card>

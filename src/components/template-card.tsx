@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { StarRating } from "@/components/star-rating"
 import { SellerLink } from "@/components/seller-link"
-import { Download, Sparkles } from "lucide-react"
+import { Download, Sparkles, Star } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { TrustBadge } from "@/components/trust-badge"
 import type { Template } from "@/lib/types"
@@ -11,9 +11,10 @@ import type { Template } from "@/lib/types"
 interface TemplateCardProps {
   template: Template & { seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } }
   showTimestamp?: boolean
+  isFeatured?: boolean
 }
 
-export function TemplateCard({ template, showTimestamp }: TemplateCardProps) {
+export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCardProps) {
   const isNew = Date.now() - new Date(template.created_at).getTime() < 48 * 60 * 60 * 1000
   const priceDisplay =
     template.price_cents === 0 ? (
@@ -27,8 +28,8 @@ export function TemplateCard({ template, showTimestamp }: TemplateCardProps) {
     )
 
   return (
-    <Link href={`/templates/${template.slug}`}>
-      <Card className="h-full transition-all hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] overflow-hidden">
+    <Link href={`/templates/${template.slug}`} onClick={isFeatured ? () => { navigator.sendBeacon("/api/promote/track", JSON.stringify({ templateId: template.id, type: "click" })) } : undefined}>
+      <Card className={`h-full transition-all hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] overflow-hidden ${isFeatured ? 'ring-1 ring-amber-300 dark:ring-amber-700' : ''}`}>
         {template.screenshots && template.screenshots.length > 0 && (
           <div className="aspect-video w-full overflow-hidden bg-muted">
             <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
@@ -40,6 +41,11 @@ export function TemplateCard({ template, showTimestamp }: TemplateCardProps) {
             {template.difficulty && (
               <Badge variant="outline" className={`text-xs ${template.difficulty === 'beginner' ? 'border-green-500 text-green-600' : template.difficulty === 'intermediate' ? 'border-yellow-500 text-yellow-600' : 'border-red-500 text-red-600'}`}>
                 {template.difficulty === 'beginner' ? '🟢' : template.difficulty === 'intermediate' ? '🟡' : '🔴'} {template.difficulty}
+              </Badge>
+            )}
+            {isFeatured && (
+              <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-xs gap-0.5">
+                <Star size={10} className="fill-amber-500 text-amber-500" /> Featured
               </Badge>
             )}
             {priceDisplay}

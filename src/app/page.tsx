@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { TemplateCard } from "@/components/template-card"
 import { SearchInput } from "@/components/search-input"
+import { FeaturedSection } from "@/components/featured-section"
 import { NewListingsSnippet } from "@/components/new-listings-snippet"
 import { createClient } from "@/lib/supabase/server"
 import { CATEGORIES } from "@/lib/constants"
@@ -101,6 +102,11 @@ export default async function HomePage() {
       </section>
 
       <div className="space-y-20 px-4 py-16">
+        {/* Featured Templates */}
+        <Suspense fallback={null}>
+          <FeaturedSection />
+        </Suspense>
+
         {/* Browse Templates */}
         {templates && templates.length > 0 && (
           <section className="mx-auto max-w-6xl">

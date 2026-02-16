@@ -164,3 +164,17 @@ export interface AffiliateStats {
   approved_cents: number
   paid_cents: number
 }
+
+
+export interface Promotion {
+  id: string
+  template_id: string
+  seller_id: string
+  promoted_at: string
+  amount_paid_cents: number
+  stripe_session_id: string | null
+  impressions: number
+  clicks: number
+  created_at: string
+  template?: Template & { seller?: { username: string; display_name: string | null; avatar_url?: string | null } }
+}

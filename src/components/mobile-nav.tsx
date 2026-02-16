@@ -34,6 +34,7 @@ export function MobileNav({ isLoggedIn, isSeller }: MobileNavProps) {
           <Link href="/" onClick={close} className="text-lg font-medium">Home</Link>
           <Link href="/templates" onClick={close} className="text-lg font-medium">Browse Templates</Link>
           <Link href="/templates/new" onClick={close} className="text-lg font-medium">New Listings</Link>
+          <Link href="/templates/featured" onClick={close} className="text-lg font-medium">⭐ Featured</Link>
           <Link href="/dashboard/seller" onClick={close} className="text-lg font-medium">Sell</Link>
           <Link href="/affiliate" onClick={close} className="text-lg font-medium">Affiliates</Link>
           {isLoggedIn ? (
