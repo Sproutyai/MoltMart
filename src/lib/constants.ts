@@ -25,7 +25,7 @@ export const AI_MODELS = ['Claude', 'GPT-4', 'GPT-4o', 'Gemini', 'Llama', 'Mistr
 export const LICENSES = ['MIT', 'Apache-2.0', 'GPL-3.0', 'Commercial', 'Custom'] as const
 
 export const SITE_NAME = 'Molt Mart'
-export const SITE_DESCRIPTION = 'The marketplace for OpenClaw AI agent templates'
+export const SITE_DESCRIPTION = 'The enhancement store for OpenClaw AI agents'
 export const MAX_UPLOAD_SIZE = 10 * 1024 * 1024 // 10MB
 export const MAX_SCREENSHOTS = 5
 export const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024 // 5MB per screenshot

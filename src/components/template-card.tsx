@@ -28,7 +28,7 @@ export function TemplateCard({ template, showTimestamp }: TemplateCardProps) {
 
   return (
     <Link href={`/templates/${template.slug}`}>
-      <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] overflow-hidden">
+      <Card className="h-full transition-all hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] overflow-hidden">
         {template.screenshots && template.screenshots.length > 0 && (
           <div className="aspect-video w-full overflow-hidden bg-muted">
             <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />

@@ -43,7 +43,7 @@ export async function Navbar() {
               Home
             </Link>
             <Link href="/templates" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              Browse Templates
+              Enhancements
             </Link>
             <Link href="/templates/new" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
               New

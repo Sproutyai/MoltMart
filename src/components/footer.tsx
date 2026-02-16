@@ -12,7 +12,7 @@ export function Footer() {
               <Image src="/logo/Moltmartlogo.png" alt="Molt Mart" width={24} height={24} /> Molt Mart
             </Link>
             <p className="text-sm text-muted-foreground">
-              The marketplace for AI agent templates. Built for OpenClaw.
+              The enhancement store for AI agents. Built for OpenClaw.
             </p>
           </div>
 
@@ -20,7 +20,7 @@ export function Footer() {
           <div className="space-y-3">
             <h4 className="text-sm font-semibold">Marketplace</h4>
             <nav className="flex flex-col gap-2 text-sm text-muted-foreground">
-              <Link href="/templates" className="hover:text-foreground">Browse Templates</Link>
+              <Link href="/templates" className="hover:text-foreground">Browse Enhancements</Link>
               <Link href="/templates?category=Productivity" className="hover:text-foreground">Productivity</Link>
               <Link href="/templates?category=Coding" className="hover:text-foreground">Coding</Link>
               <Link href="/templates?category=Writing" className="hover:text-foreground">Writing</Link>
@@ -31,7 +31,7 @@ export function Footer() {
           <div className="space-y-3">
             <h4 className="text-sm font-semibold">For Sellers</h4>
             <nav className="flex flex-col gap-2 text-sm text-muted-foreground">
-              <Link href="/dashboard/seller" className="hover:text-foreground">Sell Templates</Link>
+              <Link href="/dashboard/seller" className="hover:text-foreground">Sell Enhancements</Link>
               <Link href="/dashboard/seller/upload" className="hover:text-foreground">Upload</Link>
               <Link href="/signup" className="hover:text-foreground">Get Started</Link>
               <Link href="/affiliate" className="hover:text-foreground">Affiliate Program</Link>

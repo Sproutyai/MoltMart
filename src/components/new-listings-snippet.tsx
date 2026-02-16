@@ -21,7 +21,7 @@ export async function NewListingsSnippet() {
   return (
     <section className="mx-auto max-w-6xl">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold sm:text-3xl">🆕 Just Added</h2>
+        <h2 className="text-2xl font-bold sm:text-3xl">🆕 New Enhancements</h2>
         <Button variant="ghost" asChild>
           <Link href="/templates/new">View All →</Link>
         </Button>
