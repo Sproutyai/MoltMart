@@ -14,37 +14,18 @@ import {
   Download,
   Zap,
   Code,
-  Pen,
-  FlaskConical,
-  MessageSquare,
-  Bot,
-  Shield,
-  Smile,
-  Briefcase,
-  GraduationCap,
-  DollarSign,
-  BarChart3,
-  GitBranch,
-  Gamepad2,
-  MoreHorizontal,
+  Brain,
+  Palette,
+  Library,
 } from "lucide-react"
 import type { Template } from "@/lib/types"
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  Productivity: Briefcase,
-  Coding: Code,
-  Writing: Pen,
-  Research: FlaskConical,
-  Communication: MessageSquare,
-  Automation: Bot,
-  Security: Shield,
-  Personality: Smile,
-  Education: GraduationCap,
-  Finance: DollarSign,
-  "Data Science": BarChart3,
-  DevOps: GitBranch,
-  Entertainment: Gamepad2,
-  Other: MoreHorizontal,
+  Mindset: Brain,
+  Workflows: Zap,
+  Technical: Code,
+  Creative: Palette,
+  Knowledge: Library,
 }
 
 export default async function HomePage() {
@@ -133,8 +114,8 @@ export default async function HomePage() {
         <section className="mx-auto max-w-4xl">
           <h2 className="mb-8 text-center text-2xl font-bold sm:text-3xl">Enhancement Categories</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {CATEGORIES.slice(0, 8).map((cat) => {
-              const Icon = CATEGORY_ICONS[cat] ?? Briefcase
+            {CATEGORIES.map((cat) => {
+              const Icon = CATEGORY_ICONS[cat] ?? Zap
               return (
                 <Link key={cat} href={`/templates?category=${encodeURIComponent(cat)}`}>
                   <Card className="group cursor-pointer border transition-colors hover:border-primary hover:bg-primary/5">

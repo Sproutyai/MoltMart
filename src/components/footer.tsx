@@ -21,9 +21,9 @@ export function Footer() {
             <h4 className="text-sm font-semibold">Marketplace</h4>
             <nav className="flex flex-col gap-2 text-sm text-muted-foreground">
               <Link href="/templates" className="hover:text-foreground">Browse Enhancements</Link>
-              <Link href="/templates?category=Productivity" className="hover:text-foreground">Productivity</Link>
-              <Link href="/templates?category=Coding" className="hover:text-foreground">Coding</Link>
-              <Link href="/templates?category=Writing" className="hover:text-foreground">Writing</Link>
+              <Link href="/templates?category=Mindset" className="hover:text-foreground">Mindset</Link>
+              <Link href="/templates?category=Workflows" className="hover:text-foreground">Workflows</Link>
+              <Link href="/templates?category=Technical" className="hover:text-foreground">Technical</Link>
             </nav>
           </div>
 

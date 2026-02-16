@@ -1,18 +1,9 @@
 export const CATEGORIES = [
-  'Productivity',
-  'Coding',
-  'Writing',
-  'Research',
-  'Communication',
-  'Automation',
-  'Security',
-  'Personality',
-  'Education',
-  'Finance',
-  'Data Science',
-  'DevOps',
-  'Entertainment',
-  'Other',
+  'Mindset',
+  'Workflows',
+  'Technical',
+  'Creative',
+  'Knowledge',
 ] as const
 
 export type Category = (typeof CATEGORIES)[number]
