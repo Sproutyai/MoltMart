@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid zip file" }, { status: 400 })
   }
 
-  const filePath = `templates/${user.id}/${slug}.zip`
+  const filePath = `${user.id}/${slug}.zip`
   const { error: uploadError } = await supabase.storage
     .from("templates")
     .upload(filePath, buffer, { contentType: "application/zip", upsert: true })
