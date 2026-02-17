@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { TemplateCard } from "@/components/template-card"
+import { InfiniteCarousel } from "@/components/infinite-carousel"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import type { Template } from "@/lib/types"
@@ -14,23 +15,25 @@ export async function NewListingsSnippet() {
     .eq("status", "published")
     .gte("created_at", weekAgo)
     .order("created_at", { ascending: false })
-    .limit(4)
+    .limit(10)
 
   if (!templates || templates.length === 0) return null
 
+  const typed = templates as (Template & { seller: { username: string; display_name: string | null } })[]
+
   return (
-    <section className="mx-auto max-w-6xl">
-      <div className="mb-6 flex items-center justify-between">
+    <section className="mx-auto max-w-full overflow-hidden">
+      <div className="mb-6 mx-auto max-w-6xl flex items-center justify-between px-4">
         <h2 className="text-2xl font-bold sm:text-3xl">🆕 New Enhancements</h2>
         <Button variant="ghost" asChild>
           <Link href="/templates/new">View All →</Link>
         </Button>
       </div>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {(templates as (Template & { seller: { username: string; display_name: string | null } })[]).map((t) => (
+      <InfiniteCarousel direction="left" speed={35}>
+        {typed.map((t) => (
           <TemplateCard key={t.id} template={t} showTimestamp />
         ))}
-      </div>
+      </InfiniteCarousel>
     </section>
   )
 }

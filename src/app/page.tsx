@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { TemplateCard } from "@/components/template-card"
+import { InfiniteCarousel } from "@/components/infinite-carousel"
 import { FeaturedSection } from "@/components/featured-section"
 import { NewListingsSnippet } from "@/components/new-listings-snippet"
 import { createClient } from "@/lib/supabase/server"
@@ -44,7 +45,7 @@ export default async function HomePage() {
     .select("*, seller:profiles!seller_id(username, display_name, avatar_url)")
     .eq("status", "published")
     .order("download_count", { ascending: false })
-    .limit(6)
+    .limit(10)
 
   return (
     <div className="-mx-4 -my-6">
@@ -97,31 +98,39 @@ export default async function HomePage() {
           <FeaturedSection />
         </Suspense>
 
-        {/* Browse Templates */}
-        {templates && templates.length > 0 && (
-          <section className="mx-auto max-w-6xl">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold sm:text-3xl">Popular Enhancements</h2>
-              <Button variant="ghost" asChild>
-                <Link href="/templates">View All →</Link>
-              </Button>
-            </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {(templates as (Template & { seller: { username: string; display_name: string | null } })[]).map((t) => (
-                <TemplateCard key={t.id} template={t} />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Conveyor belt pair — tighter spacing */}
+        <div className="space-y-8">
+          {/* Popular Enhancements — carousel L→R */}
+          {templates && templates.length > 0 && (
+            <section className="mx-auto max-w-full overflow-hidden">
+              <div className="mb-6 mx-auto max-w-6xl flex items-center justify-between px-4">
+                <h2 className="text-2xl font-bold sm:text-3xl">Popular Enhancements</h2>
+                <Button variant="ghost" asChild>
+                  <Link href="/templates">View All →</Link>
+                </Button>
+              </div>
+              <InfiniteCarousel direction="right" speed={35}>
+                {(templates as (Template & { seller: { username: string; display_name: string | null } })[]).map((t) => (
+                  <TemplateCard key={t.id} template={t} />
+                ))}
+              </InfiniteCarousel>
+            </section>
+          )}
+
+          {/* New Enhancements — carousel R→L */}
+          <Suspense fallback={null}>
+            <NewListingsSnippet />
+          </Suspense>
+        </div>
 
         {/* Categories */}
         <section className="mx-auto max-w-4xl">
           <h2 className="mb-8 text-center text-2xl font-bold sm:text-3xl">Enhancement Categories</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="flex gap-4 overflow-x-auto pb-2 sm:overflow-visible sm:grid sm:grid-cols-5">
             {CATEGORIES.map((cat) => {
               const Icon = CATEGORY_ICONS[cat] ?? Zap
               return (
-                <Link key={cat} href={`/templates?category=${encodeURIComponent(cat)}`}>
+                <Link key={cat} href={`/templates?category=${encodeURIComponent(cat)}`} className="min-w-[140px] flex-shrink-0 sm:min-w-0">
                   <Card className="group cursor-pointer border transition-colors hover:border-primary hover:bg-primary/5">
                     <CardContent className="flex flex-col items-center gap-2 py-4">
                       <Icon className="h-8 w-8 text-muted-foreground transition-colors group-hover:text-primary" />
@@ -133,11 +142,6 @@ export default async function HomePage() {
             })}
           </div>
         </section>
-
-        {/* New Listings */}
-        <Suspense fallback={null}>
-          <NewListingsSnippet />
-        </Suspense>
 
         {/* How it works */}
         <section className="mx-auto max-w-4xl">

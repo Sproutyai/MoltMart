@@ -47,26 +47,34 @@ export async function POST(
     .from("templates")
     .download(template.file_path)
 
-  if (storageError || !fileData) {
-    return NextResponse.json({ error: "Could not download template file" }, { status: 500 })
-  }
-
   const seller = template.seller as unknown as { username: string }
-  const fileList = (template.preview_data as { file_list?: string[] })?.file_list || []
+  const previewData = template.preview_data as Record<string, unknown> | null
+  const fileList = (previewData as { file_list?: string[] })?.file_list || []
   const templateName = template.title
   const templateSlug = template.slug
   const sourceUrl = `https://molt-mart.vercel.app/templates/${templateSlug}`
 
-  // Build enhanced zip
-  const originalZip = await JSZip.loadAsync(await fileData.arrayBuffer())
   const newZip = new JSZip()
 
-  // Copy all original files into a folder
-  for (const [path, zipEntry] of Object.entries(originalZip.files)) {
-    if (!zipEntry.dir) {
-      const content = await zipEntry.async("uint8array")
-      newZip.file(path, content)
+  if (!storageError && fileData) {
+    // Build from storage zip
+    const originalZip = await JSZip.loadAsync(await fileData.arrayBuffer())
+    for (const [path, zipEntry] of Object.entries(originalZip.files)) {
+      if (!zipEntry.dir) {
+        const content = await zipEntry.async("uint8array")
+        newZip.file(path, content)
+      }
     }
+  } else if (previewData) {
+    // Fallback: build zip from preview_data (file contents stored as key-value pairs)
+    for (const [filename, content] of Object.entries(previewData)) {
+      if (filename === "file_list") continue
+      if (typeof content === "string") {
+        newZip.file(filename, content)
+      }
+    }
+  } else {
+    return NextResponse.json({ error: "Could not download template file" }, { status: 500 })
   }
 
   // Add molt-mart.json manifest
