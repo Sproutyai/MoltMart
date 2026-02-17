@@ -45,7 +45,7 @@ export async function FeaturedSection() {
       </div>
       <InfiniteCarousel direction="left" speed={35}>
         {sorted.map((t) => (
-          <TemplateCard key={t.id} template={t as Template & { seller: { username: string; display_name: string | null } }} isFeatured />
+          <TemplateCard key={t.id} template={t as Template & { seller: { username: string; display_name: string | null } }} isFeatured borderColor="amber" />
         ))}
       </InfiniteCarousel>
     </section>
