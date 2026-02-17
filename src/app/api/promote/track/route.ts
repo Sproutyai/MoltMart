@@ -11,6 +11,9 @@ export async function POST(req: NextRequest) {
 
     const field = type === 'impression' ? 'impressions' : 'clicks'
     const supabase = createAdminClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Admin client unavailable' }, { status: 503 })
+    }
 
     await supabase.rpc('increment_promotion_stat', {
       p_template_id: templateId,

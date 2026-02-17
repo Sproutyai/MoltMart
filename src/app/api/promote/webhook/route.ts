@@ -29,6 +29,9 @@ export async function POST(req: NextRequest) {
 
       if (templateId && sellerId) {
         const supabase = createAdminClient()
+        if (!supabase) {
+          return NextResponse.json({ error: 'Admin client unavailable' }, { status: 503 })
+        }
 
         await supabase
           .from('promotions')
