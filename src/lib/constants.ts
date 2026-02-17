@@ -1,4 +1,5 @@
 export const CATEGORIES = [
+  'Basic Skills',
   'Mindset',
   'Workflows',
   'Technical',

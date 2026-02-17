@@ -17,10 +17,12 @@ import {
   Brain,
   Palette,
   Library,
+  GraduationCap,
 } from "lucide-react"
 import type { Template } from "@/lib/types"
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  "Basic Skills": GraduationCap,
   Mindset: Brain,
   Workflows: Zap,
   Technical: Code,
@@ -131,7 +133,7 @@ export default async function HomePage() {
         {/* Categories */}
         <section className="mx-auto max-w-4xl">
           <h2 className="mb-8 text-center text-2xl font-bold sm:text-3xl">Enhancement Categories</h2>
-          <div className="flex gap-4 overflow-x-auto pb-2 sm:overflow-visible sm:grid sm:grid-cols-5">
+          <div className="flex gap-4 overflow-x-auto pb-2 sm:overflow-visible sm:grid sm:grid-cols-3 lg:grid-cols-6">
             {CATEGORIES.map((cat) => {
               const Icon = CATEGORY_ICONS[cat] ?? Zap
               return (
