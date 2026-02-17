@@ -50,7 +50,7 @@ export default async function HomePage() {
   return (
     <div className="-mx-4 -my-6">
       {/* Hero */}
-      <section className="hero-gradient px-4 py-24 sm:py-32">
+      <section className="hero-gradient px-4 pt-24 pb-[84px] sm:pt-32 sm:pb-[104px]">
         <div className="mx-auto max-w-4xl text-center">
           <div className="mb-6 flex justify-center">
             <div className="animate-float logo-glow">
@@ -92,7 +92,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="space-y-20 px-4 py-16">
+      <div className="space-y-20 px-4 pt-0 pb-16">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
+          Browse OpenClaw Upgrades
+        </h2>
+
         {/* Featured Templates */}
         <Suspense fallback={null}>
           <FeaturedSection />
