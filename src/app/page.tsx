@@ -93,7 +93,7 @@ export default async function HomePage() {
       </section>
 
       <div className="space-y-20 px-4 pt-0 pb-16">
-        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl mb-[-10px] mt-[-10px]">
           Browse OpenClaw Upgrades
         </h2>
 
