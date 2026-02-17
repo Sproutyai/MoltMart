@@ -1,10 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { usePathname } from "next/navigation"
-import { Menu, Search } from "lucide-react"
+import { Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,6 +12,7 @@ import {
   SheetTrigger,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { SearchPopup } from "@/components/search-popup"
 
 interface MobileNavProps {
   isLoggedIn: boolean
@@ -21,20 +21,9 @@ interface MobileNavProps {
 
 export function MobileNav({ isLoggedIn, isSeller }: MobileNavProps) {
   const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState("")
-  const router = useRouter()
   const pathname = usePathname()
   const close = () => setOpen(false)
   const linkClass = (match: boolean) => cn("text-lg font-medium", match && "text-foreground font-semibold")
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    if (query.trim()) {
-      router.push(`/templates?q=${encodeURIComponent(query.trim())}`)
-      setQuery("")
-      close()
-    }
-  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -47,17 +36,8 @@ export function MobileNav({ isLoggedIn, isSeller }: MobileNavProps) {
       <SheetContent side="top" className="pt-12">
         <SheetTitle className="sr-only">Navigation</SheetTitle>
         <nav className="flex flex-col gap-4">
-          {/* Mobile Search */}
-          <form onSubmit={handleSearch} className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search enhancements..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="h-10 w-full rounded-lg border border-input bg-muted/50 pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </form>
+          {/* Mobile Search — opens search popup */}
+          <SearchPopup mobile />
 
           <Link href="/" onClick={close} className={linkClass(pathname === "/")}>Home</Link>
           <Link href="/templates" onClick={close} className={linkClass(pathname === "/templates")}>Browse Enhancements</Link>
