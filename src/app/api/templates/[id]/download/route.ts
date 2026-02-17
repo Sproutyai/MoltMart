@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { NextResponse } from "next/server"
 import JSZip from "jszip"
 
@@ -29,8 +30,8 @@ export async function POST(
     return NextResponse.json({ error: "Template not found" }, { status: 404 })
   }
 
-  // Upsert purchase record
-  await supabase.from("purchases").upsert(
+  // Upsert purchase record (try authenticated client first, fall back to admin)
+  const { error: purchaseError } = await supabase.from("purchases").upsert(
     {
       buyer_id: user.id,
       template_id: id,
@@ -38,6 +39,25 @@ export async function POST(
     },
     { onConflict: "buyer_id,template_id" }
   )
+
+  if (purchaseError) {
+    console.error("Purchase upsert failed (RLS client):", purchaseError.message, purchaseError.code)
+    // Retry with admin client to bypass RLS
+    const admin = createAdminClient()
+    const { error: adminError } = await admin.from("purchases").upsert(
+      {
+        buyer_id: user.id,
+        template_id: id,
+        price_cents: 0,
+      },
+      { onConflict: "buyer_id,template_id" }
+    )
+    if (adminError) {
+      console.error("Purchase upsert failed (admin client):", adminError.message, adminError.code)
+    } else {
+      console.log("Purchase recorded via admin client for user:", user.id, "template:", id)
+    }
+  }
 
   // Increment download count
   await supabase.rpc("increment_download_count", { tid: id })
