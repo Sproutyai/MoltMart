@@ -33,9 +33,9 @@ export function TemplateCard({ template, showTimestamp, isFeatured, borderColor 
     )
 
   const ringClass =
-    borderColor === "green" ? "ring-1 ring-emerald-400 dark:ring-emerald-600"
-    : borderColor === "red" ? "ring-1 ring-rose-400 dark:ring-rose-600"
-    : (borderColor === "amber" || isFeatured) ? "ring-1 ring-amber-300 dark:ring-amber-500"
+    borderColor === "green" ? "border-2 border-emerald-400 dark:border-emerald-500"
+    : borderColor === "red" ? "border-2 border-rose-400 dark:border-rose-500"
+    : (borderColor === "amber" || isFeatured) ? "border-2 border-amber-400 dark:border-amber-500"
     : ""
 
   const templateUrl = `/templates/${template.slug}`
