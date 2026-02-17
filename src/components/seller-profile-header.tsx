@@ -3,6 +3,9 @@ import { SellerSocialLinks } from "@/components/seller-social-links"
 import { SellerTrustSection } from "@/components/seller-trust-section"
 import { SellerStatsBar } from "@/components/seller-stats-bar"
 import { FollowButton } from "@/components/follow-button"
+import { ActivityIndicator } from "@/components/activity-indicator"
+import { ShareProfileButton } from "@/components/share-profile-button"
+import { ContactSellerButton } from "@/components/contact-seller-button"
 import { CheckCircle } from "lucide-react"
 import type { Profile, SellerStats } from "@/lib/types"
 
@@ -19,14 +22,14 @@ export function SellerProfileHeader({ profile, stats, isOwnProfile, isFollowing 
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="relative h-40 w-full overflow-hidden rounded-lg bg-gradient-to-r from-primary/20 to-primary/5">
+      <div className="relative h-32 sm:h-40 w-full overflow-hidden rounded-lg bg-gradient-to-r from-primary/20 to-primary/5">
         {profile.banner_url && (
           <img src={profile.banner_url} alt="" className="h-full w-full object-cover" />
         )}
       </div>
 
       {/* Avatar + info */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6 -mt-12 px-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6 -mt-12 px-4 sm:px-6">
         <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border-4 border-background bg-muted">
           {profile.avatar_url ? (
             <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -47,11 +50,22 @@ export function SellerProfileHeader({ profile, stats, isOwnProfile, isFollowing 
           <p className="text-sm text-muted-foreground">
             @{profile.username} · Member since {memberSince}
           </p>
+          <ActivityIndicator lastActiveAt={profile.last_active_at ?? null} createdAt={profile.created_at} />
         </div>
 
-        {!isOwnProfile && (
-          <FollowButton sellerId={profile.id} initialFollowing={isFollowing} />
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {!isOwnProfile && (
+            <>
+              <FollowButton sellerId={profile.id} initialFollowing={isFollowing} />
+              <ContactSellerButton
+                twitterUsername={profile.twitter_username}
+                githubUsername={profile.github_username}
+                website={profile.website}
+              />
+            </>
+          )}
+          <ShareProfileButton username={profile.username} displayName={profile.display_name || profile.username} />
+        </div>
       </div>
 
       {/* Bio */}

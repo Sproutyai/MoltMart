@@ -28,7 +28,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { href: "/dashboard/seller/upload", label: "Upload Enhancement", icon: Upload },
     { href: "/dashboard/seller/promote", label: "Promote", icon: Megaphone },
     { href: "/dashboard/transactions", label: "Transactions", icon: Receipt },
-    ...(profile?.username ? [{ href: `/sellers/${profile.username}`, label: "Public Profile", icon: ExternalLink }] : []),
+    ...(profile?.username ? [{ href: `/sellers/${profile.username}`, label: "Seller Profile", icon: ExternalLink }] : []),
   ]
 
   const affiliateLinks = [

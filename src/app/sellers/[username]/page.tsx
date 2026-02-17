@@ -5,6 +5,7 @@ import { FeaturedTemplates } from "@/components/featured-templates"
 import { TemplateCard } from "@/components/template-card"
 import { Pagination } from "@/components/pagination"
 import { SortSelect } from "@/components/sort-select"
+import type { Metadata } from "next"
 import type { Profile, SellerStats, Template } from "@/lib/types"
 
 const PAGE_SIZE = 12
@@ -13,6 +14,40 @@ const SORT_MAP: Record<string, { column: string; ascending: boolean }> = {
   newest: { column: "created_at", ascending: false },
   popular: { column: "download_count", ascending: false },
   "top-rated": { column: "avg_rating", ascending: false },
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
+  const { username } = await params
+  const supabase = await createClient()
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, username, bio, avatar_url, banner_url")
+    .eq("username", username)
+    .eq("is_seller", true)
+    .single()
+
+  if (!profile) return { title: "Seller Not Found" }
+
+  const name = profile.display_name || profile.username
+  const description = profile.bio || `Check out ${name}'s templates on Molt Mart`
+  const ogImage = profile.banner_url || profile.avatar_url || undefined
+
+  return {
+    title: `${name} — Seller Profile | Molt Mart`,
+    description,
+    openGraph: {
+      title: `${name} on Molt Mart`,
+      description,
+      type: "profile",
+      ...(ogImage && { images: [{ url: ogImage }] }),
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title: `${name} on Molt Mart`,
+      description,
+      ...(ogImage && { images: [ogImage] }),
+    },
+  }
 }
 
 export default async function SellerProfilePage({
@@ -117,7 +152,7 @@ export default async function SellerProfilePage({
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">All Templates</h2>
+          <h2 className="text-xl font-semibold">All Templates ({totalCount})</h2>
           <SortSelect />
         </div>
 
@@ -127,8 +162,19 @@ export default async function SellerProfilePage({
               <TemplateCard key={t.id} template={t} />
             ))}
           </div>
+        ) : isOwnProfile ? (
+          <div className="py-12 text-center space-y-3">
+            <p className="text-lg font-medium">Your shop is empty!</p>
+            <p className="text-sm text-muted-foreground">Publish your first template to start selling.</p>
+            <a href="/dashboard/templates/new" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
+              Publish your first template →
+            </a>
+          </div>
         ) : (
-          <p className="py-8 text-center text-muted-foreground">No templates published yet.</p>
+          <div className="py-12 text-center space-y-3">
+            <p className="text-lg font-medium">🚀 {p.display_name || p.username} is setting up shop</p>
+            <p className="text-sm text-muted-foreground">Follow to get notified when they publish their first template!</p>
+          </div>
         )}
 
         <Pagination totalCount={totalCount} pageSize={PAGE_SIZE} currentPage={currentPage} />

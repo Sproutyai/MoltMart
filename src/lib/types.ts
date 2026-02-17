@@ -23,6 +23,7 @@ export interface Profile {
   is_verified?: boolean
   follower_count?: number
   created_at: string
+  last_active_at?: string | null
 }
 
 export interface SellerStats {

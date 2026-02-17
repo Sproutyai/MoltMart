@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 import { ConnectedAccounts } from "@/components/connected-accounts"
+import { ImageUpload } from "@/components/image-upload"
 import type { Profile } from "@/lib/types"
 
 export default function ProfilePage() {
@@ -91,54 +92,109 @@ export default function ProfilePage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Edit Profile</h1>
+        <h1 className="text-2xl font-bold">Edit Seller Profile</h1>
         {profile.is_seller && (
           <Link href={`/sellers/${profile.username}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
-            View public profile <ExternalLink size={14} />
+            View seller profile <ExternalLink size={14} />
           </Link>
         )}
       </div>
-      <Card className="max-w-2xl">
-        <CardHeader><CardTitle>Your Profile</CardTitle></CardHeader>
-        <CardContent>
-          <form onSubmit={handleSave} className="space-y-4">
-            <div>
-              <Label htmlFor="displayName">Display Name</Label>
-              <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-            </div>
-            <div>
-              <Label htmlFor="username">Username</Label>
-              <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
-            </div>
-            <div>
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />
-            </div>
-            <div>
-              <Label htmlFor="avatarUrl">Avatar URL</Label>
-              <Input id="avatarUrl" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="https://..." />
-            </div>
-            <div>
-              <Label htmlFor="bannerUrl">Banner URL</Label>
-              <Input id="bannerUrl" value={bannerUrl} onChange={(e) => setBannerUrl(e.target.value)} placeholder="https://..." />
-            </div>
-            <div>
-              <Label htmlFor="website">Website</Label>
-              <Input id="website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://yoursite.com" />
-            </div>
-            <div>
-              <Label htmlFor="specialties">Specialties (comma-separated)</Label>
-              <Input id="specialties" value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="Mindset, Workflows, Technical" />
-            </div>
-            <Button type="submit" disabled={saving}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Profile
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
 
-      <ConnectedAccounts />
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Edit form */}
+        <div className="lg:col-span-3 space-y-6">
+          <Card>
+            <CardHeader><CardTitle>Seller Profile</CardTitle></CardHeader>
+            <CardContent>
+              <form onSubmit={handleSave} className="space-y-4">
+                <div>
+                  <Label>Avatar</Label>
+                  <ImageUpload
+                    bucket="profile-images"
+                    path={`${profile.id}/avatar`}
+                    currentUrl={avatarUrl || null}
+                    onUploaded={(url) => setAvatarUrl(url)}
+                    aspectRatio="square"
+                  />
+                </div>
+                <div>
+                  <Label>Banner</Label>
+                  <ImageUpload
+                    bucket="profile-images"
+                    path={`${profile.id}/banner`}
+                    currentUrl={bannerUrl || null}
+                    onUploaded={(url) => setBannerUrl(url)}
+                    aspectRatio="banner"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="displayName">Display Name</Label>
+                  <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="username">Username</Label>
+                  <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />
+                </div>
+                <div>
+                  <Label htmlFor="website">Website</Label>
+                  <Input id="website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://yoursite.com" />
+                </div>
+                <div>
+                  <Label htmlFor="specialties">Specialties (comma-separated)</Label>
+                  <Input id="specialties" value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="Mindset, Workflows, Technical" />
+                </div>
+                <Button type="submit" disabled={saving}>
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save Profile
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <ConnectedAccounts />
+        </div>
+
+        {/* Live preview */}
+        <div className="lg:col-span-2">
+          <Card className="sticky top-6">
+            <CardHeader><CardTitle>Preview</CardTitle></CardHeader>
+            <CardContent className="p-0 overflow-hidden">
+              <div className="relative h-24 w-full overflow-hidden bg-gradient-to-r from-primary/20 to-primary/5">
+                {bannerUrl && <img src={bannerUrl} alt="" className="h-full w-full object-cover" />}
+              </div>
+              <div className="px-4 pb-4">
+                <div className="flex items-center gap-3 -mt-6">
+                  <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border-2 border-background bg-muted">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-sm font-bold text-muted-foreground">
+                        {(displayName || username)?.[0]?.toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-6">
+                    <p className="font-semibold text-sm">{displayName || username || "Your Name"}</p>
+                    <p className="text-xs text-muted-foreground">@{username || "username"}</p>
+                  </div>
+                </div>
+                {bio && <p className="text-xs text-muted-foreground mt-2">{bio}</p>}
+                {specialties && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {specialties.split(",").map(s => s.trim()).filter(Boolean).map(s => (
+                      <span key={s} className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded">{s}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
