@@ -39,13 +39,12 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
   }
 
   return (
-    <Card className={`h-full transition-all hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] overflow-hidden ${isFeatured ? 'ring-1 ring-amber-300 dark:ring-amber-700' : ''}`}>
+    <Link href={templateUrl} onClick={handleBeacon} className="block h-full">
+    <Card className={`h-full transition-all hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] overflow-hidden cursor-pointer ${isFeatured ? 'ring-1 ring-amber-300 dark:ring-amber-700' : ''}`}>
       {template.screenshots && template.screenshots.length > 0 && (
-        <Link href={templateUrl} onClick={handleBeacon}>
-          <div className="aspect-video w-full overflow-hidden bg-muted">
-            <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
-          </div>
-        </Link>
+        <div className="aspect-video w-full overflow-hidden bg-muted">
+          <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
+        </div>
       )}
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
@@ -63,22 +62,24 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
           {priceDisplay}
         </div>
         <div className="mt-2 flex items-center justify-between gap-1">
-          <Link href={templateUrl} onClick={handleBeacon} className="block min-w-0">
+          <div className="block min-w-0">
             <h3 className="font-semibold leading-tight line-clamp-1 hover:underline">{template.title}</h3>
-          </Link>
-          <BookmarkButton templateId={template.id} size={16} />
+          </div>
+          <span onClick={(e) => e.preventDefault()}><BookmarkButton templateId={template.id} size={16} /></span>
         </div>
       </CardHeader>
       <CardContent className="pb-2">
         <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
         {template.seller && (
           <div className="mt-2 flex items-center">
+            <span onClick={(e) => e.stopPropagation()}>
             <SellerLink
               username={template.seller.username}
               displayName={template.seller.display_name}
               avatarUrl={template.seller.avatar_url}
               showAvatar
             />
+            </span>
             {template.seller.is_verified && (
               <TrustBadge githubVerified={template.seller.github_verified} twitterVerified={template.seller.twitter_verified} variant="inline" />
             )}
@@ -109,5 +110,6 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
         </div>
       </CardFooter>
     </Card>
+    </Link>
   )
 }

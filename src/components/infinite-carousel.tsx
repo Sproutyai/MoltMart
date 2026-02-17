@@ -23,6 +23,8 @@ export function InfiniteCarousel({ children, direction = "left", speed = 30 }: I
         }}
         onMouseEnter={(e) => { e.currentTarget.style.animationPlayState = "paused" }}
         onMouseLeave={(e) => { e.currentTarget.style.animationPlayState = "running" }}
+        onTouchStart={(e) => { e.currentTarget.style.animationPlayState = "paused" }}
+        onTouchEnd={(e) => { setTimeout(() => { e.currentTarget.style.animationPlayState = "running" }, 3000) }}
       >
         {children.map((child, i) => (
           <div key={`a-${i}`} className="w-[300px] flex-shrink-0 sm:w-[340px]">
