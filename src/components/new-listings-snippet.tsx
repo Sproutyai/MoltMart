@@ -24,14 +24,14 @@ export async function NewListingsSnippet() {
   return (
     <section className="mx-auto max-w-full overflow-hidden">
       <div className="mb-6 mx-auto max-w-6xl flex items-center justify-between px-4">
-        <h2 className="text-2xl font-bold sm:text-3xl">🆕 New Enhancements</h2>
+        <h2 className="text-2xl font-bold sm:text-3xl">🆕 New</h2>
         <Button variant="ghost" asChild>
           <Link href="/templates/new">View All →</Link>
         </Button>
       </div>
       <InfiniteCarousel direction="left" speed={35}>
         {typed.map((t) => (
-          <TemplateCard key={t.id} template={t} showTimestamp />
+          <TemplateCard key={t.id} template={t} showTimestamp borderColor="red" />
         ))}
       </InfiniteCarousel>
     </section>

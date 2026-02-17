@@ -15,9 +15,10 @@ interface TemplateCardProps {
   template: Template & { seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } }
   showTimestamp?: boolean
   isFeatured?: boolean
+  borderColor?: "amber" | "green" | "red"
 }
 
-export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCardProps) {
+export function TemplateCard({ template, showTimestamp, isFeatured, borderColor }: TemplateCardProps) {
   const router = useRouter()
   const isNew = Date.now() - new Date(template.created_at).getTime() < 48 * 60 * 60 * 1000
   const priceDisplay =
@@ -31,6 +32,12 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
       </span>
     )
 
+  const ringClass =
+    borderColor === "green" ? "ring-1 ring-emerald-400 dark:ring-emerald-600"
+    : borderColor === "red" ? "ring-1 ring-rose-400 dark:ring-rose-600"
+    : (borderColor === "amber" || isFeatured) ? "ring-1 ring-amber-300 dark:ring-amber-700"
+    : ""
+
   const templateUrl = `/templates/${template.slug}`
 
   function handleBeacon() {
@@ -41,7 +48,7 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
 
   return (
     <div onClick={() => { handleBeacon(); router.push(templateUrl) }} className="block h-full cursor-pointer">
-    <Card className={`h-full transition-all hover:shadow-[0_0_20px_rgba(234,179,8,0.15)] dark:hover:shadow-[0_0_25px_rgba(239,68,68,0.18)] hover:scale-[1.02] overflow-hidden cursor-pointer ${isFeatured ? 'ring-1 ring-amber-300 dark:ring-amber-700' : ''}`}>
+    <Card className={`h-full transition-all hover:shadow-[0_0_20px_rgba(234,179,8,0.15)] dark:hover:shadow-[0_0_25px_rgba(239,68,68,0.18)] hover:scale-[1.02] overflow-hidden cursor-pointer ${ringClass}`}>
       {template.screenshots && template.screenshots.length > 0 && (
         <div className="aspect-video w-full overflow-hidden bg-muted">
           <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />

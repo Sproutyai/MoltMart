@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { TemplateCard } from "@/components/template-card"
+import { InfiniteCarousel } from "@/components/infinite-carousel"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import type { Template } from "@/lib/types"
@@ -11,7 +12,7 @@ export async function FeaturedSection() {
     .from("promotions")
     .select("template_id, promoted_at")
     .order("promoted_at", { ascending: false })
-    .limit(6)
+    .limit(10)
 
   if (!promotions || promotions.length === 0) return null
 
@@ -35,18 +36,18 @@ export async function FeaturedSection() {
   }
 
   return (
-    <section className="mx-auto max-w-6xl">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold sm:text-3xl">⭐ Featured Enhancements</h2>
+    <section className="mx-auto max-w-full overflow-hidden">
+      <div className="mb-6 mx-auto max-w-6xl flex items-center justify-between px-4">
+        <h2 className="text-2xl font-bold sm:text-3xl">⭐ Featured</h2>
         <Button variant="ghost" asChild>
           <Link href="/templates/featured">View All →</Link>
         </Button>
       </div>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <InfiniteCarousel direction="left" speed={35}>
         {sorted.map((t) => (
           <TemplateCard key={t.id} template={t as Template & { seller: { username: string; display_name: string | null } }} isFeatured />
         ))}
-      </div>
+      </InfiniteCarousel>
     </section>
   )
 }
