@@ -48,7 +48,7 @@ export function TemplateCard({ template, showTimestamp, isFeatured, borderColor 
 
   return (
     <div onClick={() => { handleBeacon(); router.push(templateUrl) }} className="block h-full cursor-pointer">
-    <Card className={`h-full transition-all hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] hover:scale-[1.02] overflow-hidden cursor-pointer ${ringClass}`}>
+    <Card className={`h-full transition-all hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] hover:scale-[1.02] cursor-pointer ${ringClass}`}>
       {template.screenshots && template.screenshots.length > 0 && (
         <div className="aspect-video w-full overflow-hidden bg-muted">
           <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />

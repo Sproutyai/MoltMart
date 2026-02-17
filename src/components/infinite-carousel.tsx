@@ -14,7 +14,7 @@ export function InfiniteCarousel({ children, direction = "left", speed = 30 }: I
   const animationName = direction === "left" ? "scroll-left" : "scroll-right"
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden py-2 -my-2 px-1 -mx-1">
       <div
         className="flex gap-5"
         style={{
