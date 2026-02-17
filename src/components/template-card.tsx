@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { StarRating } from "@/components/star-rating"
 import { SellerLink } from "@/components/seller-link"
-import { Download, Sparkles, Star } from "lucide-react"
+import { Download, Sparkles } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { TrustBadge } from "@/components/trust-badge"
 import { BookmarkButton } from "@/components/bookmark-button"
@@ -48,32 +48,30 @@ export function TemplateCard({ template, showTimestamp, isFeatured, borderColor 
 
   return (
     <div onClick={() => { handleBeacon(); router.push(templateUrl) }} className="block h-full cursor-pointer">
-    <Card className={`h-full transition-all hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] hover:scale-[1.02] cursor-pointer ${ringClass}`}>
+    <Card className={`h-full transition-all hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] hover:scale-[1.02] cursor-pointer overflow-hidden ${ringClass}`}>
+      {isFeatured && (
+        <div className="h-1 w-full bg-amber-400 dark:bg-amber-500" />
+      )}
       {template.screenshots && template.screenshots.length > 0 && (
         <div className="aspect-video w-full overflow-hidden bg-muted">
           <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
         </div>
       )}
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className="text-xs">{template.category}</Badge>
           {template.difficulty && (
             <Badge variant="outline" className={`text-xs ${template.difficulty === 'beginner' ? 'border-green-500 text-green-600' : template.difficulty === 'intermediate' ? 'border-yellow-500 text-yellow-600' : 'border-red-500 text-red-600'}`}>
               {template.difficulty === 'beginner' ? '🟢' : template.difficulty === 'intermediate' ? '🟡' : '🔴'} {template.difficulty}
             </Badge>
           )}
-          {isFeatured && (
-            <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-xs gap-0.5">
-              <Star size={10} className="fill-amber-500 text-amber-500" /> Featured
-            </Badge>
-          )}
-          {priceDisplay}
         </div>
-        <div className="mt-2 flex items-center justify-between gap-1">
-          <div className="block min-w-0">
-            <h3 className="font-semibold leading-tight line-clamp-1 hover:underline">{template.title}</h3>
+        <div className="mt-2 flex items-start justify-between gap-2">
+          <h3 className="font-semibold leading-tight line-clamp-1 min-w-0 hover:underline">{template.title}</h3>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {priceDisplay}
+            <BookmarkButton templateId={template.id} size={16} />
           </div>
-          <BookmarkButton templateId={template.id} size={16} />
         </div>
       </CardHeader>
       <CardContent className="pb-2">
