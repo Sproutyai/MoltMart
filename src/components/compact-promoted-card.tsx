@@ -30,7 +30,7 @@ export function CompactPromotedCard({ template, onClick }: CompactPromotedCardPr
   return (
     <button
       onClick={handleClick}
-      className="rounded-lg border bg-card p-2 hover:bg-accent/50 transition-colors cursor-pointer text-left w-full"
+      className="rounded-lg border border-border/60 bg-white dark:bg-zinc-800 p-2 hover:bg-accent/50 transition-colors cursor-pointer text-left w-full shadow-sm"
     >
       {/* Thumbnail */}
       <div className="w-full aspect-[3/2] rounded-md overflow-hidden bg-muted flex items-center justify-center">

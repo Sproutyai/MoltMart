@@ -176,7 +176,7 @@ export function SearchPopup({ mobile, className }: SearchPopupProps) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           showCloseButton={false}
-          className="sm:max-w-2xl max-h-[85vh] overflow-hidden flex flex-col p-0 gap-0 rounded-none sm:rounded-xl"
+          className="sm:max-w-3xl max-h-[85vh] overflow-hidden flex flex-col p-0 gap-0 rounded-none sm:rounded-xl bg-white dark:bg-zinc-900 shadow-2xl border border-border/50"
         >
           <DialogTitle className="sr-only">Search enhancements</DialogTitle>
 
@@ -190,7 +190,7 @@ export function SearchPopup({ mobile, className }: SearchPopupProps) {
               onChange={(e) => handleQueryChange(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search enhancements..."
-              className="flex-1 h-12 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground"
+              className="flex-1 h-12 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground text-foreground"
             />
             {query && (
               <button
