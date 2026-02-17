@@ -193,7 +193,7 @@ export default async function TemplateDetailPage({
             <Separator />
             <div>
               <h2 className="mb-4 text-xl font-semibold">More by {t.seller.display_name || t.seller.username}</h2>
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                 {(moreBySeller as (Template & { seller: { username: string; display_name: string | null } })[]).map((mt) => (
                   <TemplateCard key={mt.id} template={mt} />
                 ))}

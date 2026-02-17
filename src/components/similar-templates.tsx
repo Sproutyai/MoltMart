@@ -24,7 +24,7 @@ export async function SimilarTemplates({ category, currentTemplateId }: SimilarT
   return (
     <div>
       <h2 className="mb-4 text-xl font-semibold">Similar Enhancements</h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         {(data as (Template & { seller: { username: string; display_name: string | null; avatar_url?: string | null } })[]).map((t) => (
           <TemplateCard key={t.id} template={t} />
         ))}

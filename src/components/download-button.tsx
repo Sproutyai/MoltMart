@@ -34,6 +34,8 @@ export function DownloadButton({ templateId, templateSlug, templateName, isLogge
 
     setLoading(true)
     try {
+      // Record the purchase/download, then trigger download via direct navigation
+      // Using window.location.href avoids the async user-gesture trust chain issue
       const res = await fetch(`/api/templates/${templateId}/download`, { method: "POST" })
 
       if (!res.ok) {
@@ -42,16 +44,8 @@ export function DownloadButton({ templateId, templateSlug, templateName, isLogge
         return
       }
 
-      // Download as blob
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `${templateSlug || "template"}.zip`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      // Use GET endpoint for actual file download — avoids blob/click blocking
+      window.location.href = `/api/templates/${templateId}/download`
 
       toast.success("Download started!")
       setShowGuide(true)

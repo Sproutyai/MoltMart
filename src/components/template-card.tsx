@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { StarRating } from "@/components/star-rating"
@@ -18,6 +18,7 @@ interface TemplateCardProps {
 }
 
 export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCardProps) {
+  const router = useRouter()
   const isNew = Date.now() - new Date(template.created_at).getTime() < 48 * 60 * 60 * 1000
   const priceDisplay =
     template.price_cents === 0 ? (
@@ -39,7 +40,7 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
   }
 
   return (
-    <Link href={templateUrl} onClick={handleBeacon} className="block h-full">
+    <div onClick={() => { handleBeacon(); router.push(templateUrl) }} className="block h-full cursor-pointer">
     <Card className={`h-full transition-all hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] overflow-hidden cursor-pointer ${isFeatured ? 'ring-1 ring-amber-300 dark:ring-amber-700' : ''}`}>
       {template.screenshots && template.screenshots.length > 0 && (
         <div className="aspect-video w-full overflow-hidden bg-muted">
@@ -65,7 +66,7 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
           <div className="block min-w-0">
             <h3 className="font-semibold leading-tight line-clamp-1 hover:underline">{template.title}</h3>
           </div>
-          <span onClick={(e) => e.preventDefault()}><BookmarkButton templateId={template.id} size={16} /></span>
+          <BookmarkButton templateId={template.id} size={16} />
         </div>
       </CardHeader>
       <CardContent className="pb-2">
@@ -73,12 +74,12 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
         {template.seller && (
           <div className="mt-2 flex items-center">
             <span onClick={(e) => e.stopPropagation()}>
-            <SellerLink
-              username={template.seller.username}
-              displayName={template.seller.display_name}
-              avatarUrl={template.seller.avatar_url}
-              showAvatar
-            />
+              <SellerLink
+                username={template.seller.username}
+                displayName={template.seller.display_name}
+                avatarUrl={template.seller.avatar_url}
+                showAvatar
+              />
             </span>
             {template.seller.is_verified && (
               <TrustBadge githubVerified={template.seller.github_verified} twitterVerified={template.seller.twitter_verified} variant="inline" />
@@ -110,6 +111,6 @@ export function TemplateCard({ template, showTimestamp, isFeatured }: TemplateCa
         </div>
       </CardFooter>
     </Card>
-    </Link>
+    </div>
   )
 }

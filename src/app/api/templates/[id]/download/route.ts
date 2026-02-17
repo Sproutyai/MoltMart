@@ -3,6 +3,13 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { NextResponse } from "next/server"
 import JSZip from "jszip"
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return POST(_request, { params })
+}
+
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
