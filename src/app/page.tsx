@@ -116,15 +116,15 @@ export default async function HomePage() {
         {/* Categories */}
         <section className="mx-auto max-w-4xl">
           <h2 className="mb-8 text-center text-2xl font-bold sm:text-3xl">Enhancement Categories</h2>
-          <div className="flex gap-4 overflow-x-auto pb-2 sm:overflow-visible sm:grid sm:grid-cols-3 lg:grid-cols-6">
+          <div className="flex gap-4 overflow-x-auto pb-2 sm:overflow-visible sm:flex-wrap sm:justify-center">
             {CATEGORIES.map((cat) => {
               const Icon = CATEGORY_ICONS[cat] ?? Zap
               return (
-                <Link key={cat} href={`/templates?category=${encodeURIComponent(cat)}`} className="min-w-[140px] flex-shrink-0 sm:min-w-0">
-                  <Card className="group cursor-pointer border transition-colors hover:border-primary hover:bg-primary/5">
+                <Link key={cat} href={`/templates?category=${encodeURIComponent(cat)}`} className="min-w-[140px] flex-shrink-0 sm:min-w-0 sm:w-[calc((100%-2.5rem)/3)] lg:w-[calc((100%-5rem)/6)]">
+                  <Card className="group cursor-pointer border transition-colors hover:border-primary hover:bg-primary/5 h-full">
                     <CardContent className="flex flex-col items-center gap-2 py-4">
                       <Icon className="h-8 w-8 text-muted-foreground transition-colors group-hover:text-primary" />
-                      <span className="text-sm font-medium">{cat}</span>
+                      <span className="text-sm font-medium text-center">{cat}</span>
                     </CardContent>
                   </Card>
                 </Link>
