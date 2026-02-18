@@ -28,6 +28,8 @@ export function UploadForm() {
   const [selectedModels, setSelectedModels] = useState<string[]>([])
   const [requirements, setRequirements] = useState("")
   const [setupInstructions, setSetupInstructions] = useState("")
+  const [changelog, setChangelog] = useState("")
+  const [faq, setFaq] = useState("")
   const [screenshots, setScreenshots] = useState<File[]>([])
   const [screenshotPreviews, setScreenshotPreviews] = useState<string[]>([])
   const [demoVideoUrl, setDemoVideoUrl] = useState("")
@@ -99,6 +101,8 @@ export function UploadForm() {
       fd.append("requirements", requirements)
       fd.append("setup_instructions", setupInstructions)
       fd.append("demo_video_url", demoVideoUrl)
+      fd.append("changelog", changelog)
+      fd.append("faq", faq)
       fd.append("version", version)
       fd.append("license", license)
       fd.append("file", file)
@@ -201,6 +205,16 @@ export function UploadForm() {
               <div>
                 <Label htmlFor="setupInstructions">Setup Instructions (Markdown)</Label>
                 <Textarea id="setupInstructions" value={setupInstructions} onChange={(e) => setSetupInstructions(e.target.value)} rows={4} placeholder="Step-by-step setup guide..." />
+              </div>
+              <div>
+                <Label htmlFor="changelog">Changelog / What&apos;s New (Markdown)</Label>
+                <Textarea id="changelog" value={changelog} onChange={(e) => setChangelog(e.target.value)} rows={4} placeholder="## v1.0.0&#10;- Initial release&#10;- Feature X added" />
+                <p className="text-xs text-muted-foreground mt-1">Document changes across versions. Visible to buyers.</p>
+              </div>
+              <div>
+                <Label htmlFor="faq">FAQ (Markdown)</Label>
+                <Textarea id="faq" value={faq} onChange={(e) => setFaq(e.target.value)} rows={4} placeholder="**Q: How do I install this?**&#10;A: Follow the setup instructions above.&#10;&#10;**Q: Is this compatible with X?**&#10;A: Yes!" />
+                <p className="text-xs text-muted-foreground mt-1">Frequently asked questions. Use **Q:** and A: format for best display.</p>
               </div>
             </div>
           </details>

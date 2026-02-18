@@ -210,7 +210,7 @@ export default async function TemplateDetailPage({
 
         <div>
           <h2 className="mb-4 text-xl font-semibold">Reviews</h2>
-          <ReviewList reviews={(reviews as (Review & { buyer: { username: string; avatar_url: string | null } })[]) ?? []} />
+          <ReviewList reviews={(reviews as (Review & { buyer: { username: string; avatar_url: string | null } })[]) ?? []} currentSellerId={user?.id === t.seller_id ? user.id : undefined} />
           {user && hasPurchased && (
             <div className="mt-6">
               <h3 className="mb-3 text-lg font-semibold">Leave a Review</h3>

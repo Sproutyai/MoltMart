@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
   const supabase = await createClient()
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, username, bio, avatar_url, banner_url")
+    .select("display_name, username, bio, avatar_url")
     .eq("username", username)
     .eq("is_seller", true)
     .single()
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
 
   const name = profile.display_name || profile.username
   const description = profile.bio || `Check out ${name}'s templates on Molt Mart`
-  const ogImage = profile.banner_url || profile.avatar_url || undefined
+  const ogImage = profile.avatar_url || undefined
 
   return {
     title: `${name} — Seller Profile | Molt Mart`,
@@ -166,7 +166,7 @@ export default async function SellerProfilePage({
           <div className="py-12 text-center space-y-3">
             <p className="text-lg font-medium">Your shop is empty!</p>
             <p className="text-sm text-muted-foreground">Publish your first template to start selling.</p>
-            <a href="/dashboard/templates/new" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
+            <a href="/dashboard/seller/upload" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
               Publish your first template →
             </a>
           </div>
