@@ -124,6 +124,11 @@ export function TemplateCard({
               NEW
             </Badge>
           )}
+          {isFeatured && (
+            <Badge className="absolute top-2 right-2 bg-amber-500 text-white text-[10px] px-1.5 py-0 h-4">
+              ⭐ Featured
+            </Badge>
+          )}
         </div>
 
         <CardHeader className="pb-2">

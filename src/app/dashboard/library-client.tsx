@@ -23,9 +23,10 @@ interface LibraryClientProps {
   purchases: Purchase[]
   reviewMap: Record<string, number>
   bookmarkedIds?: string[]
+  recommendedTemplates?: (Template & { seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } })[]
 }
 
-export function LibraryClient({ purchases, reviewMap, bookmarkedIds = [] }: LibraryClientProps) {
+export function LibraryClient({ purchases, reviewMap, bookmarkedIds = [], recommendedTemplates = [] }: LibraryClientProps) {
   const bookmarkedSet = useMemo(() => new Set(bookmarkedIds), [bookmarkedIds])
   const [search, setSearch] = useState("")
   const [sort, setSort] = useState<SortOption>("recent")
@@ -235,6 +236,18 @@ export function LibraryClient({ purchases, reviewMap, bookmarkedIds = [] }: Libr
               />
             )
           })}
+        </div>
+      )}
+
+      {/* Recommended promoted templates */}
+      {recommendedTemplates.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-lg font-semibold mb-4">⭐ Recommended</h2>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {recommendedTemplates.map((t) => (
+              <TemplateCard key={t.id} template={t} isFeatured />
+            ))}
+          </div>
         </div>
       )}
     </div>

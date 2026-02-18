@@ -14,6 +14,7 @@ import { ScreenshotCarousel } from "@/components/screenshot-carousel"
 import { MarkdownContent } from "@/components/markdown-content"
 import { VideoEmbed } from "@/components/video-embed"
 import { SimilarTemplates } from "@/components/similar-templates"
+import { PromotedInCategory } from "@/components/promoted-in-category"
 import { BookmarkButton } from "@/components/bookmark-button"
 import { Download, Calendar, Shield, BookOpen, Cpu, History, Clock } from "lucide-react"
 import { SellerTrustSection } from "@/components/seller-trust-section"
@@ -301,6 +302,8 @@ export default async function TemplateDetailPage({
               openclaw template install {t.slug}
             </code>
           </div>
+
+          <PromotedInCategory category={t.category} currentTemplateId={t.id} />
 
           {(t.seller.github_verified || t.seller.twitter_verified) && (
             <>

@@ -154,10 +154,13 @@ export default async function TemplatesPage({
 
       {/* Featured results */}
       {featuredTemplates.length > 0 && (
+        <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Sponsored</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {featuredTemplates.map((t) => (
             <TemplateCard key={t.id} template={t} isFeatured />
           ))}
+        </div>
         </div>
       )}
 
