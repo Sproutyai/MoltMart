@@ -21,7 +21,7 @@ export async function PATCH(
   if (template.seller_id !== user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const body = await request.json()
-  const allowed = ["title", "description", "long_description", "category", "tags", "price_cents", "status", "difficulty", "ai_models", "requirements", "setup_instructions", "screenshots", "demo_video_url", "version", "license"]
+  const allowed = ["title", "description", "long_description", "category", "tags", "price_cents", "status", "difficulty", "ai_models", "requirements", "setup_instructions", "screenshots", "demo_video_url", "version", "license", "file_path", "preview_data"]
   const updates: Record<string, unknown> = {}
   for (const key of allowed) {
     if (key in body) updates[key] = body[key]

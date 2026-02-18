@@ -38,6 +38,7 @@ export default function SellerDashboardPage() {
   const [promoting, setPromoting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [archiveTarget, setArchiveTarget] = useState<Template | null>(null)
+  const [promoteTarget, setPromoteTarget] = useState<Template | null>(null)
 
   async function load() {
     setError(null)
@@ -57,26 +58,18 @@ export default function SellerDashboardPage() {
           .order("created_at", { ascending: false })
         setTemplates(t || [])
 
-        // Fetch promotions
+        // Fetch only this seller's promotions
         const { data: promos } = await supabase
           .from("promotions")
           .select("template_id, promoted_at, impressions, clicks")
           .eq("seller_id", user.id)
 
         if (promos) {
-          const { data: allPromos } = await supabase
-            .from("promotions")
-            .select("template_id, promoted_at")
-            .order("promoted_at", { ascending: false })
-
-          const posMap = new Map<string, number>()
-          allPromos?.forEach((p, i) => posMap.set(p.template_id, i + 1))
-
           const promoMap = new Map<string, { promoted_at: string; position: number; impressions: number; clicks: number }>()
           promos.forEach(p => {
             promoMap.set(p.template_id, {
               promoted_at: p.promoted_at,
-              position: posMap.get(p.template_id) ?? 0,
+              position: 0,
               impressions: p.impressions,
               clicks: p.clicks,
             })
@@ -105,8 +98,8 @@ export default function SellerDashboardPage() {
     try {
       const res = await fetch("/api/profile/become-seller", { method: "POST" })
       if (!res.ok) { toast.error("Failed"); return }
-      toast.success("You're now a seller!")
-      setProfile((p) => p ? { ...p, is_seller: true } : p)
+      toast.success("You're now a seller! Set up your store profile to get started.")
+      router.push("/dashboard/profile")
     } catch {
       toast.error("Something went wrong")
     } finally {
@@ -174,12 +167,20 @@ export default function SellerDashboardPage() {
             <Store className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
             <CardTitle>Become a Seller</CardTitle>
           </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-sm text-muted-foreground mb-4">Start selling your OpenClaw agent enhancements to the community.</p>
-            <Button onClick={becomeSeller} disabled={becoming}>
-              {becoming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Become a Seller
-            </Button>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground text-center">Start selling your OpenClaw agent enhancements to the community.</p>
+            <ul className="text-sm text-muted-foreground space-y-2">
+              <li className="flex items-center gap-2">📦 List your agent enhancements & templates</li>
+              <li className="flex items-center gap-2">💰 Set your own prices (free or paid)</li>
+              <li className="flex items-center gap-2">📊 Track downloads, ratings & reviews</li>
+              <li className="flex items-center gap-2">🎉 0% platform fees during beta</li>
+            </ul>
+            <div className="text-center">
+              <Button onClick={becomeSeller} disabled={becoming}>
+                {becoming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Become a Seller
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -188,9 +189,6 @@ export default function SellerDashboardPage() {
 
   const totalDownloads = templates.reduce((s, t) => s + t.download_count, 0)
   const avgRating = templates.length ? (templates.reduce((s, t) => s + t.avg_rating, 0) / templates.length).toFixed(1) : "—"
-  // Earnings should come from actual purchases (Stripe not live yet), so show $0.00
-  const estimatedEarnings = 0
-
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
@@ -230,8 +228,8 @@ export default function SellerDashboardPage() {
         <Card>
           <CardContent className="pt-6 text-center">
             <DollarSign className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
-            <div className="text-2xl font-bold">${estimatedEarnings.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground">Est. Earnings</div>
+            <div className="text-2xl font-bold text-muted-foreground">—</div>
+            <div className="text-xs text-muted-foreground">Earnings (coming soon)</div>
           </CardContent>
         </Card>
       </div>
@@ -259,7 +257,7 @@ export default function SellerDashboardPage() {
                   <Badge variant={statusColors[t.status] || "secondary"}>{t.status}</Badge>
                   {promotions.has(t.id) && (
                     <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-xs">
-                      ⭐ #{promotions.get(t.id)!.position}
+                      ⭐ Promoted
                     </Badge>
                   )}
                   <span className="text-sm text-muted-foreground">{t.download_count} DLs</span>
@@ -282,15 +280,9 @@ export default function SellerDashboardPage() {
                     {archiving === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Archive className="h-4 w-4" />}
                   </Button>
                   {t.status === "published" && (
-                    promotions.has(t.id) ? (
-                      <Button variant="ghost" size="sm" onClick={() => handlePromote(t.id)} disabled={promoting === t.id} title="Re-promote to #1">
-                        {promoting === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <TrendingUp className="h-4 w-4 text-amber-500" />}
-                      </Button>
-                    ) : (
-                      <Button variant="ghost" size="sm" onClick={() => handlePromote(t.id)} disabled={promoting === t.id} title="Promote for $25">
-                        {promoting === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Megaphone className="h-4 w-4" />}
-                      </Button>
-                    )
+                    <Button variant="ghost" size="sm" onClick={() => setPromoteTarget(t)} disabled={promoting === t.id} title={promotions.has(t.id) ? "Re-promote to #1" : "Promote for $25"}>
+                      {promoting === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : promotions.has(t.id) ? <TrendingUp className="h-4 w-4 text-amber-500" /> : <Megaphone className="h-4 w-4" />}
+                    </Button>
                   )}
                 </div>
               </CardContent>
@@ -311,6 +303,23 @@ export default function SellerDashboardPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => { if (archiveTarget) { toggleArchive(archiveTarget); setArchiveTarget(null) } }}>
               Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!promoteTarget} onOpenChange={(open) => !open && setPromoteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Promote Enhancement</AlertDialogTitle>
+            <AlertDialogDescription>
+              Promote &ldquo;{promoteTarget?.title}&rdquo; to #1 in Featured for <strong>$25</strong>. You&apos;ll be redirected to Stripe to complete payment.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (promoteTarget) { handlePromote(promoteTarget.id); setPromoteTarget(null) } }}>
+              Promote for $25
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

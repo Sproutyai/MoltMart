@@ -12,7 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { CATEGORIES, DIFFICULTIES, AI_MODELS, LICENSES, MAX_SCREENSHOTS, MAX_SCREENSHOT_SIZE } from "@/lib/constants"
+import { CATEGORIES, DIFFICULTIES, AI_MODELS, LICENSES, MAX_SCREENSHOTS, MAX_SCREENSHOT_SIZE, MAX_UPLOAD_SIZE } from "@/lib/constants"
 import { Loader2, Trash2, X, ImagePlus } from "lucide-react"
 import { toast } from "sonner"
 import type { Template } from "@/lib/types"
@@ -39,6 +39,7 @@ export function EditTemplateForm({ template }: { template: Template }) {
   const [priceUsd, setPriceUsd] = useState(template.price_cents > 0 ? (template.price_cents / 100).toFixed(2) : "")
   const [version, setVersion] = useState(template.version || "1.0.0")
   const [license, setLicense] = useState(template.license || "MIT")
+  const [newFile, setNewFile] = useState<File | null>(null)
 
   const totalScreenshots = existingScreenshots.length + newScreenshots.length
 
@@ -76,6 +77,11 @@ export function EditTemplateForm({ template }: { template: Template }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!title || !description || !category) { toast.error("Fill in all required fields"); return }
+    if (pricingType === "paid" && (!priceUsd || isNaN(parseFloat(priceUsd)) || parseFloat(priceUsd) < 1)) {
+      toast.error("Minimum price is $1.00"); return
+    }
+    if (newFile && !newFile.name.endsWith(".zip")) { toast.error("Only .zip files allowed"); return }
+    if (newFile && newFile.size > MAX_UPLOAD_SIZE) { toast.error("File must be under 10MB"); return }
 
     setLoading(true)
     try {
@@ -96,10 +102,27 @@ export function EditTemplateForm({ template }: { template: Template }) {
 
       const allScreenshots = [...existingScreenshots, ...uploadedUrls]
 
+      // Upload replacement file if provided
+      let fileUpdateFields: Record<string, unknown> = {}
+      if (newFile) {
+        const fd = new FormData()
+        fd.append("file", newFile)
+        fd.append("templateId", template.id)
+        const fileRes = await fetch("/api/templates/replace-file", { method: "POST", body: fd })
+        if (!fileRes.ok) {
+          const fileData = await fileRes.json()
+          toast.error(fileData.error || "File replacement failed")
+          return
+        }
+        const fileData = await fileRes.json()
+        fileUpdateFields = { file_path: fileData.file_path, preview_data: fileData.preview_data }
+      }
+
       const res = await fetch(`/api/templates/${template.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...fileUpdateFields,
           title,
           description,
           long_description: longDescription,
@@ -153,7 +176,7 @@ export function EditTemplateForm({ template }: { template: Template }) {
 
   return (
     <Card className="max-w-2xl">
-      <CardHeader><CardTitle>Edit Template</CardTitle></CardHeader>
+      <CardHeader><CardTitle>Edit Enhancement</CardTitle></CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -188,7 +211,7 @@ export function EditTemplateForm({ template }: { template: Template }) {
             </div>
           </details>
 
-          <details open>
+          <details>
             <summary className="cursor-pointer text-lg font-semibold mb-3">2. Details</summary>
             <div className="space-y-4 pl-1">
               <div>
@@ -229,7 +252,7 @@ export function EditTemplateForm({ template }: { template: Template }) {
             </div>
           </details>
 
-          <details open>
+          <details>
             <summary className="cursor-pointer text-lg font-semibold mb-3">3. Media</summary>
             <div className="space-y-4 pl-1">
               <div>
@@ -267,9 +290,17 @@ export function EditTemplateForm({ template }: { template: Template }) {
             </div>
           </details>
 
-          <details open>
+          <details>
             <summary className="cursor-pointer text-lg font-semibold mb-3">4. Pricing & Version</summary>
             <div className="space-y-4 pl-1">
+              <div>
+                <Label htmlFor="newFile">Replace Template File (.zip, max 10MB)</Label>
+                <Input id="newFile" type="file" accept=".zip" onChange={(e) => setNewFile(e.target.files?.[0] || null)} />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Current file: {template.file_path.split("/").pop()}
+                  {newFile && <span className="text-primary ml-2">→ {newFile.name}</span>}
+                </p>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="version">Version</Label>

@@ -27,6 +27,13 @@ export async function POST(request: Request) {
   const license = (formData.get("license") as string) || "MIT"
   const priceCentsRaw = formData.get("price_cents") as string
   const priceCents = priceCentsRaw ? parseInt(priceCentsRaw, 10) : 0
+  const statusRaw = formData.get("status") as string
+  const status = statusRaw === "draft" ? "draft" : "published"
+
+  // Validate price_cents is a valid number
+  if (isNaN(priceCents)) {
+    return NextResponse.json({ error: "Invalid price" }, { status: 400 })
+  }
 
   if (!title || !slug || !description || !category || !file) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -103,7 +110,7 @@ export async function POST(request: Request) {
       price_cents: priceCents,
       file_path: filePath,
       preview_data: previewData,
-      status: "published",
+      status,
       compatibility: "openclaw",
       screenshots: screenshotUrls,
       difficulty,

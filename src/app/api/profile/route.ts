@@ -17,6 +17,23 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "No valid fields" }, { status: 400 })
   }
 
+  // Validate username format and uniqueness
+  if (updates.username) {
+    const usernameStr = updates.username as string
+    if (!/^[a-z0-9_-]{3,30}$/.test(usernameStr)) {
+      return NextResponse.json({ error: "Invalid username format. Use 3-30 lowercase letters, numbers, hyphens, or underscores." }, { status: 400 })
+    }
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", usernameStr)
+      .neq("id", user.id)
+      .single()
+    if (existing) {
+      return NextResponse.json({ error: "Username already taken" }, { status: 409 })
+    }
+  }
+
   const { error } = await supabase.from("profiles").update(updates).eq("id", user.id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

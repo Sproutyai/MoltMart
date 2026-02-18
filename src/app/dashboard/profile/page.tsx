@@ -27,6 +27,7 @@ export default function ProfilePage() {
   const [bannerUrl, setBannerUrl] = useState("")
   const [website, setWebsite] = useState("")
   const [specialties, setSpecialties] = useState("")
+  const [usernameError, setUsernameError] = useState("")
 
   useEffect(() => {
     async function load() {
@@ -51,8 +52,21 @@ export default function ProfilePage() {
     load()
   }, [router])
 
+  function validateUsername(value: string) {
+    if (!value) { setUsernameError(""); return }
+    if (!/^[a-z0-9_-]{3,30}$/.test(value)) {
+      setUsernameError("3-30 characters, lowercase letters, numbers, hyphens, underscores only")
+    } else {
+      setUsernameError("")
+    }
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
+    if (username && !/^[a-z0-9_-]{3,30}$/.test(username)) {
+      toast.error("Invalid username format")
+      return
+    }
     setSaving(true)
     try {
       const specialtiesArr = specialties
@@ -92,7 +106,7 @@ export default function ProfilePage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Edit Store</h1>
+        <h1 className="text-2xl font-bold">{profile.is_seller ? "Edit Store" : "Edit Profile"}</h1>
         {profile.is_seller && (
           <Link href={`/sellers/${profile.username}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
             View seller profile <ExternalLink size={14} />
@@ -133,7 +147,8 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <Label htmlFor="username">Username</Label>
-                  <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
+                  <Input id="username" value={username} onChange={(e) => { setUsername(e.target.value.toLowerCase()); validateUsername(e.target.value.toLowerCase()) }} placeholder="my-username" />
+                  {usernameError && <p className="text-xs text-destructive mt-1">{usernameError}</p>}
                 </div>
                 <div>
                   <Label htmlFor="bio">Bio</Label>

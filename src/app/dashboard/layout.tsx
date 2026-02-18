@@ -28,7 +28,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { href: "/dashboard/seller/upload", label: "Create Product", icon: Upload },
     { href: "/dashboard/seller/promote", label: "Promote", icon: Megaphone },
     { href: "/dashboard/transactions", label: "Sales", icon: Receipt },
-    ...(profile?.username ? [{ href: `/sellers/${profile.username}`, label: "Edit Store", icon: ExternalLink }] : []),
+    ...(profile?.username ? [{ href: `/sellers/${profile.username}`, label: "View Public Profile", icon: ExternalLink }] : []),
   ]
 
   const affiliateLinks = [
@@ -36,7 +36,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ]
 
   const accountLinks = [
-    { href: "/dashboard/profile", label: "Edit Profile", icon: Pencil },
+    { href: "/dashboard/profile", label: isSeller ? "Edit Store" : "Edit Profile", icon: Pencil },
   ]
 
   const becomeSellerLink = { href: "/dashboard/seller", label: "Become a Seller", icon: UserPlus }

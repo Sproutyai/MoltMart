@@ -37,6 +37,7 @@ export function UploadForm() {
   const [priceUsd, setPriceUsd] = useState("")
   const [version, setVersion] = useState("1.0.0")
   const [license, setLicense] = useState("MIT")
+  const [submitStatus, setSubmitStatus] = useState<"published" | "draft">("published")
 
   function toggleModel(model: string) {
     setSelectedModels((prev) =>
@@ -80,6 +81,9 @@ export function UploadForm() {
     if (!file.name.endsWith(".zip")) { toast.error("Only .zip files allowed"); return }
     if (file.size > MAX_UPLOAD_SIZE) { toast.error("File must be under 10MB"); return }
     if (!title || !description || !category) { toast.error("Fill in all required fields"); return }
+    if (pricingType === "paid" && (!priceUsd || isNaN(parseFloat(priceUsd)) || parseFloat(priceUsd) < 1)) {
+      toast.error("Minimum price is $1.00"); return
+    }
 
     setLoading(true)
     try {
@@ -98,6 +102,7 @@ export function UploadForm() {
       fd.append("version", version)
       fd.append("license", license)
       fd.append("file", file)
+      fd.append("status", submitStatus)
       const priceCents = pricingType === "paid" ? Math.round(parseFloat(priceUsd) * 100) : 0
       fd.append("price_cents", String(priceCents))
 
@@ -109,9 +114,14 @@ export function UploadForm() {
       const data = await res.json()
 
       if (!res.ok) { toast.error(data.error || "Upload failed"); return }
-      toast.success("Enhancement uploaded!")
-      const uploadedSlug = data.template?.slug || slugify(title)
-      router.push(`/dashboard/seller/upload/success?slug=${encodeURIComponent(uploadedSlug)}`)
+      if (submitStatus === "draft") {
+        toast.success("Draft saved!")
+        router.push("/dashboard/seller")
+      } else {
+        toast.success("Enhancement uploaded!")
+        const uploadedSlug = data.template?.slug || slugify(title)
+        router.push(`/dashboard/seller/upload/success?slug=${encodeURIComponent(uploadedSlug)}`)
+      }
     } catch {
       toast.error("Something went wrong")
     } finally {
@@ -123,7 +133,7 @@ export function UploadForm() {
 
   return (
     <Card className="max-w-2xl">
-      <CardHeader><CardTitle>New Template</CardTitle></CardHeader>
+      <CardHeader><CardTitle>New Enhancement</CardTitle></CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <details open>
@@ -154,7 +164,7 @@ export function UploadForm() {
             </div>
           </details>
 
-          <details open>
+          <details>
             <summary className="cursor-pointer text-lg font-semibold mb-3">2. Details</summary>
             <div className="space-y-4 pl-1">
               <div>
@@ -195,7 +205,7 @@ export function UploadForm() {
             </div>
           </details>
 
-          <details open>
+          <details>
             <summary className="cursor-pointer text-lg font-semibold mb-3">3. Media</summary>
             <div className="space-y-4 pl-1">
               <div>
@@ -225,7 +235,7 @@ export function UploadForm() {
             </div>
           </details>
 
-          <details open>
+          <details>
             <summary className="cursor-pointer text-lg font-semibold mb-3">4. File & Pricing</summary>
             <div className="space-y-4 pl-1">
               <div>
@@ -273,10 +283,16 @@ export function UploadForm() {
             </div>
           </details>
 
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Upload Template
-          </Button>
+          <div className="flex gap-3">
+            <Button type="submit" disabled={loading} className="flex-1" onClick={() => setSubmitStatus("published")}>
+              {loading && submitStatus === "published" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Upload Enhancement
+            </Button>
+            <Button type="submit" variant="outline" disabled={loading} onClick={() => setSubmitStatus("draft")}>
+              {loading && submitStatus === "draft" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save as Draft
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>
