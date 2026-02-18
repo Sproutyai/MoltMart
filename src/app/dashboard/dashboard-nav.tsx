@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { Library, Store, Upload, Receipt, ExternalLink, Pencil, DollarSign, Megaphone, UserPlus, Heart } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 interface NavLink {
@@ -12,16 +13,35 @@ interface NavLink {
 }
 
 interface DashboardNavProps {
-  buyerLinks: NavLink[]
-  sellerLinks: NavLink[]
-  affiliateLinks: NavLink[]
-  accountLinks: NavLink[]
   isSeller: boolean
-  becomeSellerLink?: NavLink
+  username?: string | null
 }
 
-export function DashboardNav({ buyerLinks, sellerLinks, affiliateLinks, accountLinks, isSeller, becomeSellerLink }: DashboardNavProps) {
+export function DashboardNav({ isSeller, username }: DashboardNavProps) {
   const pathname = usePathname()
+
+  const buyerLinks: NavLink[] = [
+    { href: "/dashboard", label: "Purchases", icon: Library },
+    { href: "/dashboard/bookmarks", label: "Bookmarks", icon: Heart },
+  ]
+
+  const sellerLinks: NavLink[] = [
+    { href: "/dashboard/seller", label: "Seller Dashboard", icon: Store },
+    { href: "/dashboard/seller/upload", label: "Create Product", icon: Upload },
+    { href: "/dashboard/seller/promote", label: "Promote", icon: Megaphone },
+    { href: "/dashboard/transactions", label: "Sales", icon: Receipt },
+    ...(username ? [{ href: `/sellers/${username}`, label: "View Public Profile", icon: ExternalLink }] : []),
+  ]
+
+  const affiliateLinks: NavLink[] = [
+    { href: "/dashboard/affiliate", label: "Affiliate Program", icon: DollarSign },
+  ]
+
+  const accountLinks: NavLink[] = [
+    { href: "/dashboard/profile", label: isSeller ? "Edit Store" : "Edit Profile", icon: Pencil },
+  ]
+
+  const becomeSellerLink: NavLink | undefined = isSeller ? undefined : { href: "/dashboard/seller", label: "Become a Seller", icon: UserPlus }
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard"
