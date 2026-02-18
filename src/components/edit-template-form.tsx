@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,9 +15,15 @@ import {
 import { CATEGORIES, DIFFICULTIES, AI_MODELS, LICENSES, MAX_SCREENSHOTS, MAX_SCREENSHOT_SIZE, MAX_UPLOAD_SIZE } from "@/lib/constants"
 import { Loader2, Trash2, X, ImagePlus } from "lucide-react"
 import { toast } from "sonner"
+import { TemplateCard } from "@/components/template-card"
 import type { Template } from "@/lib/types"
 
-export function EditTemplateForm({ template }: { template: Template }) {
+interface EditTemplateFormProps {
+  template: Template
+  seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean }
+}
+
+export function EditTemplateForm({ template, seller }: EditTemplateFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -178,8 +184,43 @@ export function EditTemplateForm({ template }: { template: Template }) {
 
   const difficultyEmoji: Record<string, string> = { beginner: "🟢", intermediate: "🟡", advanced: "🔴" }
 
+  const previewScreenshots = useMemo(() => [...existingScreenshots, ...newPreviews], [existingScreenshots, newPreviews])
+
+  const previewTemplate = useMemo(() => ({
+    id: template.id,
+    seller_id: template.seller_id,
+    title: title || "Your Enhancement Title",
+    slug: template.slug,
+    description: description || "Your enhancement description will appear here...",
+    long_description: template.long_description,
+    category: category || "Skills",
+    tags: template.tags || [],
+    price_cents: pricingType === "paid" ? Math.round(parseFloat(priceUsd || "0") * 100) : 0,
+    file_path: template.file_path,
+    preview_data: template.preview_data,
+    download_count: template.download_count,
+    avg_rating: template.avg_rating,
+    review_count: template.review_count,
+    status: template.status,
+    compatibility: template.compatibility,
+    screenshots: previewScreenshots,
+    difficulty: (difficulty || "beginner") as Template["difficulty"],
+    ai_models: selectedModels,
+    requirements: template.requirements,
+    version,
+    license,
+    demo_video_url: template.demo_video_url,
+    setup_instructions: template.setup_instructions,
+    changelog: template.changelog,
+    faq: template.faq,
+    created_at: template.created_at,
+    updated_at: template.updated_at,
+    seller,
+  }) as any, [title, description, category, pricingType, priceUsd, previewScreenshots, difficulty, selectedModels, version, license, seller, template])
+
   return (
-    <Card className="max-w-2xl">
+    <div className="flex items-start gap-8">
+    <Card className="max-w-2xl flex-1 min-w-0">
       <CardHeader><CardTitle>Edit Enhancement</CardTitle></CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -395,5 +436,15 @@ export function EditTemplateForm({ template }: { template: Template }) {
         </form>
       </CardContent>
     </Card>
+    <div className="hidden lg:block w-[224px] flex-shrink-0">
+      <div className="sticky top-6 space-y-3">
+        <p className="text-sm font-medium text-muted-foreground">Live Preview</p>
+        <div className="w-[224px]">
+          <TemplateCard template={previewTemplate} isPreview />
+        </div>
+        <p className="text-xs text-muted-foreground text-center">Actual size as shown on site</p>
+      </div>
+    </div>
+    </div>
   )
 }

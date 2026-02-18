@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,12 +11,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CATEGORIES, DIFFICULTIES, AI_MODELS, LICENSES, MAX_UPLOAD_SIZE, MAX_SCREENSHOTS, MAX_SCREENSHOT_SIZE } from "@/lib/constants"
 import { Loader2, X, ImagePlus } from "lucide-react"
 import { toast } from "sonner"
+import { TemplateCard } from "@/components/template-card"
+import type { Template } from "@/lib/types"
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
 }
 
-export function UploadForm() {
+interface UploadFormProps {
+  seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean }
+}
+
+export function UploadForm({ seller }: UploadFormProps = {}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [title, setTitle] = useState("")
@@ -135,8 +141,41 @@ export function UploadForm() {
 
   const difficultyEmoji: Record<string, string> = { beginner: "🟢", intermediate: "🟡", advanced: "🔴" }
 
+  const previewTemplate = useMemo(() => ({
+    id: "preview",
+    seller_id: "",
+    title: title || "Your Enhancement Title",
+    slug: "preview",
+    description: description || "Your enhancement description will appear here...",
+    long_description: null,
+    category: category || "Skills",
+    tags: [],
+    price_cents: pricingType === "paid" ? Math.round(parseFloat(priceUsd || "0") * 100) : 0,
+    file_path: "",
+    preview_data: {},
+    download_count: 0,
+    avg_rating: 0,
+    review_count: 0,
+    status: "draft" as const,
+    compatibility: "",
+    screenshots: screenshotPreviews,
+    difficulty: (difficulty || "beginner") as Template["difficulty"],
+    ai_models: [],
+    requirements: null,
+    version: "1.0.0",
+    license: "MIT",
+    demo_video_url: null,
+    setup_instructions: null,
+    changelog: null,
+    faq: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    seller,
+  }) as any, [title, description, category, pricingType, priceUsd, screenshotPreviews, difficulty, seller])
+
   return (
-    <Card className="max-w-2xl">
+    <div className="flex items-start gap-8">
+    <Card className="max-w-2xl flex-1 min-w-0">
       <CardHeader><CardTitle>New Enhancement</CardTitle></CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -316,5 +355,15 @@ export function UploadForm() {
         </form>
       </CardContent>
     </Card>
+    <div className="hidden lg:block w-[224px] flex-shrink-0">
+      <div className="sticky top-6 space-y-3">
+        <p className="text-sm font-medium text-muted-foreground">Live Preview</p>
+        <div className="w-[224px]">
+          <TemplateCard template={previewTemplate} isPreview />
+        </div>
+        <p className="text-xs text-muted-foreground text-center">Actual size as shown on site</p>
+      </div>
+    </div>
+    </div>
   )
 }

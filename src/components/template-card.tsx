@@ -28,6 +28,8 @@ interface TemplateCardProps {
   purchaseDate?: string
   /** For library variant: user's existing rating */
   userRating?: number
+  /** Preview mode: renders in a div instead of Link, disables bookmark & beacon */
+  isPreview?: boolean
 }
 
 export function TemplateCard({
@@ -41,6 +43,7 @@ export function TemplateCard({
   actions,
   purchaseDate,
   userRating,
+  isPreview,
 }: TemplateCardProps) {
   const isNew = Date.now() - new Date(template.created_at).getTime() < 48 * 60 * 60 * 1000
 
@@ -71,8 +74,10 @@ export function TemplateCard({
 
   // ── Compact variant (search popup / promoted) ──
   if (variant === "compact") {
+    const Wrapper = isPreview ? "div" : Link
+    const wrapperProps = isPreview ? { className: "block" } : { href: templateUrl, onClick: handleBeacon, className: "block" }
     return (
-      <Link href={templateUrl} onClick={handleBeacon} className="block">
+      <Wrapper {...(wrapperProps as any)}>
         <div className="rounded-lg border border-border/60 bg-card p-2 hover:bg-accent/50 transition-colors cursor-pointer text-left w-full shadow-sm">
           <div className="w-full aspect-[3/1] rounded-md overflow-hidden bg-muted flex items-center justify-center">
             {template.screenshots?.[0] ? (
@@ -95,14 +100,16 @@ export function TemplateCard({
             </div>
           )}
         </div>
-      </Link>
+      </Wrapper>
     )
   }
 
   // ── Default + Library variants ──
+  const OuterWrapper = isPreview ? "div" : Link
+  const outerProps = isPreview ? { className: "block h-full" } : { href: templateUrl, onClick: handleBeacon, className: "block h-full" }
   return (
-    <Link href={templateUrl} onClick={handleBeacon} className="block h-full">
-      <Card className={`h-full flex flex-col transition-shadow hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] cursor-pointer overflow-hidden pt-0 ${ringClass}`}>
+    <OuterWrapper {...(outerProps as any)}>
+      <Card className={`h-full flex flex-col transition-shadow ${isPreview ? "" : "hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] cursor-pointer"} overflow-hidden pt-0 ${ringClass}`}>
         {/* Thumbnail — always rendered for uniform height */}
         <div className="aspect-[5/2] w-full overflow-hidden bg-muted relative">
           {template.screenshots && template.screenshots.length > 0 ? (
@@ -126,9 +133,11 @@ export function TemplateCard({
           </div>
           <div className="mt-2 flex items-start justify-between gap-2">
             <h3 className="font-semibold leading-tight line-clamp-1 min-w-0 hover:underline">{template.title}</h3>
-            <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.preventDefault()}>
-              <BookmarkButton templateId={template.id} size={16} initialBookmarked={initialBookmarked} onRemove={onBookmarkRemove} />
-            </div>
+            {!isPreview && (
+              <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.preventDefault()}>
+                <BookmarkButton templateId={template.id} size={16} initialBookmarked={initialBookmarked} onRemove={onBookmarkRemove} />
+              </div>
+            )}
           </div>
         </CardHeader>
 
@@ -183,6 +192,6 @@ export function TemplateCard({
           )}
         </CardFooter>
       </Card>
-    </Link>
+    </OuterWrapper>
   )
 }

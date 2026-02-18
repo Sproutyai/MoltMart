@@ -7,9 +7,10 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Megaphone, TrendingUp, ArrowLeft, BarChart3, MousePointer, AlertTriangle, RefreshCw } from "lucide-react"
+import { Loader2, Megaphone, TrendingUp, ArrowLeft, BarChart3, MousePointer, AlertTriangle, RefreshCw, Eye } from "lucide-react"
 import { toast } from "sonner"
 import { formatDistanceToNow } from "date-fns"
+import { TemplateCard } from "@/components/template-card"
 import type { Template } from "@/lib/types"
 
 interface PromoInfo {
@@ -26,6 +27,8 @@ export default function PromotePage() {
   const [loading, setLoading] = useState(true)
   const [promoting, setPromoting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [previewOpen, setPreviewOpen] = useState<Set<string>>(new Set())
+  const [sellerProfile, setSellerProfile] = useState<{ username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } | null>(null)
 
   async function load() {
     setError(null)
@@ -34,13 +37,21 @@ export default function PromotePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push("/login"); return }
 
-      const { data: t } = await supabase
-        .from("templates")
-        .select("*")
-        .eq("seller_id", user.id)
-        .eq("status", "published")
-        .order("created_at", { ascending: false })
+      const [{ data: t }, { data: profile }] = await Promise.all([
+        supabase
+          .from("templates")
+          .select("*")
+          .eq("seller_id", user.id)
+          .eq("status", "published")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("profiles")
+          .select("username, display_name, avatar_url, is_verified, github_verified, twitter_verified")
+          .eq("id", user.id)
+          .single(),
+      ])
       setTemplates(t || [])
+      if (profile) setSellerProfile(profile)
 
       const { data: promos } = await supabase
         .from("promotions")
@@ -118,6 +129,19 @@ export default function PromotePage() {
         <Button onClick={() => { setLoading(true); load() }}><RefreshCw className="mr-2 h-4 w-4" />Retry</Button>
       </div>
     )
+  }
+
+  function togglePreview(id: string) {
+    setPreviewOpen(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function withSeller(t: Template) {
+    return sellerProfile ? { ...t, seller: sellerProfile } as any : t
   }
 
   const promoted = templates.filter(t => promotions.has(t.id))
@@ -207,24 +231,57 @@ export default function PromotePage() {
           <div className="space-y-2">
             {unpromoted.map(t => (
               <Card key={t.id}>
-                <CardContent className="flex items-center justify-between gap-4 py-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{t.title}</div>
-                    <div className="text-xs text-muted-foreground">{t.category}</div>
+                <CardContent className="py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{t.title}</div>
+                      <div className="text-xs text-muted-foreground">{t.category}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => togglePreview(t.id)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        {previewOpen.has(t.id) ? "Hide" : "Preview"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePromote(t.id)}
+                        disabled={promoting === t.id}
+                      >
+                        {promoting === t.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                        ) : (
+                          <Megaphone className="h-4 w-4 mr-1" />
+                        )}
+                        Promote — $25
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePromote(t.id)}
-                    disabled={promoting === t.id}
-                  >
-                    {promoting === t.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                    ) : (
-                      <Megaphone className="h-4 w-4 mr-1" />
-                    )}
-                    Promote — $25
-                  </Button>
+                  {previewOpen.has(t.id) && (
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="flex flex-wrap gap-6 justify-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="text-xs font-medium text-muted-foreground">Regular</span>
+                          <div className="w-[224px] flex-shrink-0">
+                            <TemplateCard template={withSeller(t)} isPreview />
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="text-xs font-medium text-amber-600">⭐ Featured</span>
+                          <div className="w-[224px] flex-shrink-0">
+                            <TemplateCard template={withSeller(t)} isPreview isFeatured borderColor="amber" />
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground text-center mt-3">
+                        Your enhancement will appear in the Featured carousel on the homepage with the gold border.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
