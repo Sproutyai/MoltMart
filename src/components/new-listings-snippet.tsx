@@ -15,7 +15,7 @@ export async function NewListingsSnippet() {
     .eq("status", "published")
     .gte("created_at", weekAgo)
     .order("created_at", { ascending: false })
-    .limit(10)
+    .limit(20)
 
   if (!templates || templates.length === 0) return null
 

@@ -12,7 +12,7 @@ export async function FeaturedSection() {
     .from("promotions")
     .select("template_id, promoted_at")
     .order("promoted_at", { ascending: false })
-    .limit(10)
+    .limit(20)
 
   if (!promotions || promotions.length === 0) return null
 

@@ -103,10 +103,6 @@ export function TemplateCard({
   return (
     <Link href={templateUrl} onClick={handleBeacon} className="block h-full">
       <Card className={`h-full flex flex-col transition-shadow hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] cursor-pointer overflow-hidden ${ringClass}`}>
-        {isFeatured && (
-          <div className="h-1 w-full bg-amber-400 dark:bg-amber-500" />
-        )}
-
         {/* Thumbnail — always rendered for uniform height */}
         <div className="aspect-[5/2] w-full overflow-hidden bg-muted relative">
           {template.screenshots && template.screenshots.length > 0 ? (

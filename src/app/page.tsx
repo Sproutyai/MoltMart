@@ -30,7 +30,7 @@ export default async function HomePage() {
     .select("*, seller:profiles!seller_id(username, display_name, avatar_url)")
     .eq("status", "published")
     .order("download_count", { ascending: false })
-    .limit(10)
+    .limit(20)
 
   return (
     <div className="-mx-4 -my-6">
