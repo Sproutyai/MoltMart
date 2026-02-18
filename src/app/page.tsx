@@ -77,13 +77,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="space-y-20 px-4 pt-0 pb-16">
+      <div className="space-y-12 px-4 pt-0 pb-16">
         <div>
-          <h2 className="text-center text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl mb-10">
-            Browse OpenClaw Upgrades
-          </h2>
-
-          <div className="space-y-12">
+          <div className="space-y-6">
             {/* Featured Templates */}
             <Suspense fallback={null}>
               <FeaturedSection />
@@ -92,13 +88,13 @@ export default async function HomePage() {
             {/* Popular Enhancements — carousel L→R */}
             {templates && templates.length > 0 && (
               <section className="mx-auto max-w-full overflow-hidden">
-                <div className="mb-6 mx-auto max-w-6xl flex items-center justify-between px-4">
-                  <h2 className="text-2xl font-bold sm:text-3xl">🔥 Popular</h2>
+                <div className="mb-3 mx-auto max-w-6xl flex items-center justify-between px-4">
+                  <h2 className="text-lg font-semibold sm:text-xl">🔥 Popular</h2>
                   <Button variant="ghost" asChild>
                     <Link href="/templates">View All →</Link>
                   </Button>
                 </div>
-                <InfiniteCarousel direction="right" speed={35}>
+                <InfiniteCarousel direction="right" speed={60}>
                   {(templates as (Template & { seller: { username: string; display_name: string | null } })[]).map((t) => (
                     <TemplateCard key={t.id} template={t} borderColor="green" />
                   ))}

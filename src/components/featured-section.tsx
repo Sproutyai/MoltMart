@@ -37,13 +37,13 @@ export async function FeaturedSection() {
 
   return (
     <section className="mx-auto max-w-full overflow-hidden">
-      <div className="mb-6 mx-auto max-w-6xl flex items-center justify-between px-4">
-        <h2 className="text-2xl font-bold sm:text-3xl">⭐ Featured</h2>
+      <div className="mb-3 mx-auto max-w-6xl flex items-center justify-between px-4">
+        <h2 className="text-lg font-semibold sm:text-xl">⭐ Featured</h2>
         <Button variant="ghost" asChild>
           <Link href="/templates/featured">View All →</Link>
         </Button>
       </div>
-      <InfiniteCarousel direction="left" speed={35}>
+      <InfiniteCarousel direction="left" speed={50}>
         {sorted.map((t) => (
           <TemplateCard key={t.id} template={t as Template & { seller: { username: string; display_name: string | null } }} isFeatured borderColor="amber" />
         ))}

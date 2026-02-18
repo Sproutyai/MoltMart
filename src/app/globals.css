@@ -17,16 +17,6 @@
   background: radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.577 0.245 27.325 / 20%), transparent);
 }
 
-@keyframes scroll-left {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-@keyframes scroll-right {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0); }
-}
-
 .text-gradient-brand {
   background: linear-gradient(135deg, #DC2626, #F97316);
   -webkit-background-clip: text;
