@@ -19,6 +19,7 @@ export interface Profile {
   twitter_tweet_count?: number | null
   social_stats_updated_at?: string | null
   specialties?: string[]
+  tagline?: string | null
   is_seller: boolean
   is_verified?: boolean
   follower_count?: number
@@ -62,6 +63,8 @@ export interface Template {
   license: string
   demo_video_url: string | null
   setup_instructions: string | null
+  changelog: string | null
+  faq: string | null
   created_at: string
   updated_at: string
   seller?: Profile
@@ -115,6 +118,8 @@ export interface Review {
   template_id: string
   rating: number
   comment: string | null
+  seller_response: string | null
+  seller_response_at: string | null
   created_at: string
   buyer?: Profile
 }

@@ -15,7 +15,7 @@ import { MarkdownContent } from "@/components/markdown-content"
 import { VideoEmbed } from "@/components/video-embed"
 import { SimilarTemplates } from "@/components/similar-templates"
 import { BookmarkButton } from "@/components/bookmark-button"
-import { Download, Calendar, Shield, BookOpen, Cpu } from "lucide-react"
+import { Download, Calendar, Shield, BookOpen, Cpu, History, Clock } from "lucide-react"
 import { SellerTrustSection } from "@/components/seller-trust-section"
 import type { Template, Review } from "@/lib/types"
 
@@ -173,6 +173,37 @@ export default async function TemplateDetailPage({
         <div>
           <h2 className="mb-4 text-xl font-semibold">Preview</h2>
           <TemplatePreview previewData={t.preview_data} />
+        </div>
+
+        <Separator />
+
+        {/* Version History */}
+        <div>
+          <h2 className="mb-4 text-xl font-semibold flex items-center gap-2">
+            <History size={20} /> Version History
+          </h2>
+          <div className="rounded-lg border">
+            <div className="flex items-start gap-3 p-4">
+              <div className="mt-1 h-2 w-2 rounded-full bg-green-500 shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold">v{t.version || "1.0.0"}</span>
+                  <Badge variant="secondary">Latest</Badge>
+                </div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                  <Clock size={12} />
+                  <span>
+                    {new Date(t.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                  </span>
+                </div>
+                {t.created_at !== t.updated_at && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Originally published {new Date(t.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         <Separator />

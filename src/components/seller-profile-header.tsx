@@ -19,14 +19,20 @@ interface SellerProfileHeaderProps {
 export function SellerProfileHeader({ profile, stats, isOwnProfile, isFollowing }: SellerProfileHeaderProps) {
   const memberSince = new Date(profile.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })
 
+  // Generate a unique gradient based on username
+  const nameHash = (profile.username || "a").split("").reduce((a, c) => a + c.charCodeAt(0), 0)
+  const hue1 = nameHash % 360
+  const hue2 = (nameHash + 60) % 360
+
   return (
     <div className="space-y-6">
-      {/* Banner */}
-      <div className="relative h-32 sm:h-40 w-full overflow-hidden rounded-lg bg-gradient-to-r from-primary/20 to-primary/5">
-        {profile.banner_url && (
-          <img src={profile.banner_url} alt="" className="h-full w-full object-cover" />
-        )}
-      </div>
+      {/* Dynamic gradient header */}
+      <div
+        className="relative h-32 sm:h-40 w-full overflow-hidden rounded-lg"
+        style={{
+          background: `linear-gradient(135deg, hsl(${hue1}, 60%, 85%), hsl(${hue2}, 50%, 90%))`,
+        }}
+      />
 
       {/* Avatar + info */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6 -mt-12 px-4 sm:px-6">
@@ -51,6 +57,9 @@ export function SellerProfileHeader({ profile, stats, isOwnProfile, isFollowing 
             @{profile.username} · Member since {memberSince}
           </p>
           <ActivityIndicator lastActiveAt={profile.last_active_at ?? null} createdAt={profile.created_at} />
+          {profile.tagline && (
+            <p className="text-sm text-primary/80 italic">{profile.tagline}</p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

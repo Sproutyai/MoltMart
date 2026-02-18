@@ -24,7 +24,7 @@ export default function ProfilePage() {
   const [username, setUsername] = useState("")
   const [bio, setBio] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
-  const [bannerUrl, setBannerUrl] = useState("")
+  const [tagline, setTagline] = useState("")
   const [website, setWebsite] = useState("")
   const [specialties, setSpecialties] = useState("")
   const [usernameError, setUsernameError] = useState("")
@@ -43,7 +43,7 @@ export default function ProfilePage() {
         setUsername(prof.username || "")
         setBio(prof.bio || "")
         setAvatarUrl(prof.avatar_url || "")
-        setBannerUrl(prof.banner_url || "")
+        setTagline(prof.tagline || "")
         setWebsite(prof.website || "")
         setSpecialties((prof.specialties || []).join(", "))
       }
@@ -82,7 +82,7 @@ export default function ProfilePage() {
           username,
           bio,
           avatar_url: avatarUrl,
-          banner_url: bannerUrl || null,
+          tagline: tagline || null,
           website: website || null,
           specialties: specialtiesArr,
         }),
@@ -138,17 +138,6 @@ export default function ProfilePage() {
                   <p className="text-xs text-muted-foreground mt-1">JPG, PNG or WebP. Max 2MB.</p>
                 </div>
                 <div>
-                  <Label>Banner</Label>
-                  <ImageUpload
-                    bucket="profile-images"
-                    path={`${profile.id}/banner`}
-                    currentUrl={bannerUrl || null}
-                    onUploaded={(url) => setBannerUrl(url)}
-                    aspectRatio="banner"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Recommended 1500×500. JPG, PNG or WebP. Max 5MB.</p>
-                </div>
-                <div>
                   <Label htmlFor="displayName">Display Name</Label>
                   <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
                 </div>
@@ -156,6 +145,11 @@ export default function ProfilePage() {
                   <Label htmlFor="username">Username</Label>
                   <Input id="username" value={username} onChange={(e) => { setUsername(e.target.value.toLowerCase()); validateUsername(e.target.value.toLowerCase()) }} placeholder="my-username" />
                   {usernameError && <p className="text-xs text-destructive mt-1">{usernameError}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="tagline">Tagline</Label>
+                  <Input id="tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="Building the future of AI agents" maxLength={80} />
+                  <p className="text-xs text-muted-foreground mt-1">Short motto displayed under your name (max 80 chars)</p>
                 </div>
                 <div>
                   <Label htmlFor="bio">Bio</Label>
@@ -185,9 +179,9 @@ export default function ProfilePage() {
           <Card className="sticky top-6">
             <CardHeader><CardTitle>Preview</CardTitle></CardHeader>
             <CardContent className="p-0 overflow-hidden">
-              <div className="relative h-24 w-full overflow-hidden bg-gradient-to-r from-primary/20 to-primary/5">
-                {bannerUrl && <img src={bannerUrl} alt="" className="h-full w-full object-cover" />}
-              </div>
+              <div className="relative h-24 w-full overflow-hidden" style={{
+                background: `linear-gradient(135deg, hsl(${(username || "a").split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360}, 60%, 85%), hsl(${((username || "a").split("").reduce((a, c) => a + c.charCodeAt(0), 0) + 60) % 360}, 50%, 90%))`,
+              }} />
               <div className="px-4 pb-4">
                 <div className="flex items-center gap-3 -mt-6">
                   <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border-2 border-background bg-muted">
@@ -204,7 +198,8 @@ export default function ProfilePage() {
                     <p className="text-xs text-muted-foreground">@{username || "username"}</p>
                   </div>
                 </div>
-                {bio && <p className="text-xs text-muted-foreground mt-2">{bio}</p>}
+                {tagline && <p className="text-xs text-primary/80 mt-2 italic">{tagline}</p>}
+                {bio && <p className="text-xs text-muted-foreground mt-1">{bio}</p>}
                 {specialties && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {specialties.split(",").map(s => s.trim()).filter(Boolean).map(s => (

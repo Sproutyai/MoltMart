@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Plus, Store, Pencil, Archive, DollarSign, Download, Star, Package, Megaphone, TrendingUp, AlertTriangle, RefreshCw } from "lucide-react"
+import { Loader2, Plus, Store, Pencil, Archive, DollarSign, Download, Star, Package, Megaphone, TrendingUp, AlertTriangle, RefreshCw, BarChart3, Upload, Zap, Crown } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -233,6 +233,64 @@ export default function SellerDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-3 gap-3 mb-8">
+        <Link href="/dashboard/seller/upload">
+          <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+            <CardContent className="flex flex-col items-center gap-2 py-5 text-center">
+              <Upload className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">Upload Product</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/dashboard/seller/analytics">
+          <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+            <CardContent className="flex flex-col items-center gap-2 py-5 text-center">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">View Analytics</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/dashboard/seller/promote">
+          <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+            <CardContent className="flex flex-col items-center gap-2 py-5 text-center">
+              <Megaphone className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">Promote</span>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* Best Performing Product */}
+      {templates.length > 0 && (() => {
+        const best = [...templates].sort((a, b) => b.download_count - a.download_count)[0]
+        const recentlyUpdated = [...templates].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0]
+        return (
+          <Card className="mb-8">
+            <CardContent className="py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-start gap-3">
+                  <Crown className="h-5 w-5 text-yellow-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium">Top Performer</p>
+                    <Link href={`/templates/${best.slug}`} className="text-sm font-semibold hover:underline">{best.title}</Link>
+                    <p className="text-xs text-muted-foreground">{best.download_count} downloads · ★ {best.avg_rating.toFixed(1)}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Zap className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium">Recently Updated</p>
+                    <Link href={`/templates/${recentlyUpdated.slug}`} className="text-sm font-semibold hover:underline">{recentlyUpdated.title}</Link>
+                    <p className="text-xs text-muted-foreground">Updated {new Date(recentlyUpdated.updated_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })()}
 
       {templates.length === 0 ? (
         <Card>

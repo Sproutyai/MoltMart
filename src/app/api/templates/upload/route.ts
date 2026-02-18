@@ -23,6 +23,8 @@ export async function POST(request: Request) {
   const requirements = formData.get("requirements") as string
   const setupInstructions = formData.get("setup_instructions") as string
   const demoVideoUrl = formData.get("demo_video_url") as string
+  const changelog = formData.get("changelog") as string
+  const faq = formData.get("faq") as string
   const version = (formData.get("version") as string) || "1.0.0"
   const license = (formData.get("license") as string) || "MIT"
   const priceCentsRaw = formData.get("price_cents") as string
@@ -120,6 +122,8 @@ export async function POST(request: Request) {
       version,
       license,
       demo_video_url: demoVideoUrl || null,
+      changelog: changelog || null,
+      faq: faq || null,
     })
     .select()
     .single()
