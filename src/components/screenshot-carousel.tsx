@@ -15,7 +15,7 @@ export function ScreenshotCarousel({ screenshots, title }: { screenshots: string
         <img
           src={screenshots[current]}
           alt={`${title} screenshot ${current + 1}`}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover"
         />
       </div>
       {screenshots.length > 1 && (

@@ -79,7 +79,7 @@ export function TemplateCard({
     return (
       <Wrapper {...(wrapperProps as any)}>
         <div className="rounded-lg border border-border/60 bg-card p-2 hover:bg-accent/50 transition-colors cursor-pointer text-left w-full shadow-sm">
-          <div className="w-full aspect-[3/1] rounded-md overflow-hidden bg-muted flex items-center justify-center">
+          <div className="w-full aspect-video rounded-md overflow-hidden bg-muted flex items-center justify-center">
             {template.screenshots?.[0] ? (
               <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
             ) : (
@@ -111,7 +111,7 @@ export function TemplateCard({
     <OuterWrapper {...(outerProps as any)}>
       <Card className={`h-full flex flex-col transition-shadow ${isPreview ? "" : "hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] cursor-pointer"} overflow-hidden pt-0 ${ringClass}`}>
         {/* Thumbnail — always rendered for uniform height */}
-        <div className="aspect-[5/2] w-full overflow-hidden bg-muted relative">
+        <div className="aspect-video w-full overflow-hidden bg-muted relative">
           {template.screenshots && template.screenshots.length > 0 ? (
             <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
           ) : (

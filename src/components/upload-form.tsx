@@ -264,11 +264,11 @@ export function UploadForm({ seller }: UploadFormProps = {}) {
               <div>
                 <Label>Screenshots (up to {MAX_SCREENSHOTS})</Label>
                 <p className="text-xs text-muted-foreground mt-1 mb-2">
-                  Recommended: 1280×512px (5:2 ratio) for best card display. First image will be your listing thumbnail. JPG, PNG, or WebP. Max 5MB each.
+                  Recommended: 1280×720px (16:9 ratio) for best card display. First image will be your listing thumbnail. JPG, PNG, or WebP. Max 5MB each.
                 </p>
                 <div className="flex flex-wrap gap-3 mt-2">
                   {screenshotPreviews.map((src, i) => (
-                    <div key={i} className="relative w-32 aspect-[5/2] rounded-md overflow-hidden border">
+                    <div key={i} className="relative w-32 aspect-video rounded-md overflow-hidden border">
                       {i === 0 && (
                         <span className="absolute top-0.5 left-0.5 bg-primary text-primary-foreground text-[9px] font-semibold px-1.5 py-0.5 rounded z-10">Thumbnail</span>
                       )}
@@ -279,7 +279,7 @@ export function UploadForm({ seller }: UploadFormProps = {}) {
                     </div>
                   ))}
                   {screenshots.length < MAX_SCREENSHOTS && (
-                    <button type="button" onClick={() => screenshotInputRef.current?.click()} className="w-32 aspect-[5/2] rounded-md border-2 border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                    <button type="button" onClick={() => screenshotInputRef.current?.click()} className="w-32 aspect-video rounded-md border-2 border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
                       <ImagePlus size={20} />
                       <span className="text-xs">Add</span>
                     </button>
