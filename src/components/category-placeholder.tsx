@@ -11,8 +11,8 @@ export function CategoryPlaceholder({ category }: CategoryPlaceholderProps) {
 
   return (
     <div className={`w-full h-full bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-2`}>
-      <Icon className="h-10 w-10 text-muted-foreground/60" />
-      <span className="text-xs font-medium text-muted-foreground/60">{category}</span>
+      <Icon className="h-8 w-8 text-muted-foreground/50" />
+      <span className="text-[10px] font-medium text-muted-foreground/50">{category}</span>
     </div>
   )
 }

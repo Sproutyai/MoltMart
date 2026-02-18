@@ -74,7 +74,7 @@ export function TemplateCard({
     return (
       <Link href={templateUrl} onClick={handleBeacon} className="block">
         <div className="rounded-lg border border-border/60 bg-card p-2 hover:bg-accent/50 transition-colors cursor-pointer text-left w-full shadow-sm">
-          <div className="w-full aspect-[3/2] rounded-md overflow-hidden bg-muted flex items-center justify-center">
+          <div className="w-full aspect-[3/1] rounded-md overflow-hidden bg-muted flex items-center justify-center">
             {template.screenshots?.[0] ? (
               <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
             ) : (
@@ -108,7 +108,7 @@ export function TemplateCard({
         )}
 
         {/* Thumbnail — always rendered for uniform height */}
-        <div className="aspect-video w-full overflow-hidden bg-muted relative">
+        <div className="aspect-[5/2] w-full overflow-hidden bg-muted relative">
           {template.screenshots && template.screenshots.length > 0 ? (
             <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
           ) : (

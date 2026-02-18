@@ -223,10 +223,16 @@ export function UploadForm() {
             <summary className="cursor-pointer text-lg font-semibold mb-3">3. Media</summary>
             <div className="space-y-4 pl-1">
               <div>
-                <Label>Screenshots (up to {MAX_SCREENSHOTS}, max 5MB each)</Label>
+                <Label>Screenshots (up to {MAX_SCREENSHOTS})</Label>
+                <p className="text-xs text-muted-foreground mt-1 mb-2">
+                  Recommended: 1280×512px (5:2 ratio) for best card display. First image will be your listing thumbnail. JPG, PNG, or WebP. Max 5MB each.
+                </p>
                 <div className="flex flex-wrap gap-3 mt-2">
                   {screenshotPreviews.map((src, i) => (
-                    <div key={i} className="relative w-24 h-24 rounded-md overflow-hidden border">
+                    <div key={i} className="relative w-32 aspect-[5/2] rounded-md overflow-hidden border">
+                      {i === 0 && (
+                        <span className="absolute top-0.5 left-0.5 bg-primary text-primary-foreground text-[9px] font-semibold px-1.5 py-0.5 rounded z-10">Thumbnail</span>
+                      )}
                       <img src={src} alt={`Screenshot ${i + 1}`} className="w-full h-full object-cover" />
                       <button type="button" onClick={() => removeScreenshot(i)} className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 text-white hover:bg-black/80">
                         <X size={14} />
@@ -234,13 +240,13 @@ export function UploadForm() {
                     </div>
                   ))}
                   {screenshots.length < MAX_SCREENSHOTS && (
-                    <button type="button" onClick={() => screenshotInputRef.current?.click()} className="w-24 h-24 rounded-md border-2 border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                    <button type="button" onClick={() => screenshotInputRef.current?.click()} className="w-32 aspect-[5/2] rounded-md border-2 border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
                       <ImagePlus size={20} />
                       <span className="text-xs">Add</span>
                     </button>
                   )}
                 </div>
-                <input ref={screenshotInputRef} type="file" accept="image/*" multiple onChange={handleScreenshotAdd} className="hidden" />
+                <input ref={screenshotInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleScreenshotAdd} className="hidden" />
               </div>
               <div>
                 <Label htmlFor="demoVideoUrl">Demo Video URL (YouTube or Loom)</Label>
