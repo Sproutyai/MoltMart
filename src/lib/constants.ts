@@ -1,10 +1,14 @@
 export const CATEGORIES = [
-  'Basic Skills',
-  'Mindset',
+  'Personas',
+  'Skills',
   'Workflows',
-  'Technical',
-  'Creative',
-  'Knowledge',
+  'Heartbeats & Monitoring',
+  'Cron & Scheduling',
+  'Browser Automations',
+  'Channels & Integrations',
+  'Node & Device Control',
+  'Memory & Context',
+  'Multi-Agent & Orchestration',
 ] as const
 
 export type Category = (typeof CATEGORIES)[number]

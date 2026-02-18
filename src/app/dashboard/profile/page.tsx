@@ -167,7 +167,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <Label htmlFor="specialties">Specialties (comma-separated)</Label>
-                  <Input id="specialties" value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="Mindset, Workflows, Technical" />
+                  <Input id="specialties" value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="Personas, Skills, Workflows" />
                 </div>
                 <Button type="submit" disabled={saving}>
                   {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

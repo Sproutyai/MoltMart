@@ -15,19 +15,27 @@ import {
   Zap,
   Code,
   Brain,
-  Palette,
-  Library,
-  GraduationCap,
+  Globe,
+  Clock,
+  Activity,
+  MessageSquare,
+  Monitor,
+  Database,
+  Users,
 } from "lucide-react"
 import type { Template } from "@/lib/types"
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  "Basic Skills": GraduationCap,
-  Mindset: Brain,
-  Workflows: Zap,
-  Technical: Code,
-  Creative: Palette,
-  Knowledge: Library,
+  Personas: Brain,
+  Skills: Zap,
+  Workflows: Code,
+  "Heartbeats & Monitoring": Activity,
+  "Cron & Scheduling": Clock,
+  "Browser Automations": Globe,
+  "Channels & Integrations": MessageSquare,
+  "Node & Device Control": Monitor,
+  "Memory & Context": Database,
+  "Multi-Agent & Orchestration": Users,
 }
 
 export default async function HomePage() {
