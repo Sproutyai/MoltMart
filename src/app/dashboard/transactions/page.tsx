@@ -68,7 +68,7 @@ export default function TransactionsPage() {
   if (loading && !data) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Transaction History</h1>
+        <h1 className="text-2xl font-bold">Sales</h1>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i}><CardContent className="pt-6"><Skeleton className="h-16 w-full" /></CardContent></Card>
@@ -84,7 +84,7 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Transaction History</h1>
+      <h1 className="text-2xl font-bold">Sales</h1>
 
       {data && <EarningsSummary summary={data.summary} />}
 

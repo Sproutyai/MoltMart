@@ -79,7 +79,7 @@ export async function Navbar() {
                   </DropdownMenuItem>
                   {profile.is_seller ? (
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/seller/upload">Upload Enhancement</Link>
+                      <Link href="/dashboard/seller/upload">Create Product</Link>
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem asChild>

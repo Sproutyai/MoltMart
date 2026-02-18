@@ -19,16 +19,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const isSeller = !!profile?.is_seller
 
   const buyerLinks = [
-    { href: "/dashboard", label: "My Library", icon: Library },
+    { href: "/dashboard", label: "Purchases", icon: Library },
     { href: "/dashboard/bookmarks", label: "Bookmarks", icon: Heart },
   ]
 
   const sellerLinks = [
     { href: "/dashboard/seller", label: "Seller Dashboard", icon: Store },
-    { href: "/dashboard/seller/upload", label: "Upload Enhancement", icon: Upload },
+    { href: "/dashboard/seller/upload", label: "Create Product", icon: Upload },
     { href: "/dashboard/seller/promote", label: "Promote", icon: Megaphone },
-    { href: "/dashboard/transactions", label: "Transactions", icon: Receipt },
-    ...(profile?.username ? [{ href: `/sellers/${profile.username}`, label: "Seller Profile", icon: ExternalLink }] : []),
+    { href: "/dashboard/transactions", label: "Sales", icon: Receipt },
+    ...(profile?.username ? [{ href: `/sellers/${profile.username}`, label: "Edit Store", icon: ExternalLink }] : []),
   ]
 
   const affiliateLinks = [
@@ -76,7 +76,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Desktop sidebar */}
       <aside className="hidden w-56 shrink-0 md:block">
         <nav className="flex flex-col gap-1">
-          <p className="px-3 py-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider">Buyer</p>
+          <p className="px-3 py-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider">Library</p>
           {buyerLinks.map((l) => (
             <Link key={l.href} href={l.href} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted">
               <l.icon className="h-4 w-4" />{l.label}
@@ -85,7 +85,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
           {isSeller ? (
             <>
-              <p className="px-3 py-2 mt-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider">Seller</p>
+              <p className="px-3 py-2 mt-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider">My Store</p>
               {sellerLinks.map((l) => (
                 <Link key={l.href} href={l.href} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted">
                   <l.icon className="h-4 w-4" />{l.label}
@@ -94,7 +94,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             </>
           ) : (
             <>
-              <p className="px-3 py-2 mt-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider">Seller</p>
+              <p className="px-3 py-2 mt-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider">My Store</p>
               <Link href="/dashboard/seller" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-primary hover:bg-muted">
                 <UserPlus className="h-4 w-4" />Become a Seller
               </Link>

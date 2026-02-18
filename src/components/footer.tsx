@@ -50,7 +50,7 @@ export async function Footer() {
                 <>
                   <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
                   <Link href="/dashboard/profile" className="hover:text-foreground">Profile</Link>
-                  <Link href="/dashboard/transactions" className="hover:text-foreground">Transactions</Link>
+                  <Link href="/dashboard/transactions" className="hover:text-foreground">Sales</Link>
                 </>
               ) : (
                 <>

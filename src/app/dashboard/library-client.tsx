@@ -86,7 +86,7 @@ export function LibraryClient({ purchases, reviewMap }: LibraryClientProps) {
   if (!purchases || purchases.length === 0) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6">My Library</h1>
+        <h1 className="text-2xl font-bold mb-6">Purchases</h1>
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-16">
             <Package className="h-16 w-16 text-muted-foreground" />
@@ -111,7 +111,7 @@ export function LibraryClient({ purchases, reviewMap }: LibraryClientProps) {
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">My Library</h1>
+        <h1 className="text-2xl font-bold">Purchases</h1>
         <Link href="/templates">
           <Button variant="outline" size="sm">
             <ShoppingBag className="mr-2 h-4 w-4" />

@@ -70,7 +70,7 @@ export function MobileNav({ isLoggedIn, isSeller, isAffiliate }: MobileNavProps)
             <>
               <Link href="/dashboard" onClick={close} className="text-lg font-medium">Dashboard</Link>
               {isSeller && (
-                <Link href="/dashboard/seller/upload" onClick={close} className="text-lg font-medium">Upload Enhancement</Link>
+                <Link href="/dashboard/seller/upload" onClick={close} className="text-lg font-medium">Create Product</Link>
               )}
               <form action="/auth/signout" method="post">
                 <button type="submit" className="text-lg font-medium text-destructive">Sign Out</button>

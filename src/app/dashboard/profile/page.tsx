@@ -92,7 +92,7 @@ export default function ProfilePage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Edit Seller Profile</h1>
+        <h1 className="text-2xl font-bold">Edit Store</h1>
         {profile.is_seller && (
           <Link href={`/sellers/${profile.username}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
             View seller profile <ExternalLink size={14} />
@@ -104,7 +104,7 @@ export default function ProfilePage() {
         {/* Edit form */}
         <div className="lg:col-span-3 space-y-6">
           <Card>
-            <CardHeader><CardTitle>Seller Profile</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Store Profile</CardTitle></CardHeader>
             <CardContent>
               <form onSubmit={handleSave} className="space-y-4">
                 <div>
