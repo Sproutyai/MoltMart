@@ -2,14 +2,11 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DownloadButton } from "@/components/download-button"
-import { StarRating } from "@/components/star-rating"
-import { SellerLink } from "@/components/seller-link"
-import { BookmarkButton } from "@/components/bookmark-button"
+import { TemplateCard } from "@/components/template-card"
 import {
   ShoppingBag,
   Package,
@@ -17,7 +14,6 @@ import {
   ArrowUpDown,
   ExternalLink,
   Star,
-  Download,
 } from "lucide-react"
 import type { Purchase, Template } from "@/lib/types"
 
@@ -199,170 +195,48 @@ export function LibraryClient({ purchases, reviewMap, bookmarkedIds = [] }: Libr
         </Card>
       ) : (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((purchase) => (
-            <LibraryCard
-              key={purchase.id}
-              purchase={purchase}
-              userRating={reviewMap[purchase.template_id]}
-              isBookmarked={bookmarkedSet.has(purchase.template_id)}
-            />
-          ))}
+          {filtered.map((purchase) => {
+            const t = purchase.template as (Template & { seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } }) | undefined
+            if (!t) return null
+            const templateUrl = `/templates/${t.slug}`
+            return (
+              <TemplateCard
+                key={purchase.id}
+                template={t}
+                variant="library"
+                initialBookmarked={bookmarkedSet.has(purchase.template_id)}
+                purchaseDate={purchase.created_at}
+                userRating={reviewMap[purchase.template_id]}
+                actions={
+                  <div className="flex flex-col gap-2 w-full">
+                    {reviewMap[purchase.template_id] === undefined && (
+                      <Link href={`${templateUrl}#reviews`}>
+                        <Button variant="outline" size="sm" className="w-full">
+                          <Star className="mr-2 h-3 w-3" />
+                          Leave a Review
+                        </Button>
+                      </Link>
+                    )}
+                    <DownloadButton
+                      templateId={purchase.template_id}
+                      templateSlug={t.slug}
+                      templateName={t.title}
+                      isLoggedIn={true}
+                      hasPurchased={true}
+                    />
+                    <Link href={templateUrl} className="w-full">
+                      <Button variant="ghost" size="sm" className="w-full text-xs">
+                        <ExternalLink className="mr-1 h-3 w-3" />
+                        View Listing
+                      </Button>
+                    </Link>
+                  </div>
+                }
+              />
+            )
+          })}
         </div>
       )}
     </div>
-  )
-}
-
-/* ─── Individual Library Card (rich, matches TemplateCard style) ─── */
-
-function LibraryCard({
-  purchase,
-  userRating,
-  isBookmarked = false,
-}: {
-  purchase: Purchase
-  userRating?: number
-  isBookmarked?: boolean
-}) {
-  const t = purchase.template as (Template & { seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } }) | undefined
-  if (!t) return null
-
-  const templateUrl = `/templates/${t.slug}`
-
-  return (
-    <Card className="h-full flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] overflow-hidden">
-      {/* Screenshot thumbnail */}
-      {t.screenshots && t.screenshots.length > 0 && (
-        <Link href={templateUrl}>
-          <div className="aspect-video w-full overflow-hidden bg-muted">
-            <img
-              src={t.screenshots[0]}
-              alt={t.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </Link>
-      )}
-
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between gap-2">
-          <Badge variant="outline" className="text-xs">
-            {t.category}
-          </Badge>
-          {t.difficulty && (
-            <Badge
-              variant="outline"
-              className={`text-xs ${
-                t.difficulty === "beginner"
-                  ? "border-green-500 text-green-600"
-                  : t.difficulty === "intermediate"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-red-500 text-red-600"
-              }`}
-            >
-              {t.difficulty === "beginner"
-                ? "🟢"
-                : t.difficulty === "intermediate"
-                  ? "🟡"
-                  : "🔴"}{" "}
-              {t.difficulty}
-            </Badge>
-          )}
-          {t.price_cents === 0 ? (
-            <Badge
-              variant="secondary"
-              className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-            >
-              Free
-            </Badge>
-          ) : (
-            <span className="font-semibold text-sm">
-              ${(t.price_cents / 100).toFixed(2)}
-            </span>
-          )}
-        </div>
-        <div className="mt-2 flex items-center justify-between gap-1">
-          <Link href={templateUrl} className="block min-w-0">
-            <h3 className="font-semibold leading-tight line-clamp-1 hover:underline">
-              {t.title}
-            </h3>
-          </Link>
-          <BookmarkButton templateId={t.id} size={16} initialBookmarked={isBookmarked} />
-        </div>
-      </CardHeader>
-
-      <CardContent className="pb-2 flex-1">
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {t.description}
-        </p>
-        {t.seller && (
-          <div className="mt-2 flex items-center">
-            <SellerLink
-              username={t.seller.username}
-              displayName={t.seller.display_name}
-              avatarUrl={t.seller.avatar_url}
-              showAvatar
-            />
-          </div>
-        )}
-        {/* Downloaded on date */}
-        <p className="mt-2 text-xs text-muted-foreground">
-          Downloaded on{" "}
-          {new Date(purchase.created_at).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </p>
-      </CardContent>
-
-      <CardFooter className="flex flex-col items-stretch gap-2 pt-2">
-        {/* Ratings row */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <StarRating value={t.avg_rating} size={12} />
-            <span>({t.review_count})</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Download size={12} />
-            <span>{t.download_count}</span>
-          </div>
-        </div>
-
-        {/* User's rating or leave review */}
-        {userRating !== undefined ? (
-          <div className="flex items-center gap-1 text-sm">
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span>Your rating: {userRating}/5</span>
-          </div>
-        ) : (
-          <Link href={`${templateUrl}#reviews`}>
-            <Button variant="outline" size="sm" className="w-full">
-              <Star className="mr-2 h-3 w-3" />
-              Leave a Review
-            </Button>
-          </Link>
-        )}
-
-        {/* Quick actions */}
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <DownloadButton
-              templateId={purchase.template_id}
-              templateSlug={t.slug}
-              templateName={t.title}
-              isLoggedIn={true}
-              hasPurchased={true}
-            />
-          </div>
-        </div>
-        <Link href={templateUrl} className="w-full">
-          <Button variant="ghost" size="sm" className="w-full text-xs">
-            <ExternalLink className="mr-1 h-3 w-3" />
-            View Listing
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
   )
 }

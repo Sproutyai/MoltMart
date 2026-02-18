@@ -9,34 +9,9 @@ import { FeaturedSection } from "@/components/featured-section"
 import { NewListingsSnippet } from "@/components/new-listings-snippet"
 import { createClient } from "@/lib/supabase/server"
 import { CATEGORIES } from "@/lib/constants"
-import {
-  Search,
-  Download,
-  Zap,
-  Code,
-  Brain,
-  Globe,
-  Clock,
-  Activity,
-  MessageSquare,
-  Monitor,
-  Database,
-  Users,
-} from "lucide-react"
+import { Search, Download, Zap } from "lucide-react"
+import { CATEGORY_ICONS } from "@/lib/category-icons"
 import type { Template } from "@/lib/types"
-
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  Personas: Brain,
-  Skills: Zap,
-  Workflows: Code,
-  "Heartbeats & Monitoring": Activity,
-  "Cron & Scheduling": Clock,
-  "Browser Automations": Globe,
-  "Channels & Integrations": MessageSquare,
-  "Node & Device Control": Monitor,
-  "Memory & Context": Database,
-  "Multi-Agent & Orchestration": Users,
-}
 
 export default async function HomePage() {
   const supabase = await createClient()

@@ -1,0 +1,18 @@
+import { Zap } from "lucide-react"
+import { CATEGORY_ICONS, CATEGORY_GRADIENTS } from "@/lib/category-icons"
+
+interface CategoryPlaceholderProps {
+  category: string
+}
+
+export function CategoryPlaceholder({ category }: CategoryPlaceholderProps) {
+  const Icon = CATEGORY_ICONS[category] ?? Zap
+  const gradient = CATEGORY_GRADIENTS[category] ?? "from-muted to-muted/50"
+
+  return (
+    <div className={`w-full h-full bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-2`}>
+      <Icon className="h-10 w-10 text-muted-foreground/60" />
+      <span className="text-xs font-medium text-muted-foreground/60">{category}</span>
+    </div>
+  )
+}

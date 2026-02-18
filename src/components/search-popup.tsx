@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { CompactPromotedCard } from "@/components/compact-promoted-card"
+import { TemplateCard } from "@/components/template-card"
 import { createClient } from "@/lib/supabase/client"
 import type { Template } from "@/lib/types"
 
@@ -251,10 +251,10 @@ export function SearchPopup({ mobile, className }: SearchPopupProps) {
             ) : promotedTemplates.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {promotedTemplates.map((t) => (
-                  <CompactPromotedCard
+                  <TemplateCard
                     key={t.id}
                     template={t}
-                    onClick={() => handleCardClick(t.id)}
+                    variant="compact"
                   />
                 ))}
               </div>
