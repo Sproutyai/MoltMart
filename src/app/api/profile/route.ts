@@ -18,7 +18,10 @@ export async function PATCH(request: NextRequest) {
   }
 
   // Validate username format and uniqueness
-  if (updates.username) {
+  if ("username" in updates) {
+    if (!updates.username || typeof updates.username !== "string") {
+      return NextResponse.json({ error: "Username is required" }, { status: 400 })
+    }
     const usernameStr = updates.username as string
     if (!/^[a-z0-9_-]{3,30}$/.test(usernameStr)) {
       return NextResponse.json({ error: "Invalid username format. Use 3-30 lowercase letters, numbers, hyphens, or underscores." }, { status: 400 })

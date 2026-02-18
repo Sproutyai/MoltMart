@@ -101,7 +101,12 @@ export default function ProfilePage() {
   }
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
-  if (!profile) return null
+  if (!profile) return (
+    <div className="flex flex-col items-center justify-center py-12 gap-4">
+      <p className="text-muted-foreground">Failed to load profile.</p>
+      <Button variant="outline" onClick={() => window.location.reload()}>Retry</Button>
+    </div>
+  )
 
   return (
     <div>
@@ -118,7 +123,7 @@ export default function ProfilePage() {
         {/* Edit form */}
         <div className="lg:col-span-3 space-y-6">
           <Card>
-            <CardHeader><CardTitle>Store Profile</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{profile.is_seller ? "Store Profile" : "Profile"}</CardTitle></CardHeader>
             <CardContent>
               <form onSubmit={handleSave} className="space-y-4">
                 <div>
@@ -130,6 +135,7 @@ export default function ProfilePage() {
                     onUploaded={(url) => setAvatarUrl(url)}
                     aspectRatio="square"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG or WebP. Max 2MB.</p>
                 </div>
                 <div>
                   <Label>Banner</Label>
@@ -140,6 +146,7 @@ export default function ProfilePage() {
                     onUploaded={(url) => setBannerUrl(url)}
                     aspectRatio="banner"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">Recommended 1500×500. JPG, PNG or WebP. Max 5MB.</p>
                 </div>
                 <div>
                   <Label htmlFor="displayName">Display Name</Label>
@@ -170,7 +177,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <ConnectedAccounts />
+          <ConnectedAccounts onAvatarChange={(url) => setAvatarUrl(url)} />
         </div>
 
         {/* Live preview */}

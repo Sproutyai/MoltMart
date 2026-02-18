@@ -24,7 +24,11 @@ interface SocialState {
   social_stats_updated_at: string | null
 }
 
-export function ConnectedAccounts() {
+interface ConnectedAccountsProps {
+  onAvatarChange?: (url: string) => void
+}
+
+export function ConnectedAccounts({ onAvatarChange }: ConnectedAccountsProps) {
   const searchParams = useSearchParams()
   const [state, setState] = useState<SocialState | null>(null)
   const [loading, setLoading] = useState(true)
@@ -145,6 +149,7 @@ export function ConnectedAccounts() {
         toast.error("Failed to update profile photo")
       } else {
         toast.success("Profile photo updated!")
+        onAvatarChange?.(avatarUrl)
         await loadState()
       }
     } catch {
@@ -172,7 +177,7 @@ export function ConnectedAccounts() {
   }
 
   return (
-    <Card className="max-w-2xl mt-6">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Connected Accounts</CardTitle>
