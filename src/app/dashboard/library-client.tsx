@@ -26,9 +26,11 @@ type SortOption = "recent" | "alpha" | "category"
 interface LibraryClientProps {
   purchases: Purchase[]
   reviewMap: Record<string, number>
+  bookmarkedIds?: string[]
 }
 
-export function LibraryClient({ purchases, reviewMap }: LibraryClientProps) {
+export function LibraryClient({ purchases, reviewMap, bookmarkedIds = [] }: LibraryClientProps) {
+  const bookmarkedSet = useMemo(() => new Set(bookmarkedIds), [bookmarkedIds])
   const [search, setSearch] = useState("")
   const [sort, setSort] = useState<SortOption>("recent")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
@@ -188,6 +190,11 @@ export function LibraryClient({ purchases, reviewMap }: LibraryClientProps) {
           <CardContent className="flex flex-col items-center gap-3 py-12">
             <Search className="h-8 w-8 text-muted-foreground" />
             <p className="text-muted-foreground">No matching enhancements found</p>
+            {search && (
+              <Button variant="outline" size="sm" onClick={() => setSearch("")}>
+                Clear search
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -197,6 +204,7 @@ export function LibraryClient({ purchases, reviewMap }: LibraryClientProps) {
               key={purchase.id}
               purchase={purchase}
               userRating={reviewMap[purchase.template_id]}
+              isBookmarked={bookmarkedSet.has(purchase.template_id)}
             />
           ))}
         </div>
@@ -210,9 +218,11 @@ export function LibraryClient({ purchases, reviewMap }: LibraryClientProps) {
 function LibraryCard({
   purchase,
   userRating,
+  isBookmarked = false,
 }: {
   purchase: Purchase
   userRating?: number
+  isBookmarked?: boolean
 }) {
   const t = purchase.template as (Template & { seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } }) | undefined
   if (!t) return null
@@ -258,12 +268,18 @@ function LibraryCard({
               {t.difficulty}
             </Badge>
           )}
-          <Badge
-            variant="secondary"
-            className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-          >
-            Free
-          </Badge>
+          {t.price_cents === 0 ? (
+            <Badge
+              variant="secondary"
+              className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+            >
+              Free
+            </Badge>
+          ) : (
+            <span className="font-semibold text-sm">
+              ${(t.price_cents / 100).toFixed(2)}
+            </span>
+          )}
         </div>
         <div className="mt-2 flex items-center justify-between gap-1">
           <Link href={templateUrl} className="block min-w-0">
@@ -271,7 +287,7 @@ function LibraryCard({
               {t.title}
             </h3>
           </Link>
-          <BookmarkButton templateId={t.id} size={16} />
+          <BookmarkButton templateId={t.id} size={16} initialBookmarked={isBookmarked} />
         </div>
       </CardHeader>
 

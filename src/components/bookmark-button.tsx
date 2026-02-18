@@ -8,9 +8,10 @@ interface BookmarkButtonProps {
   templateId: string
   initialBookmarked?: boolean
   size?: number
+  onRemove?: () => void
 }
 
-export function BookmarkButton({ templateId, initialBookmarked = false, size = 20 }: BookmarkButtonProps) {
+export function BookmarkButton({ templateId, initialBookmarked = false, size = 20, onRemove }: BookmarkButtonProps) {
   const [bookmarked, setBookmarked] = useState(initialBookmarked)
   const [isPending, startTransition] = useTransition()
 
@@ -36,6 +37,7 @@ export function BookmarkButton({ templateId, initialBookmarked = false, size = 2
           return
         }
         toast.success(next ? "Bookmarked!" : "Removed from bookmarks")
+        if (!next && onRemove) onRemove()
       } catch {
         setBookmarked(!next) // revert
         toast.error("Something went wrong")

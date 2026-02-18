@@ -16,9 +16,11 @@ interface TemplateCardProps {
   showTimestamp?: boolean
   isFeatured?: boolean
   borderColor?: "amber" | "green" | "red"
+  initialBookmarked?: boolean
+  onBookmarkRemove?: () => void
 }
 
-export function TemplateCard({ template, showTimestamp, isFeatured, borderColor }: TemplateCardProps) {
+export function TemplateCard({ template, showTimestamp, isFeatured, borderColor, initialBookmarked, onBookmarkRemove }: TemplateCardProps) {
   const router = useRouter()
   const isNew = Date.now() - new Date(template.created_at).getTime() < 48 * 60 * 60 * 1000
   const priceDisplay =
@@ -70,7 +72,7 @@ export function TemplateCard({ template, showTimestamp, isFeatured, borderColor 
           <h3 className="font-semibold leading-tight line-clamp-1 min-w-0 hover:underline">{template.title}</h3>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {priceDisplay}
-            <BookmarkButton templateId={template.id} size={16} />
+            <BookmarkButton templateId={template.id} size={16} initialBookmarked={initialBookmarked} onRemove={onBookmarkRemove} />
           </div>
         </div>
       </CardHeader>
