@@ -132,9 +132,9 @@ export function TemplateCard({
         </div>
 
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="text-xs">{template.category}</Badge>
-            {priceDisplay}
+          <div className="flex items-center gap-2 flex-nowrap">
+            <Badge variant="outline" className="text-xs truncate min-w-0">{template.category}</Badge>
+            <div className="shrink-0">{priceDisplay}</div>
           </div>
           <div className="mt-2 flex items-start justify-between gap-2">
             <h3 className="font-semibold leading-tight line-clamp-1 min-w-0 hover:underline">{template.title}</h3>
