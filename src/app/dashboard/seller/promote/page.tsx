@@ -48,13 +48,22 @@ export default function PromotePage() {
         .eq("seller_id", user.id)
 
       if (promos) {
-        const { data: allPromos } = await supabase
-          .from("promotions")
-          .select("template_id, promoted_at")
-          .order("promoted_at", { ascending: false })
-
-        const posMap = new Map<string, number>()
-        allPromos?.forEach((p, i) => posMap.set(p.template_id, i + 1))
+        // Compute position server-side via API to avoid leaking all sellers' promotion data
+        let posMap = new Map<string, number>()
+        try {
+          const templateIds = promos.map(p => p.template_id)
+          const res = await fetch("/api/promote/positions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ templateIds }),
+          })
+          if (res.ok) {
+            const positions: Record<string, number> = await res.json()
+            posMap = new Map(Object.entries(positions))
+          }
+        } catch {
+          // Position will default to 0 if API fails — non-critical
+        }
 
         const promoMap = new Map<string, PromoInfo>()
         promos.forEach(p => {
@@ -75,7 +84,8 @@ export default function PromotePage() {
     }
   }
 
-  useEffect(() => { load() }, [router])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load() }, [])
 
   async function handlePromote(templateId: string) {
     setPromoting(templateId)

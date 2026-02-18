@@ -16,6 +16,7 @@ export function EarningsSummary({ summary }: { summary: TransactionSummary }) {
 
   return (
     <div className="space-y-3">
+      <h2 className="text-sm font-medium text-muted-foreground">All-Time Overview</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {cards.map((c) => (
           <Card key={c.label}>

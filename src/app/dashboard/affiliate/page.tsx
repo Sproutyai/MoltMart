@@ -81,7 +81,7 @@ export default async function AffiliateDashboardPage() {
   // Get earnings list
   const { data: earnings } = await supabase
     .from("affiliate_earnings")
-    .select("*")
+    .select("*, purchase:purchases(template:templates(title))")
     .eq("affiliate_id", affiliate.id)
     .order("created_at", { ascending: false })
     .limit(10)

@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Receipt } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Receipt, AlertTriangle, RefreshCw } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EarningsSummary } from "@/components/transactions/earnings-summary"
 import { TransactionFilters } from "@/components/transactions/transaction-filters"
@@ -20,6 +21,7 @@ interface ApiResponse {
 export default function TransactionsPage() {
   const [data, setData] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [period, setPeriod] = useState("all")
   const [templateId, setTemplateId] = useState("")
   const [status, setStatus] = useState("")
@@ -29,15 +31,20 @@ export default function TransactionsPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true)
+    setError(null)
     const params = new URLSearchParams({ period, sort, order, page: String(page), per_page: "20" })
     if (templateId) params.set("template_id", templateId)
     if (status) params.set("status", status)
 
     try {
       const res = await fetch(`/api/seller/transactions?${params}`)
-      if (res.ok) setData(await res.json())
-    } catch (e) {
-      console.error("Failed to fetch transactions", e)
+      if (res.ok) {
+        setData(await res.json())
+      } else {
+        setError("Failed to load sales data. Please try again.")
+      }
+    } catch {
+      setError("Failed to load sales data. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -80,7 +87,21 @@ export default function TransactionsPage() {
     )
   }
 
+  if (error && !data) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Sales</h1>
+        <div className="flex flex-col items-center justify-center py-16 gap-4">
+          <AlertTriangle className="h-10 w-10 text-destructive" />
+          <p className="text-lg font-medium">{error}</p>
+          <Button onClick={fetchData}><RefreshCw className="mr-2 h-4 w-4" />Retry</Button>
+        </div>
+      </div>
+    )
+  }
+
   const hasTransactions = data && data.pagination.total > 0
+  const hasActiveFilters = period !== "all" || templateId !== "" || status !== ""
 
   return (
     <div className="space-y-6">
@@ -115,10 +136,21 @@ export default function TransactionsPage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-12">
             <Receipt className="h-12 w-12 text-muted-foreground" />
-            <p className="text-muted-foreground font-medium">No transactions yet</p>
-            <p className="text-sm text-muted-foreground">
-              Sales will appear here once customers purchase your templates.
-            </p>
+            {hasActiveFilters ? (
+              <>
+                <p className="text-muted-foreground font-medium">No transactions match your filters</p>
+                <Button variant="outline" onClick={() => { setPeriod("all"); setTemplateId(""); setStatus(""); setPage(1) }}>
+                  Clear filters
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-muted-foreground font-medium">No transactions yet</p>
+                <p className="text-sm text-muted-foreground">
+                  Sales will appear here once customers purchase your templates.
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       )}

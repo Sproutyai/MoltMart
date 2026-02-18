@@ -42,7 +42,7 @@ export function TransactionTable({ transactions, sort, order, onSort }: Props) {
         <thead className="border-b bg-muted/50">
           <tr>
             {header("Date", "date")}
-            {header("Enhancement", "template")}
+            <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Enhancement</th>
             <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Buyer</th>
             {header("Amount", "amount")}
             <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Fee</th>
