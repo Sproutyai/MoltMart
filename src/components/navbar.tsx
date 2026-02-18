@@ -30,6 +30,16 @@ export async function Navbar() {
     profile = data
   }
 
+  let isAffiliate = false
+  if (user) {
+    const { data: affData } = await supabase
+      .from("affiliates")
+      .select("id")
+      .eq("user_id", user.id)
+      .single()
+    isAffiliate = !!affData
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -40,7 +50,7 @@ export async function Navbar() {
             <span>Molt Mart</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <NavLinks isSeller={!!profile?.is_seller} isLoggedIn={!!user} />
+            <NavLinks isSeller={!!profile?.is_seller} isLoggedIn={!!user} isAffiliate={isAffiliate} />
           </nav>
         </div>
 
@@ -68,14 +78,9 @@ export async function Navbar() {
                     <Link href="/dashboard">Dashboard</Link>
                   </DropdownMenuItem>
                   {profile.is_seller ? (
-                    <>
-                      <DropdownMenuItem asChild>
-                        <Link href="/dashboard/seller">Seller Dashboard</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/dashboard/seller/upload">Upload Enhancement</Link>
-                      </DropdownMenuItem>
-                    </>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/seller/upload">Upload Enhancement</Link>
+                    </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard/seller">Become a Seller</Link>
@@ -99,7 +104,7 @@ export async function Navbar() {
               </>
             )}
           </div>
-          <MobileNav isLoggedIn={!!user} isSeller={!!profile?.is_seller} />
+          <MobileNav isLoggedIn={!!user} isSeller={!!profile?.is_seller} isAffiliate={isAffiliate} />
         </div>
       </div>
     </header>

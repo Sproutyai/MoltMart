@@ -17,9 +17,10 @@ import { SearchPopup } from "@/components/search-popup"
 interface MobileNavProps {
   isLoggedIn: boolean
   isSeller: boolean
+  isAffiliate: boolean
 }
 
-export function MobileNav({ isLoggedIn, isSeller }: MobileNavProps) {
+export function MobileNav({ isLoggedIn, isSeller, isAffiliate }: MobileNavProps) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const close = () => setOpen(false)
@@ -39,10 +40,12 @@ export function MobileNav({ isLoggedIn, isSeller }: MobileNavProps) {
           {/* Mobile Search — opens search popup */}
           <SearchPopup mobile />
 
-          <Link href="/" onClick={close} className={linkClass(pathname === "/")}>Home</Link>
+          {pathname !== "/" && (
+            <Link href="/" onClick={close} className={linkClass(pathname === "/")}>Home</Link>
+          )}
           <Link href="/templates" onClick={close} className={linkClass(pathname === "/templates")}>Browse Enhancements</Link>
           <Link href="/templates/new" onClick={close} className={linkClass(pathname === "/templates/new")}>New Listings</Link>
-          <Link href="/templates/featured" onClick={close} className={linkClass(pathname === "/templates/featured")}>⭐ Featured</Link>
+          <Link href="/templates/featured" onClick={close} className={linkClass(pathname === "/templates/featured")}>Featured</Link>
           {isSeller ? (
             <Link href="/dashboard/seller" onClick={close} className={linkClass(pathname.startsWith("/dashboard/seller"))}>Sell</Link>
           ) : isLoggedIn ? (
@@ -50,7 +53,19 @@ export function MobileNav({ isLoggedIn, isSeller }: MobileNavProps) {
           ) : (
             <Link href="/sell" onClick={close} className={linkClass(pathname === "/sell")}>Sell</Link>
           )}
-          <Link href="/affiliate" onClick={close} className={linkClass(pathname === "/affiliate")}>Affiliates</Link>
+          <Link
+            href="/affiliate"
+            onClick={close}
+            className={cn(
+              pathname === "/affiliate"
+                ? linkClass(true)
+                : isAffiliate
+                  ? "text-lg font-medium"
+                  : "text-lg font-bold text-amber-500 dark:text-amber-400"
+            )}
+          >
+            {isAffiliate ? "Affiliates" : "Become an Affiliate"}
+          </Link>
           {isLoggedIn ? (
             <>
               <Link href="/dashboard" onClick={close} className="text-lg font-medium">Dashboard</Link>
