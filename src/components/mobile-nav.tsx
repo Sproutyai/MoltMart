@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { usePathname } from "next/navigation"
-import { Menu } from "lucide-react"
+import { Menu, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -29,7 +29,7 @@ export function MobileNav({ isLoggedIn, isSeller, isAffiliate }: MobileNavProps)
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="lg:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Menu</span>
         </Button>
@@ -46,31 +46,37 @@ export function MobileNav({ isLoggedIn, isSeller, isAffiliate }: MobileNavProps)
           <Link href="/templates" onClick={close} className={linkClass(pathname === "/templates")}>Explore</Link>
           <Link href="/templates/new" onClick={close} className={linkClass(pathname === "/templates/new")}>New Listings</Link>
           <Link href="/templates/featured" onClick={close} className={linkClass(pathname === "/templates/featured")}>Featured</Link>
-          {isSeller ? (
-            <Link href="/dashboard/seller" onClick={close} className={linkClass(pathname.startsWith("/dashboard/seller"))}>Sell</Link>
-          ) : isLoggedIn ? (
+
+          {/* Hide "Sell" if already a seller */}
+          {isSeller ? null : isLoggedIn ? (
             <Link href="/dashboard/seller" onClick={close} className={linkClass(pathname.startsWith("/dashboard/seller"))}>Become a Seller</Link>
           ) : (
             <Link href="/sell" onClick={close} className={linkClass(pathname === "/sell")}>Sell</Link>
           )}
-          <Link
-            href="/affiliate"
-            onClick={close}
-            className={cn(
-              pathname === "/affiliate"
-                ? linkClass(true)
-                : isAffiliate
-                  ? "text-lg font-medium"
+
+          {/* Hide "Affiliate" if already an affiliate */}
+          {!isAffiliate && (
+            <Link
+              href="/affiliate"
+              onClick={close}
+              className={cn(
+                pathname === "/affiliate"
+                  ? linkClass(true)
                   : "text-lg font-bold text-amber-500 dark:text-amber-400"
-            )}
-          >
-            {isAffiliate ? "Affiliates" : "Become an Affiliate"}
-          </Link>
+              )}
+            >
+              Become an Affiliate
+            </Link>
+          )}
+
           {isLoggedIn ? (
             <>
               <Link href="/dashboard" onClick={close} className="text-lg font-medium">Dashboard</Link>
               {isSeller && (
-                <Link href="/dashboard/seller/upload" onClick={close} className="text-lg font-medium">Create Product</Link>
+                <Link href="/dashboard/seller/upload" onClick={close} className="flex items-center gap-2 text-lg font-medium">
+                  <Plus className="size-4" />
+                  New Listing
+                </Link>
               )}
               <form action="/auth/signout" method="post">
                 <button type="submit" className="text-lg font-medium text-destructive">Sign Out</button>
