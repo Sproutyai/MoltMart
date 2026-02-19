@@ -78,7 +78,7 @@ export function TemplateCard({
     const wrapperProps = isPreview ? { className: "block" } : { href: templateUrl, onClick: handleBeacon, className: "block" }
     return (
       <Wrapper {...(wrapperProps as any)}>
-        <div className="rounded-lg border border-border/60 bg-card p-2 hover:bg-accent/50 transition-colors cursor-pointer text-left w-full shadow-sm">
+        <div className="rounded-lg border border-border/60 bg-card p-2 hover:bg-accent/50 transition-colors cursor-pointer text-left w-full shadow-sm overflow-hidden">
           <div className="w-full aspect-video rounded-md overflow-hidden bg-muted flex items-center justify-center">
             {template.screenshots?.[0] ? (
               <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
@@ -86,9 +86,9 @@ export function TemplateCard({
               <CategoryPlaceholder category={template.category} />
             )}
           </div>
-          <p className="font-semibold text-sm line-clamp-1 mt-1.5">{template.title}</p>
-          <div className="flex items-center justify-between mt-1 gap-1">
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">{template.category}</Badge>
+          <p className="font-semibold text-sm line-clamp-1 mt-1.5 min-w-0 truncate">{template.title}</p>
+          <div className="flex items-center justify-between mt-1 gap-1 min-w-0 overflow-hidden">
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink min-w-0 truncate">{template.category}</Badge>
             {priceDisplay}
           </div>
           {template.review_count > 0 && (
@@ -131,15 +131,15 @@ export function TemplateCard({
           )}
         </div>
 
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 flex-nowrap">
-            <Badge variant="outline" className="text-xs truncate min-w-0">{template.category}</Badge>
+        <CardHeader className="pb-2 min-w-0">
+          <div className="flex items-center gap-2 flex-nowrap min-w-0 overflow-hidden">
+            <Badge variant="outline" className="text-xs shrink min-w-0 truncate">{template.category}</Badge>
             <div className="shrink-0">{priceDisplay}</div>
           </div>
-          <div className="mt-2 flex items-start justify-between gap-2">
+          <div className="mt-2 flex items-start justify-between gap-2 min-w-0 overflow-hidden">
             <h3 className="font-semibold leading-tight line-clamp-1 min-w-0 hover:underline">{template.title}</h3>
             {!isPreview && (
-              <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.preventDefault()}>
+              <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.preventDefault()}>
                 <BookmarkButton templateId={template.id} size={16} initialBookmarked={initialBookmarked} onRemove={onBookmarkRemove} />
               </div>
             )}

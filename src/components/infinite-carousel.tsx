@@ -123,7 +123,7 @@ export function InfiniteCarousel({
   return (
     <div
       ref={containerRef}
-      className="overflow-hidden py-1 -my-1 px-1 -mx-1"
+      className="overflow-hidden py-4 -my-4 px-1 -mx-1"
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
     >

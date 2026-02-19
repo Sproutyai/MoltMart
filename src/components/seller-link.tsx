@@ -15,13 +15,13 @@ export function SellerLink({ username, displayName, avatarUrl, showAvatar }: Sel
   return (
     <Link
       href={`/sellers/${username}`}
-      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+      className="inline-flex items-center gap-1.5 min-w-0 text-xs text-muted-foreground hover:text-foreground transition-colors"
       onClick={(e) => e.stopPropagation()}
     >
       {showAvatar && (
         <UserAvatar avatarUrl={avatarUrl} displayName={displayName || username} size="xs" />
       )}
-      <span>by {displayName || username}</span>
+      <span className="truncate">by {displayName || username}</span>
       {isOfficialSeller(username) && <OfficialBadge size={14} />}
     </Link>
   )
