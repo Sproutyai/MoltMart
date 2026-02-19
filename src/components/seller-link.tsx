@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { UserAvatar } from "@/components/user-avatar"
+import { OfficialBadge, isOfficialSeller } from "@/components/official-badge"
 
 interface SellerLinkProps {
   username: string
@@ -21,6 +22,7 @@ export function SellerLink({ username, displayName, avatarUrl, showAvatar }: Sel
         <UserAvatar avatarUrl={avatarUrl} displayName={displayName || username} size="xs" />
       )}
       <span>by {displayName || username}</span>
+      {isOfficialSeller(username) && <OfficialBadge size={14} />}
     </Link>
   )
 }

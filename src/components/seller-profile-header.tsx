@@ -7,6 +7,7 @@ import { ActivityIndicator } from "@/components/activity-indicator"
 import { ShareProfileButton } from "@/components/share-profile-button"
 import { ContactSellerButton } from "@/components/contact-seller-button"
 import { CheckCircle } from "lucide-react"
+import { OfficialBadge, isOfficialSeller } from "@/components/official-badge"
 import type { Profile, SellerStats } from "@/lib/types"
 
 interface SellerProfileHeaderProps {
@@ -49,9 +50,11 @@ export function SellerProfileHeader({ profile, stats, isOwnProfile, isFollowing 
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold">{profile.display_name || profile.username}</h1>
-            {profile.is_verified && (
+            {isOfficialSeller(profile.username) ? (
+              <OfficialBadge size={22} />
+            ) : profile.is_verified ? (
               <CheckCircle className="h-5 w-5 text-blue-500" />
-            )}
+            ) : null}
           </div>
           <p className="text-sm text-muted-foreground">
             @{profile.username} · Member since {memberSince}
