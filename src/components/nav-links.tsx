@@ -12,7 +12,7 @@ interface NavLinksProps {
 
 const links = [
   { href: "/", label: "Home", match: (p: string) => p === "/" },
-  { href: "/templates", label: "Enhancements", match: (p: string) => p === "/templates" },
+  { href: "/templates", label: "Explore", match: (p: string) => p === "/templates" },
   { href: "/templates/new", label: "New", match: (p: string) => p === "/templates/new" },
   { href: "/templates/featured", label: "Featured", match: (p: string) => p === "/templates/featured" },
 ]

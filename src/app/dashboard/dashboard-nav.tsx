@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Library, Store, Upload, Receipt, ExternalLink, Pencil, DollarSign, Megaphone, UserPlus, Heart, BarChart3 } from "lucide-react"
+import { Library, Store, Upload, Receipt, ExternalLink, Pencil, DollarSign, Megaphone, UserPlus, Heart, BarChart3, Package } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 interface NavLink {
@@ -27,8 +27,9 @@ export function DashboardNav({ isSeller, username }: DashboardNavProps) {
 
   const sellerLinks: NavLink[] = [
     { href: "/dashboard/seller", label: "Seller Dashboard", icon: Store },
-    { href: "/dashboard/seller/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/dashboard/seller/products", label: "My Products", icon: Package },
     { href: "/dashboard/seller/upload", label: "Create Product", icon: Upload },
+    { href: "/dashboard/seller/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/dashboard/seller/promote", label: "Promote", icon: Megaphone },
     { href: "/dashboard/transactions", label: "Sales", icon: Receipt },
     ...(username ? [{ href: `/sellers/${username}`, label: "View Public Profile", icon: ExternalLink }] : []),

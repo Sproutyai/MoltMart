@@ -225,8 +225,9 @@ export function EditTemplateForm({ template, seller }: EditTemplateFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label>Slug (read-only)</Label>
-            <Input value={template.slug} disabled className="bg-muted" />
+            <Label>Slug (locked)</Label>
+            <Input value={template.slug} disabled readOnly className="bg-muted cursor-not-allowed" />
+            <p className="text-xs text-muted-foreground mt-1">Slug cannot be changed after creation to preserve links and SEO.</p>
           </div>
 
           <details open>
@@ -235,6 +236,7 @@ export function EditTemplateForm({ template, seller }: EditTemplateFormProps) {
               <div>
                 <Label htmlFor="title">Title *</Label>
                 <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">⚠ Changing the title may affect search rankings and bookmarks.</p>
               </div>
               <div>
                 <Label htmlFor="description">Short Description *</Label>
@@ -248,6 +250,7 @@ export function EditTemplateForm({ template, seller }: EditTemplateFormProps) {
                     {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">⚠ Changing the category will move this product to a different browse section.</p>
               </div>
               <div>
                 <Label htmlFor="tags">Tags (comma separated)</Label>
@@ -393,10 +396,13 @@ export function EditTemplateForm({ template, seller }: EditTemplateFormProps) {
                   </label>
                 </div>
                 {pricingType === "paid" && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">$</span>
-                    <Input type="number" min="1.00" step="0.01" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="1.00" className="w-32" />
-                    <span className="text-sm text-muted-foreground">USD</span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">$</span>
+                      <Input type="number" min="1.00" step="0.01" value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} placeholder="1.00" className="w-32" />
+                      <span className="text-sm text-muted-foreground">USD</span>
+                    </div>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">⚠ Price changes apply to new buyers only. Existing buyers are unaffected.</p>
                   </div>
                 )}
               </div>
