@@ -112,7 +112,7 @@ export function InfiniteCarousel({
     items.map((child, i) => (
       <div
         key={`${rep}-${i}`}
-        className="w-[192px] flex-shrink-0 sm:w-[224px]"
+        className="w-[192px] flex-shrink-0 sm:w-[224px] transition-transform duration-200 hover:scale-105 hover:z-10"
         aria-hidden={rep > 0 ? true : undefined}
       >
         {child}
