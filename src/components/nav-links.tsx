@@ -36,17 +36,8 @@ export function NavLinks({ isSeller, isLoggedIn, isAffiliate }: NavLinksProps) {
           {l.label}
         </Link>
       ))}
-      {isSeller ? (
-        <Link
-          href="/dashboard/seller"
-          className={cn(
-            "text-sm font-medium transition-colors hover:text-foreground",
-            pathname.startsWith("/dashboard/seller") ? "text-foreground font-semibold" : "text-muted-foreground"
-          )}
-        >
-          Sell
-        </Link>
-      ) : isLoggedIn ? (
+      {/* Hide "Sell" entirely if already a seller; show "Become a Seller" for logged-in non-sellers; show "Sell" for guests */}
+      {isSeller ? null : isLoggedIn ? (
         <Link
           href="/dashboard/seller"
           className={cn(
@@ -67,19 +58,20 @@ export function NavLinks({ isSeller, isLoggedIn, isAffiliate }: NavLinksProps) {
           Sell
         </Link>
       )}
-      <Link
-        href="/affiliate"
-        className={cn(
-          "text-sm transition-colors hover:text-foreground",
-          pathname === "/affiliate"
-            ? "text-foreground font-semibold"
-            : isAffiliate
-              ? "font-medium text-muted-foreground"
+      {/* Hide "Affiliate" if already an affiliate */}
+      {!isAffiliate && (
+        <Link
+          href="/affiliate"
+          className={cn(
+            "text-sm transition-colors hover:text-foreground",
+            pathname === "/affiliate"
+              ? "text-foreground font-semibold"
               : "font-bold text-amber-500 dark:text-amber-400"
-        )}
-      >
-        {isAffiliate ? "Affiliates" : "Become an Affiliate"}
-      </Link>
+          )}
+        >
+          Become an Affiliate
+        </Link>
+      )}
     </>
   )
 }

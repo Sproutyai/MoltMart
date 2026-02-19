@@ -1,5 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
+import { Plus } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -44,28 +45,41 @@ export async function Navbar() {
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Left: Logo + Nav */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-8 shrink-0">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
             <Image src="/logo/Moltmartlogo.png" alt="Molt Mart" width={28} height={28} />
-            <span>Molt Mart</span>
+            <span className="hidden sm:inline">Molt Mart</span>
           </Link>
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav className="hidden items-center gap-6 lg:flex">
             <NavLinks isSeller={!!profile?.is_seller} isLoggedIn={!!user} isAffiliate={isAffiliate} />
           </nav>
         </div>
 
-        {/* Search */}
-        <NavbarSearch />
+        {/* Center: Search */}
+        <div className="flex-1 flex justify-center px-4">
+          <NavbarSearch />
+        </div>
 
-        {/* Right: Auth */}
-        <div className="flex items-center gap-3">
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* New Listing button for sellers */}
+          {profile?.is_seller && (
+            <Button variant="outline" size="sm" asChild className="hidden md:inline-flex gap-1 h-8 text-xs">
+              <Link href="/dashboard/seller/upload">
+                <Plus className="size-3.5" />
+                <span>New</span>
+              </Link>
+            </Button>
+          )}
+
           <ThemeToggle />
+
           <div className="hidden items-center gap-2 md:flex">
             {user && profile ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                    <Avatar className="h-9 w-9">
+                  <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
+                    <Avatar className="h-9 w-9 ring-2 ring-red-600">
                       <AvatarImage src={profile.avatar_url ?? undefined} alt={profile.username} />
                       <AvatarFallback>{profile.username?.[0]?.toUpperCase() ?? "U"}</AvatarFallback>
                     </Avatar>
