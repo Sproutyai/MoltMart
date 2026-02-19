@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import {
   Library, Store, Upload, Receipt, Pencil, DollarSign, Megaphone,
   UserPlus, Heart, BarChart3, Package, ChevronLeft, ChevronRight,
-  ShoppingBag, Settings, User, StoreIcon
+  ShoppingBag, Settings, User, StoreIcon, CreditCard
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -57,7 +57,8 @@ export function DashboardNav({ isSeller, username }: DashboardNavProps) {
     { href: "/dashboard/account/profile", label: "Edit Profile", icon: User },
     { href: "/dashboard", label: "Purchases", icon: ShoppingBag },
     { href: "/dashboard/bookmarks", label: "Bookmarks", icon: Heart },
-    { href: "/dashboard/account/settings", label: "Account Settings", icon: Settings },
+    { href: "/dashboard/payment", label: "Payment Info", icon: CreditCard },
+    { href: "/dashboard/settings", label: "Account Settings", icon: Settings },
   ]
 
   const affiliateLinks: NavLink[] = [

@@ -112,9 +112,11 @@ export default function ProfilePage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">{profile.is_seller ? "Edit Store" : "Edit Profile"}</h1>
-        {profile.is_seller && (
-          <Link href={`/sellers/${profile.username}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
-            View seller profile <ExternalLink size={14} />
+        {profile.is_seller && profile.username && (
+          <Link href={`/sellers/${profile.username}`} target="_blank">
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <ExternalLink size={14} /> View Store Preview
+            </Button>
           </Link>
         )}
       </div>

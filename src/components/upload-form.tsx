@@ -315,7 +315,8 @@ export function UploadForm({ seller }: UploadFormProps = {}) {
             <summary className="cursor-pointer text-lg font-semibold mb-3">4. File & Pricing</summary>
             <div className="space-y-4 pl-1">
               <div>
-                <Label htmlFor="file">Template File (.zip, max 10MB) *</Label>
+                <Label htmlFor="file">Template File (.zip, max 10MB) {submitStatus === "draft" ? "" : "*"}</Label>
+                <p className="text-xs text-muted-foreground mb-1">Optional for drafts</p>
                 <Input id="file" type="file" accept=".zip" onChange={(e) => setFile(e.target.files?.[0] || null)} />
               </div>
               <div className="grid grid-cols-2 gap-4">
