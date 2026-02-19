@@ -32,6 +32,18 @@ export default async function HomePage() {
     .order("download_count", { ascending: false })
     .limit(20)
 
+  // Fetch user bookmarks for carousel hydration
+  const bookmarkedIds = new Set<string>()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user && templates) {
+    const { data: bookmarks } = await supabase
+      .from("bookmarks")
+      .select("template_id")
+      .eq("user_id", user.id)
+      .in("template_id", templates.map(t => t.id))
+    bookmarks?.forEach(b => bookmarkedIds.add(b.template_id))
+  }
+
   return (
     <div className="-mx-4 -my-6">
       {/* Hero */}
@@ -87,7 +99,7 @@ export default async function HomePage() {
 
             {/* Popular Enhancements — carousel L→R */}
             {templates && templates.length > 0 && (
-              <section className="mx-auto max-w-full overflow-hidden">
+              <section className="mx-auto max-w-full">
                 <div className="mb-3 mx-auto max-w-6xl flex items-center justify-between px-4">
                   <h2 className="text-lg font-semibold sm:text-xl">🔥 Popular</h2>
                   <Button variant="ghost" asChild>
@@ -96,7 +108,7 @@ export default async function HomePage() {
                 </div>
                 <InfiniteCarousel direction="right" speed={60}>
                   {(templates as (Template & { seller: { username: string; display_name: string | null } })[]).map((t) => (
-                    <TemplateCard key={t.id} template={t} borderColor="green" />
+                    <TemplateCard key={t.id} template={t} borderColor="green" initialBookmarked={bookmarkedIds.has(t.id)} />
                   ))}
                 </InfiniteCarousel>
               </section>

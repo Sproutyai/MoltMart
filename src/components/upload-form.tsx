@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
 import { CATEGORIES, DIFFICULTIES, AI_MODELS, LICENSES, MAX_UPLOAD_SIZE, MAX_SCREENSHOTS, MAX_SCREENSHOT_SIZE } from "@/lib/constants"
-import { Loader2, X, ImagePlus } from "lucide-react"
+import { Loader2, X, ImagePlus, Eye, Star, Download, Shield, CheckCircle } from "lucide-react"
 import { toast } from "sonner"
 import { TemplateCard } from "@/components/template-card"
 import type { Template } from "@/lib/types"
@@ -46,6 +48,7 @@ export function UploadForm({ seller }: UploadFormProps = {}) {
   const [version, setVersion] = useState("1.0.0")
   const [license, setLicense] = useState("MIT")
   const [submitStatus, setSubmitStatus] = useState<"published" | "draft">("published")
+  const [otherModel, setOtherModel] = useState("")
 
   function toggleModel(model: string) {
     setSelectedModels((prev) =>
@@ -85,9 +88,10 @@ export function UploadForm({ seller }: UploadFormProps = {}) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!file) { toast.error("Please select a .zip file"); return }
-    if (!file.name.endsWith(".zip")) { toast.error("Only .zip files allowed"); return }
-    if (file.size > MAX_UPLOAD_SIZE) { toast.error("File must be under 10MB"); return }
+    const isDraft = submitStatus === "draft"
+    if (!isDraft && !file) { toast.error("Please select a .zip file"); return }
+    if (file && !file.name.endsWith(".zip")) { toast.error("Only .zip files allowed"); return }
+    if (file && file.size > MAX_UPLOAD_SIZE) { toast.error("File must be under 10MB"); return }
     if (!title || !description || !category) { toast.error("Fill in all required fields"); return }
     if (pricingType === "paid" && (!priceUsd || isNaN(parseFloat(priceUsd)) || parseFloat(priceUsd) < 1)) {
       toast.error("Minimum price is $1.00"); return
@@ -103,7 +107,8 @@ export function UploadForm({ seller }: UploadFormProps = {}) {
       fd.append("category", category)
       fd.append("tags", tags)
       fd.append("difficulty", difficulty)
-      fd.append("ai_models", JSON.stringify(selectedModels))
+      const models = selectedModels.map(m => m === "Other" && otherModel ? `Other: ${otherModel}` : m)
+      fd.append("ai_models", JSON.stringify(models))
       fd.append("requirements", requirements)
       fd.append("setup_instructions", setupInstructions)
       fd.append("demo_video_url", demoVideoUrl)
@@ -111,7 +116,7 @@ export function UploadForm({ seller }: UploadFormProps = {}) {
       fd.append("faq", faq)
       fd.append("version", version)
       fd.append("license", license)
-      fd.append("file", file)
+      if (file) fd.append("file", file)
       fd.append("status", submitStatus)
       const priceCents = pricingType === "paid" ? Math.round(parseFloat(priceUsd) * 100) : 0
       fd.append("price_cents", String(priceCents))
@@ -194,9 +199,11 @@ export function UploadForm({ seller }: UploadFormProps = {}) {
               <div>
                 <Label>Category *</Label>
                 <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectTrigger className="w-full [&>span]:truncate [&>span]:max-w-[calc(100%-20px)] [&>span]:text-left" title={category || undefined}>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {CATEGORIES.map((c) => <SelectItem key={c} value={c} className="whitespace-normal">{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -236,6 +243,16 @@ export function UploadForm({ seller }: UploadFormProps = {}) {
                     </label>
                   ))}
                 </div>
+                {selectedModels.includes("Other") && (
+                  <div className="mt-2">
+                    <Input
+                      value={otherModel}
+                      onChange={(e) => setOtherModel(e.target.value)}
+                      placeholder="Specify model name (e.g. Qwen, DeepSeek)"
+                      className="max-w-xs"
+                    />
+                  </div>
+                )}
               </div>
               <div>
                 <Label htmlFor="requirements">Requirements / Prerequisites</Label>
@@ -362,6 +379,109 @@ export function UploadForm({ seller }: UploadFormProps = {}) {
           <TemplateCard template={previewTemplate} isPreview />
         </div>
         <p className="text-xs text-muted-foreground text-center">Actual size as shown on site</p>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="w-full mt-2">
+              <Eye className="mr-2 h-4 w-4" />
+              Preview Listing
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Listing Preview</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6">
+              {/* Hero / Screenshots */}
+              {screenshotPreviews.length > 0 && (
+                <div className="rounded-lg overflow-hidden border">
+                  <img src={screenshotPreviews[0]} alt="Preview" className="w-full max-h-80 object-cover" />
+                </div>
+              )}
+
+              {/* Title & Meta */}
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold">{title || "Your Enhancement Title"}</h2>
+                <p className="text-muted-foreground">{description || "Your description will appear here..."}</p>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  {category && <Badge variant="secondary">{category}</Badge>}
+                  {difficulty && <Badge variant="outline" className="capitalize">{difficultyEmoji[difficulty]} {difficulty}</Badge>}
+                  {selectedModels.length > 0 && selectedModels.map(m => (
+                    <Badge key={m} variant="outline">{m === "Other" && otherModel ? otherModel : m}</Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price & Actions */}
+              <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 border">
+                <div className="text-2xl font-bold">
+                  {pricingType === "paid" && priceUsd ? `$${parseFloat(priceUsd).toFixed(2)}` : "Free"}
+                </div>
+                <Button className="ml-auto" disabled>
+                  <Download className="mr-2 h-4 w-4" />
+                  {pricingType === "paid" ? "Purchase" : "Download"}
+                </Button>
+              </div>
+
+              {/* Seller Info */}
+              {seller && (
+                <div className="flex items-center gap-3 p-3 rounded-lg border">
+                  {seller.avatar_url && <img src={seller.avatar_url} alt="" className="w-10 h-10 rounded-full" />}
+                  <div>
+                    <div className="flex items-center gap-1.5 font-medium">
+                      {seller.display_name || seller.username}
+                      {seller.is_verified && <CheckCircle className="h-4 w-4 text-blue-500" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground">@{seller.username}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Long Description */}
+              {longDescription && (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">About</h3>
+                  <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">{longDescription}</div>
+                </div>
+              )}
+
+              {/* Requirements */}
+              {requirements && (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Requirements</h3>
+                  <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">{requirements}</div>
+                </div>
+              )}
+
+              {/* Setup */}
+              {setupInstructions && (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Setup Instructions</h3>
+                  <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">{setupInstructions}</div>
+                </div>
+              )}
+
+              {/* Additional screenshots */}
+              {screenshotPreviews.length > 1 && (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Screenshots</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {screenshotPreviews.slice(1).map((src, i) => (
+                      <img key={i} src={src} alt={`Screenshot ${i + 2}`} className="rounded-lg border w-full aspect-video object-cover" />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Meta footer */}
+              <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t">
+                <span>v{version}</span>
+                <span>{license}</span>
+                <span className="flex items-center gap-1"><Star className="h-3 w-3" /> No reviews yet</span>
+                <span className="flex items-center gap-1"><Download className="h-3 w-3" /> 0 downloads</span>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
     </div>

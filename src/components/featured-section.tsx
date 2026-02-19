@@ -26,6 +26,18 @@ export async function FeaturedSection() {
 
   if (!templates || templates.length === 0) return null
 
+  // Fetch user bookmarks for hydration
+  const bookmarkedIds = new Set<string>()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data: bookmarks } = await supabase
+      .from("bookmarks")
+      .select("template_id")
+      .eq("user_id", user.id)
+      .in("template_id", templates.map(t => t.id))
+    bookmarks?.forEach(b => bookmarkedIds.add(b.template_id))
+  }
+
   // Sort by promotion order
   const idOrder = new Map(templateIds.map((id, i) => [id, i]))
   const sorted = [...templates].sort((a, b) => (idOrder.get(a.id) ?? 99) - (idOrder.get(b.id) ?? 99))
@@ -36,7 +48,7 @@ export async function FeaturedSection() {
   }
 
   return (
-    <section className="mx-auto max-w-full overflow-hidden">
+    <section className="mx-auto max-w-full">
       <div className="mb-3 mx-auto max-w-6xl flex items-center justify-between px-4">
         <h2 className="text-lg font-semibold sm:text-xl">⭐ Featured</h2>
         <Button variant="ghost" asChild>
@@ -45,7 +57,7 @@ export async function FeaturedSection() {
       </div>
       <InfiniteCarousel direction="left" speed={50}>
         {sorted.map((t) => (
-          <TemplateCard key={t.id} template={t as Template & { seller: { username: string; display_name: string | null } }} isFeatured borderColor="amber" />
+          <TemplateCard key={t.id} template={t as Template & { seller: { username: string; display_name: string | null } }} isFeatured borderColor="amber" initialBookmarked={bookmarkedIds.has(t.id)} />
         ))}
       </InfiniteCarousel>
     </section>
