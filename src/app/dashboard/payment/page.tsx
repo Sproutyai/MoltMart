@@ -21,10 +21,60 @@ const CARD_ICONS: Record<string, string> = {
   unknown: "💳 Card",
 }
 
+const COUNTRIES = [
+  { code: "", label: "Select country…" },
+  { code: "US", label: "United States" },
+  { code: "CA", label: "Canada" },
+  { code: "GB", label: "United Kingdom" },
+  { code: "AU", label: "Australia" },
+  { code: "DE", label: "Germany" },
+  { code: "FR", label: "France" },
+  { code: "NL", label: "Netherlands" },
+  { code: "JP", label: "Japan" },
+  { code: "KR", label: "South Korea" },
+  { code: "SG", label: "Singapore" },
+  { code: "IN", label: "India" },
+  { code: "BR", label: "Brazil" },
+  { code: "MX", label: "Mexico" },
+  { code: "SE", label: "Sweden" },
+  { code: "NO", label: "Norway" },
+  { code: "DK", label: "Denmark" },
+  { code: "FI", label: "Finland" },
+  { code: "ES", label: "Spain" },
+  { code: "IT", label: "Italy" },
+  { code: "PT", label: "Portugal" },
+  { code: "CH", label: "Switzerland" },
+  { code: "AT", label: "Austria" },
+  { code: "BE", label: "Belgium" },
+  { code: "IE", label: "Ireland" },
+  { code: "NZ", label: "New Zealand" },
+  { code: "PH", label: "Philippines" },
+  { code: "TH", label: "Thailand" },
+  { code: "PL", label: "Poland" },
+  { code: "CZ", label: "Czech Republic" },
+  { code: "ZA", label: "South Africa" },
+  { code: "AE", label: "United Arab Emirates" },
+  { code: "IL", label: "Israel" },
+  { code: "AR", label: "Argentina" },
+  { code: "CL", label: "Chile" },
+  { code: "CO", label: "Colombia" },
+  { code: "RO", label: "Romania" },
+  { code: "HU", label: "Hungary" },
+  { code: "TW", label: "Taiwan" },
+  { code: "HK", label: "Hong Kong" },
+  { code: "MY", label: "Malaysia" },
+  { code: "ID", label: "Indonesia" },
+  { code: "VN", label: "Vietnam" },
+  { code: "NG", label: "Nigeria" },
+  { code: "KE", label: "Kenya" },
+  { code: "EG", label: "Egypt" },
+]
+
 export default function PaymentPage() {
   const [methods, setMethods] = useState<PaymentMethod[]>([])
   const [loading, setLoading] = useState(true)
   const [savingAddress, setSavingAddress] = useState(false)
+  const [isSeller, setIsSeller] = useState(false)
   const [billing, setBilling] = useState<BillingAddress>({
     name: "",
     addressLine1: "",
@@ -45,17 +95,20 @@ export default function PaymentPage() {
         // silent
       }
 
-      // Load billing address from profile
+      // Load billing address + seller status from profile
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("billing_address")
+          .select("billing_address, is_seller")
           .eq("id", user.id)
           .single()
         if (data?.billing_address) {
           setBilling(data.billing_address as BillingAddress)
+        }
+        if (data?.is_seller) {
+          setIsSeller(true)
         }
       }
       setLoading(false)
@@ -95,6 +148,10 @@ export default function PaymentPage() {
       </div>
     )
   }
+
+  // Non-sellers go to purchases (dashboard), sellers go to transaction history
+  const txLink = isSeller ? "/dashboard/transactions" : "/dashboard"
+  const txLabel = isSeller ? "View Transaction History" : "View Purchase History"
 
   return (
     <div className="flex-1 space-y-6">
@@ -153,37 +210,48 @@ export default function PaymentPage() {
       <Card>
         <CardHeader>
           <CardTitle>Billing Address</CardTitle>
-          <CardDescription>Used for receipts and invoices</CardDescription>
+          <CardDescription>
+            Used for receipts and invoices. During checkout, Stripe may collect billing details separately.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label htmlFor="billing-name">Full Name</Label>
-              <Input id="billing-name" value={billing.name} onChange={(e) => setBilling({ ...billing, name: e.target.value })} placeholder="John Doe" />
+              <Input id="billing-name" value={billing.name} onChange={(e) => setBilling({ ...billing, name: e.target.value })} placeholder="Full name" />
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="addr1">Address Line 1</Label>
-              <Input id="addr1" value={billing.addressLine1} onChange={(e) => setBilling({ ...billing, addressLine1: e.target.value })} placeholder="123 Main St" />
+              <Input id="addr1" value={billing.addressLine1} onChange={(e) => setBilling({ ...billing, addressLine1: e.target.value })} placeholder="Street address" />
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="addr2">Address Line 2</Label>
-              <Input id="addr2" value={billing.addressLine2 || ""} onChange={(e) => setBilling({ ...billing, addressLine2: e.target.value })} placeholder="Apt 4B" />
+              <Input id="addr2" value={billing.addressLine2 || ""} onChange={(e) => setBilling({ ...billing, addressLine2: e.target.value })} placeholder="Apt, suite, unit, etc. (optional)" />
             </div>
             <div>
               <Label htmlFor="city">City</Label>
               <Input id="city" value={billing.city} onChange={(e) => setBilling({ ...billing, city: e.target.value })} />
             </div>
             <div>
-              <Label htmlFor="state">State / Province</Label>
+              <Label htmlFor="state">State / Province / Region</Label>
               <Input id="state" value={billing.state} onChange={(e) => setBilling({ ...billing, state: e.target.value })} />
             </div>
             <div>
-              <Label htmlFor="zip">ZIP / Postal Code</Label>
+              <Label htmlFor="zip">Postal / ZIP Code</Label>
               <Input id="zip" value={billing.postalCode} onChange={(e) => setBilling({ ...billing, postalCode: e.target.value })} />
             </div>
             <div>
               <Label htmlFor="country">Country</Label>
-              <Input id="country" value={billing.country} onChange={(e) => setBilling({ ...billing, country: e.target.value })} placeholder="US" />
+              <select
+                id="country"
+                value={billing.country}
+                onChange={(e) => setBilling({ ...billing, country: e.target.value })}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.label}</option>
+                ))}
+              </select>
             </div>
           </div>
           <Button className="mt-4" onClick={saveBillingAddress} disabled={savingAddress}>
@@ -192,12 +260,12 @@ export default function PaymentPage() {
         </CardContent>
       </Card>
 
-      {/* Transaction History Link */}
+      {/* Transaction History Link — contextual based on seller status */}
       <Card>
         <CardContent className="py-4">
-          <Link href="/dashboard/transactions" className="flex items-center gap-2 text-sm font-medium hover:underline">
+          <Link href={txLink} className="flex items-center gap-2 text-sm font-medium hover:underline">
             <Receipt className="h-4 w-4" />
-            View Transaction History →
+            {txLabel} →
           </Link>
         </CardContent>
       </Card>
