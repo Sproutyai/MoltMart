@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
     try {
       const supabase = createClient()
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://molt-mart.vercel.app/auth/reset-password",
+        redirectTo: `${window.location.origin}/auth/reset-password`,
       })
       if (resetError) {
         setError(resetError.message)

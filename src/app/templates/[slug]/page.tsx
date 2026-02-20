@@ -19,6 +19,7 @@ import { PromotedInCategory } from "@/components/promoted-in-category"
 import { BookmarkButton } from "@/components/bookmark-button"
 import { Download, Calendar, Shield, BookOpen, Cpu, History, Clock } from "lucide-react"
 import { SellerTrustSection } from "@/components/seller-trust-section"
+import { Breadcrumb } from "@/components/breadcrumb"
 import type { Template, Review } from "@/lib/types"
 
 export async function generateMetadata({
@@ -128,16 +129,12 @@ export default async function TemplateDetailPage({
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
-        {/* Breadcrumbs */}
-        <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
-          <span>&gt;</span>
-          <Link href="/templates" className="hover:text-foreground transition-colors">Enhancements</Link>
-          <span>&gt;</span>
-          <Link href={`/templates?category=${encodeURIComponent(t.category)}`} className="hover:text-foreground transition-colors">{t.category}</Link>
-          <span>&gt;</span>
-          <span className="text-foreground font-medium truncate">{t.title}</span>
-        </nav>
+        <Breadcrumb items={[
+          { label: "Home", href: "/" },
+          { label: "Templates", href: "/templates" },
+          { label: t.category, href: `/templates?category=${encodeURIComponent(t.category)}` },
+          { label: t.title },
+        ]} />
 
         {t.screenshots && t.screenshots.length > 0 && (
           <ScreenshotCarousel screenshots={t.screenshots} title={t.title} />
