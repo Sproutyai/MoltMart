@@ -14,6 +14,7 @@ import { TemplateCard } from "@/components/template-card"
 import { ScreenshotCarousel } from "@/components/screenshot-carousel"
 import { MarkdownContent } from "@/components/markdown-content"
 import { VideoEmbed } from "@/components/video-embed"
+import { getCategoryDefaultImage } from "@/lib/category-defaults"
 import { SimilarTemplates } from "@/components/similar-templates"
 import { PromotedInCategory } from "@/components/promoted-in-category"
 import { BookmarkButton } from "@/components/bookmark-button"
@@ -136,8 +137,12 @@ export default async function TemplateDetailPage({
           { label: t.title },
         ]} />
 
-        {t.screenshots && t.screenshots.length > 0 && (
+        {t.screenshots && t.screenshots.length > 0 ? (
           <ScreenshotCarousel screenshots={t.screenshots} title={t.title} />
+        ) : (
+          <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted relative">
+            <img src={getCategoryDefaultImage(t.category)} alt={t.category} className="w-full h-full object-cover" />
+          </div>
         )}
 
         <div>

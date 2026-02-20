@@ -23,6 +23,7 @@ import {
   Trash2, Loader2, Package, Star,
 } from "lucide-react"
 import { toast } from "sonner"
+import { getTemplateImage } from "@/lib/category-defaults"
 
 interface Product {
   id: string
@@ -234,13 +235,7 @@ export default function MyProductsPage() {
             <Card key={product.id} className="flex items-center gap-4 p-4">
               {/* Thumbnail */}
               <div className="w-16 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                {product.screenshots?.[0] ? (
-                  <img src={product.screenshots[0]} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                )}
+                <img src={getTemplateImage(product.screenshots, product.category)} alt="" className="w-full h-full object-cover" />
               </div>
 
               {/* Title + Category */}
