@@ -95,6 +95,11 @@ export function TemplateCard({
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink min-w-0 truncate">{template.category}</Badge>
             {priceDisplay}
           </div>
+          {template.seller && (
+            <div className="mt-0.5" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+              <SellerLink username={template.seller.username} displayName={template.seller.display_name} avatarUrl={template.seller.avatar_url} showAvatar />
+            </div>
+          )}
           {template.review_count > 0 && (
             <div className="flex items-center gap-1 mt-1">
               <Star className="size-2.5 fill-yellow-500 text-yellow-500" />
@@ -240,7 +245,12 @@ export function TemplateCard({
           )}
 
           {template.seller && (
-            <p className="text-xs text-muted-foreground truncate">{template.seller.display_name || template.seller.username}</p>
+            <div className="flex items-center" onClick={(e) => e.preventDefault()}>
+              <SellerLink username={template.seller.username} displayName={template.seller.display_name} avatarUrl={template.seller.avatar_url} showAvatar />
+              {template.seller.is_verified && (
+                <TrustBadge githubVerified={template.seller.github_verified} twitterVerified={template.seller.twitter_verified} variant="inline" />
+              )}
+            </div>
           )}
 
           <div className="flex items-center justify-between text-xs text-muted-foreground">

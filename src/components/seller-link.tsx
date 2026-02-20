@@ -21,7 +21,7 @@ export function SellerLink({ username, displayName, avatarUrl, showAvatar }: Sel
       {showAvatar && (
         <UserAvatar avatarUrl={avatarUrl} displayName={displayName || username} size="xs" />
       )}
-      <span className="truncate">by {displayName || username}</span>
+      <span className="truncate underline decoration-muted-foreground/50 underline-offset-2">by {displayName || username}</span>
       {isOfficialSeller(username) && <OfficialBadge size={14} />}
     </Link>
   )
