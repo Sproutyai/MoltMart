@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -57,11 +57,11 @@ export default function MyProductsPage() {
     return "list"
   })
 
+  // Fetch ALL products (no status param), filter client-side for counts
   const fetchProducts = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      if (statusFilter !== "all") params.set("status", statusFilter)
       if (search) params.set("search", search)
       params.set("sort", sort)
       const res = await fetch(`/api/seller/products?${params}`)
@@ -74,7 +74,20 @@ export default function MyProductsPage() {
     } finally {
       setLoading(false)
     }
-  }, [statusFilter, search, sort])
+  }, [search, sort])
+
+  // Derived: counts and filtered list
+  const allCount = useMemo(() => products.filter(p => p.status !== "deleted").length, [products])
+  const publishedCount = useMemo(() => products.filter(p => p.status === "published").length, [products])
+  const draftCount = useMemo(() => products.filter(p => p.status === "draft").length, [products])
+  const archivedCount = useMemo(() => products.filter(p => p.status === "archived").length, [products])
+
+  const filteredProducts = useMemo(() =>
+    statusFilter === "all"
+      ? products.filter(p => p.status !== "deleted")
+      : products.filter(p => p.status === statusFilter),
+    [products, statusFilter]
+  )
 
   useEffect(() => {
     fetchProducts()
@@ -106,11 +119,28 @@ export default function MyProductsPage() {
     }
   }
 
+  async function handlePublish(product: Product) {
+    try {
+      const res = await fetch(`/api/templates/${product.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "published" }),
+      })
+      if (res.ok) {
+        toast.success("Product published!")
+        fetchProducts()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || "Failed to publish")
+      }
+    } catch {
+      toast.error("Something went wrong")
+    }
+  }
+
   async function handleDuplicate(product: Product) {
     toast.info("Duplicating product...")
     try {
-      // Create via the upload endpoint would be complex; for now just navigate to upload with hint
-      // Simple approach: POST to a duplicate endpoint or navigate
       router.push(`/dashboard/seller/upload?duplicate=${product.id}`)
     } catch {
       toast.error("Failed to duplicate")
@@ -142,7 +172,7 @@ export default function MyProductsPage() {
       case "published":
         return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-100">Published</Badge>
       case "draft":
-        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 hover:bg-yellow-100">Draft</Badge>
+        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100">Draft</Badge>
       case "archived":
         return <Badge variant="outline" className="text-muted-foreground">Archived</Badge>
       default:
@@ -166,7 +196,7 @@ export default function MyProductsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
         {/* View toggle */}
         <div className="flex border rounded-md overflow-hidden shrink-0">
           <button
@@ -184,9 +214,9 @@ export default function MyProductsPage() {
             <LayoutGrid className="h-4 w-4" />
           </button>
         </div>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+
+        {/* Search */}
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search products..."
@@ -195,19 +225,46 @@ export default function MyProductsPage() {
             className="pl-9"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="archived">Archived</SelectItem>
-          </SelectContent>
-        </Select>
+
+        {/* Status pill toggles */}
+        <div className="flex items-center border rounded-md shrink-0">
+          <Button
+            variant={statusFilter === "all" ? "default" : "ghost"}
+            size="sm"
+            className="h-8 px-3 rounded-r-none text-xs whitespace-nowrap"
+            onClick={() => setStatusFilter("all")}
+          >
+            All ({allCount})
+          </Button>
+          <Button
+            variant={statusFilter === "published" ? "default" : "ghost"}
+            size="sm"
+            className="h-8 px-3 rounded-none border-x text-xs whitespace-nowrap"
+            onClick={() => setStatusFilter("published")}
+          >
+            Published ({publishedCount})
+          </Button>
+          <Button
+            variant={statusFilter === "draft" ? "default" : "ghost"}
+            size="sm"
+            className="h-8 px-3 rounded-none border-r text-xs whitespace-nowrap"
+            onClick={() => setStatusFilter("draft")}
+          >
+            Drafts ({draftCount})
+          </Button>
+          <Button
+            variant={statusFilter === "archived" ? "default" : "ghost"}
+            size="sm"
+            className="h-8 px-3 rounded-l-none text-xs whitespace-nowrap"
+            onClick={() => setStatusFilter("archived")}
+          >
+            Archived ({archivedCount})
+          </Button>
+        </div>
+
+        {/* Sort */}
         <Select value={sort} onValueChange={setSort}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[150px] shrink-0">
             <SelectValue placeholder="Sort" />
           </SelectTrigger>
           <SelectContent>
@@ -224,7 +281,7 @@ export default function MyProductsPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : products.length === 0 ? (
+      ) : filteredProducts.length === 0 ? (
         /* Empty State */
         <Card className="flex flex-col items-center justify-center py-16 px-4 text-center">
           <Package className="h-12 w-12 text-muted-foreground mb-4" />
@@ -256,8 +313,8 @@ export default function MyProductsPage() {
         </Card>
       ) : viewMode === "list" ? (
         <div className="space-y-2">
-          {products.map((product) => (
-            <Card key={product.id} className={`overflow-hidden ${product.status === "archived" ? "opacity-70" : ""}`}>
+          {filteredProducts.map((product) => (
+            <Card key={product.id} className={`overflow-hidden ${product.status === "archived" || product.status === "draft" ? "opacity-80" : ""}`}>
               {product.status === "archived" && (
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-4 py-1.5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -272,6 +329,22 @@ export default function MyProductsPage() {
                   >
                     <ArchiveRestore className="h-3 w-3 mr-1" />
                     Restore
+                  </Button>
+                </div>
+              )}
+              {product.status === "draft" && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800 px-4 py-1.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Pencil className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                    <span className="text-xs text-blue-700 dark:text-blue-400">This product is a draft and not visible to buyers</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 text-xs border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40"
+                    onClick={() => handlePublish(product)}
+                  >
+                    Publish
                   </Button>
                 </div>
               )}
@@ -324,6 +397,11 @@ export default function MyProductsPage() {
                       <DropdownMenuItem onClick={() => handleDuplicate(product)}>
                         <Copy className="mr-2 h-4 w-4" /> Duplicate
                       </DropdownMenuItem>
+                      {product.status === "draft" && (
+                        <DropdownMenuItem onClick={() => handlePublish(product)}>
+                          <ArchiveRestore className="mr-2 h-4 w-4" /> Publish
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => handleArchiveToggle(product)}>
                         {product.status === "archived" ? (
@@ -347,8 +425,8 @@ export default function MyProductsPage() {
         </div>
         ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {products.map((product) => (
-            <Card key={product.id} className={`overflow-hidden flex flex-col ${product.status === "archived" ? "opacity-70" : ""}`}>
+          {filteredProducts.map((product) => (
+            <Card key={product.id} className={`overflow-hidden flex flex-col ${product.status === "archived" || product.status === "draft" ? "opacity-80" : ""}`}>
               {/* Image */}
               <div className="aspect-[4/3] w-full overflow-hidden bg-muted relative">
                 <img src={getTemplateImage(product.screenshots, product.category)} alt={product.title} className="w-full h-full object-cover" />
@@ -371,6 +449,22 @@ export default function MyProductsPage() {
                     >
                       <ArchiveRestore className="h-2.5 w-2.5 mr-0.5" />
                       Restore
+                    </Button>
+                  </div>
+                )}
+                {product.status === "draft" && (
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1 text-[10px] text-blue-700 dark:text-blue-400">
+                      <Pencil className="h-3 w-3" />
+                      Draft
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-5 text-[10px] px-1.5 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40"
+                      onClick={() => handlePublish(product)}
+                    >
+                      Publish
                     </Button>
                   </div>
                 )}
