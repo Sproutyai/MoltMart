@@ -130,7 +130,9 @@ export async function POST(request: Request) {
   // Override status if requires review or flagged
   const effectiveStatus = requiresReview ? "pending_review" : scanResult.status === "flagged" ? "pending_review" : status
 
-  const { data: template, error: insertError } = await supabase
+  // Use admin client to bypass RLS for this trusted server-side operation
+  const insertClient = admin || supabase
+  const { data: template, error: insertError } = await insertClient
     .from("templates")
     .insert({
       seller_id: user.id,

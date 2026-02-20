@@ -34,7 +34,10 @@ export async function PATCH(
 
   updates.updated_at = new Date().toISOString()
 
-  const { error } = await supabase.from("templates").update(updates).eq("id", id)
+  // Use admin client to bypass RLS for this trusted server-side operation
+  const admin = createAdminClient()
+  const updateClient = admin || supabase
+  const { error } = await updateClient.from("templates").update(updates).eq("id", id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   return NextResponse.json({ success: true })

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import JSZip from "jszip"
 import { scanZipContents } from "@/lib/scan-zip"
 
@@ -75,8 +76,10 @@ export async function POST(request: Request) {
     }, { status: 422 })
   }
 
-  // Update scan results, hash, and file_updated_at on the template
-  await supabase.from("templates").update({
+  // Use admin client to bypass RLS for this trusted server-side operation
+  const admin = createAdminClient()
+  const updateClient = admin || supabase
+  await updateClient.from("templates").update({
     file_hash: scanResult.fileHash,
     scan_status: scanResult.status,
     scan_results: { findings: scanResult.findings, fileCount: scanResult.fileCount, scannedAt: new Date().toISOString() },
