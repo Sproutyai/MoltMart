@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -37,7 +37,7 @@ export default function AccountSettingsPage() {
   const [deleteInput, setDeleteInput] = useState("")
   const [deleting, setDeleting] = useState(false)
 
-  // Notification preferences (placeholder — would persist to DB)
+  // Notification preferences — persisted via API
   const [notifications, setNotifications] = useState({
     purchases: true,
     sales: true,
@@ -45,11 +45,42 @@ export default function AccountSettingsPage() {
     productUpdates: true,
   })
 
+  useEffect(() => {
+    fetch("/api/account/notifications")
+      .then((r) => r.ok ? r.json() : null)
+      .then((prefs) => {
+        if (prefs) {
+          setNotifications({
+            purchases: prefs.emailPurchase ?? true,
+            sales: prefs.emailSale ?? true,
+            marketing: prefs.emailMarketing ?? false,
+            productUpdates: prefs.emailReview ?? true,
+          })
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const saveNotifications = useCallback(async (updated: typeof notifications) => {
+    const payload = {
+      emailPurchase: updated.purchases,
+      emailSale: updated.sales,
+      emailReview: updated.productUpdates,
+      emailMarketing: updated.marketing,
+    }
+    const res = await fetch("/api/account/notifications", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    if (res.ok) toast.success("Notification preference updated")
+    else toast.error("Failed to update preference")
+  }, [])
+
   function updateNotification(key: keyof typeof notifications) {
     setNotifications((prev) => {
       const updated = { ...prev, [key]: !prev[key] }
-      // TODO: Persist to user profile / preferences table
-      toast.success("Notification preference updated")
+      saveNotifications(updated)
       return updated
     })
   }
@@ -92,9 +123,22 @@ export default function AccountSettingsPage() {
   }
 
   async function handleExportData() {
-    // TODO: Implement data export (GDPR compliance)
-    // Collect all user data from profiles, purchases, etc. and return as JSON/CSV
-    toast.info("Data export is coming soon")
+    try {
+      const res = await fetch("/api/account/export")
+      if (!res.ok) throw new Error("Export failed")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "molt-mart-data-export.json"
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast.success("Data exported successfully")
+    } catch {
+      toast.error("Failed to export data")
+    }
   }
 
   return (
