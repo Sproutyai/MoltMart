@@ -21,11 +21,11 @@ export const AI_MODELS = ['Claude', 'GPT-4', 'GPT-4o', 'Gemini', 'Llama', 'Mistr
 export const LICENSES = ['MIT', 'Apache-2.0', 'GPL-3.0', 'Commercial', 'Custom'] as const
 
 export const PREMADE_AVATARS = [
-  { id: "chameleon", url: "/avatars/avatar-chameleon.webp", label: "Chameleon" },
-  { id: "geometric", url: "/avatars/avatar-geometric.webp", label: "Geometric" },
   { id: "robot", url: "/avatars/avatar-robot.webp", label: "Robot" },
-  { id: "cosmic", url: "/avatars/avatar-cosmic.webp", label: "Cosmic" },
-  { id: "pixel", url: "/avatars/avatar-pixel.webp", label: "Pixel" },
+  { id: "cart", url: "/avatars/avatar-cart.webp", label: "Shopping Cart" },
+  { id: "banana", url: "/avatars/avatar-banana.webp", label: "Banana" },
+  { id: "cat", url: "/avatars/avatar-cat.webp", label: "Cat" },
+  { id: "cactus", url: "/avatars/avatar-cactus.webp", label: "Cactus" },
 ] as const
 
 export type PremadeAvatarId = (typeof PREMADE_AVATARS)[number]["id"]

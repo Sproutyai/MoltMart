@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { ImageUpload } from "@/components/image-upload"
+import { AvatarPicker } from "@/components/avatar-picker"
 import type { Profile } from "@/lib/types"
 
 export default function EditPersonalProfilePage() {
@@ -95,13 +96,22 @@ export default function EditPersonalProfilePage() {
           <form onSubmit={handleSave} className="space-y-4">
             <div>
               <Label>Avatar</Label>
-              <ImageUpload
-                bucket="profile-images"
-                path={`${profile.id}/avatar`}
-                currentUrl={avatarUrl || null}
-                onUploaded={(url) => setAvatarUrl(url)}
-                aspectRatio="square"
-              />
+              <div className="mt-1">
+                {profile.is_seller ? (
+                  <ImageUpload
+                    bucket="profile-images"
+                    path={`${profile.id}/avatar`}
+                    currentUrl={avatarUrl || null}
+                    onUploaded={(url) => setAvatarUrl(url)}
+                    aspectRatio="square"
+                  />
+                ) : (
+                  <AvatarPicker
+                    currentAvatarUrl={avatarUrl || null}
+                    onAvatarChange={(url) => setAvatarUrl(url)}
+                  />
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="displayName">Display Name</Label>
