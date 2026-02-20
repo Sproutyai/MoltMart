@@ -1,50 +1,64 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getRateLimiter, isUpstashConfigured } from '@/lib/rate-limit'
 
-// --- Rate Limiting (in-memory, single-instance only) ---
-// NOTE: For production, use Redis/Upstash instead of in-memory Map
-const RATE_LIMIT = 30 // requests per window
-const RATE_WINDOW_MS = 60_000 // 1 minute
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-
-const RATE_LIMITED_ROUTES = [
-  '/api/auth',
-  '/api/profile',
-  '/api/templates/upload',
-  '/api/affiliate/join',
-  '/api/account/delete',
-  '/api/checkout',
+// --- Route → Rate Limit Tier Mapping ---
+// Order matters: first match wins
+const ROUTE_TIER_MAP: Array<[string, "strict" | "medium" | "default" | "export"]> = [
+  ['/api/account/export', 'export'],
+  ['/api/account/delete', 'strict'],
+  ['/api/auth', 'strict'],
+  ['/api/profile', 'strict'],
+  ['/api/affiliate/join', 'strict'],
+  ['/api/checkout', 'medium'],
+  ['/api/templates/upload', 'medium'],
+  ['/api/templates/replace-file', 'medium'],
+  ['/api/', 'default'],
 ]
 
-// Cleanup stale entries every 60s
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, val] of rateLimitMap) {
-    if (val.resetAt < now) rateLimitMap.delete(key)
-  }
-}, 60_000)
+function getTierForRoute(pathname: string) {
+  // Never rate limit webhook routes (Stripe etc.)
+  if (pathname.endsWith('/webhook')) return null
 
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-  if (!entry || entry.resetAt < now) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS })
-    return true
+  for (const [prefix, tier] of ROUTE_TIER_MAP) {
+    if (pathname.startsWith(prefix)) return tier
   }
-  entry.count++
-  return entry.count <= RATE_LIMIT
+  return null
 }
 
 export async function middleware(request: NextRequest) {
-  // Rate limiting for sensitive API routes
   const pathname = request.nextUrl.pathname
-  if (RATE_LIMITED_ROUTES.some((route) => pathname.startsWith(route))) {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-    if (!checkRateLimit(ip)) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+
+  // --- Rate Limiting (Upstash Redis) ---
+  if (pathname.startsWith('/api/') && isUpstashConfigured()) {
+    const tier = getTierForRoute(pathname)
+    if (tier) {
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+      try {
+        const limiter = getRateLimiter(tier)
+        const { success, limit, remaining, reset } = await limiter.limit(ip)
+
+        if (!success) {
+          return NextResponse.json(
+            { error: 'Too many requests. Please try again later.' },
+            {
+              status: 429,
+              headers: {
+                'X-RateLimit-Limit': limit.toString(),
+                'X-RateLimit-Remaining': '0',
+                'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString(),
+              },
+            }
+          )
+        }
+      } catch {
+        // If Upstash is down, fail open — don't block requests
+        console.error('Rate limiting error, failing open')
+      }
     }
   }
 
+  // --- Supabase Auth Refresh ---
   let response = NextResponse.next({ request })
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -61,7 +75,8 @@ export async function middleware(request: NextRequest) {
       },
     }
   )
-  // Affiliate referral tracking
+
+  // --- Affiliate Referral Tracking ---
   const refCode = request.nextUrl.searchParams.get('ref')
   if (refCode && !request.cookies.get('molt_ref')) {
     response.cookies.set('molt_ref', refCode, {

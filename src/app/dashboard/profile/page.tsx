@@ -13,6 +13,7 @@ import { Loader2, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 import { ConnectedAccounts } from "@/components/connected-accounts"
 import { ImageUpload } from "@/components/image-upload"
+import { AvatarPicker } from "@/components/avatar-picker"
 import type { Profile } from "@/lib/types"
 
 export default function ProfilePage() {
@@ -130,14 +131,28 @@ export default function ProfilePage() {
               <form onSubmit={handleSave} className="space-y-4">
                 <div>
                   <Label>Avatar</Label>
-                  <ImageUpload
-                    bucket="profile-images"
-                    path={`${profile.id}/avatar`}
-                    currentUrl={avatarUrl || null}
-                    onUploaded={(url) => setAvatarUrl(url)}
-                    aspectRatio="square"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG or WebP. Max 2MB.</p>
+                  <div className="space-y-3 mt-1">
+                    <AvatarPicker
+                      currentAvatarUrl={avatarUrl || null}
+                      onAvatarChange={(url) => setAvatarUrl(url)}
+                    />
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">or upload custom</span>
+                      </div>
+                    </div>
+                    <ImageUpload
+                      bucket="profile-images"
+                      path={`${profile.id}/avatar`}
+                      currentUrl={avatarUrl || null}
+                      onUploaded={(url) => setAvatarUrl(url)}
+                      aspectRatio="square"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Pick a premade avatar or upload your own (JPG, PNG, WebP, max 2MB)</p>
                 </div>
                 <div>
                   <Label htmlFor="displayName">Display Name</Label>

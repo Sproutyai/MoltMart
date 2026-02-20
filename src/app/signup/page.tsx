@@ -21,6 +21,8 @@ export default function SignupPage() {
   const [isSeller, setIsSeller] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [website, setWebsite] = useState("") // honeypot
+  const [lastAttempt, setLastAttempt] = useState(0)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -38,6 +40,20 @@ export default function SignupPage() {
       setError("Username can only contain letters, numbers, hyphens, and underscores")
       return
     }
+
+    // Honeypot: bots fill hidden fields
+    if (website) {
+      toast.success("Account created! Check your email to confirm.")
+      return
+    }
+
+    // Client-side throttle: 10s cooldown
+    const now = Date.now()
+    if (now - lastAttempt < 10_000) {
+      setError("Please wait a moment before trying again")
+      return
+    }
+    setLastAttempt(now)
 
     setLoading(true)
     try {
@@ -98,6 +114,18 @@ export default function SignupPage() {
             <div>
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" required minLength={8} />
+            </div>
+            {/* Honeypot field — hidden from real users, bots fill it */}
+            <div className="absolute opacity-0 h-0 overflow-hidden" aria-hidden="true" tabIndex={-1}>
+              <Label htmlFor="website">Website</Label>
+              <Input
+                id="website"
+                type="text"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+              />
             </div>
             <div className="flex items-start gap-2">
               <Checkbox id="seller" checked={isSeller} onCheckedChange={(c) => setIsSeller(c === true)} className="mt-1" />

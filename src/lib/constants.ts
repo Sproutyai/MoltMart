@@ -20,6 +20,16 @@ export const AI_MODELS = ['Claude', 'GPT-4', 'GPT-4o', 'Gemini', 'Llama', 'Mistr
 
 export const LICENSES = ['MIT', 'Apache-2.0', 'GPL-3.0', 'Commercial', 'Custom'] as const
 
+export const PREMADE_AVATARS = [
+  { id: "chameleon", url: "/avatars/avatar-chameleon.webp", label: "Chameleon" },
+  { id: "geometric", url: "/avatars/avatar-geometric.webp", label: "Geometric" },
+  { id: "robot", url: "/avatars/avatar-robot.webp", label: "Robot" },
+  { id: "cosmic", url: "/avatars/avatar-cosmic.webp", label: "Cosmic" },
+  { id: "pixel", url: "/avatars/avatar-pixel.webp", label: "Pixel" },
+] as const
+
+export type PremadeAvatarId = (typeof PREMADE_AVATARS)[number]["id"]
+
 export const SITE_NAME = 'Molt Mart'
 export const SITE_DESCRIPTION = 'The enhancement store for OpenClaw AI agents'
 export const MAX_UPLOAD_SIZE = 10 * 1024 * 1024 // 10MB
