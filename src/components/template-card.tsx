@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { StarRating } from "@/components/star-rating"
@@ -79,9 +80,9 @@ export function TemplateCard({
     return (
       <Wrapper {...(wrapperProps as any)}>
         <div className="rounded-lg border border-border/60 bg-card p-2 hover:bg-accent/50 transition-colors cursor-pointer text-left w-full shadow-sm overflow-hidden">
-          <div className="w-full aspect-video rounded-md overflow-hidden bg-muted flex items-center justify-center">
+          <div className="w-full aspect-video rounded-md overflow-hidden bg-muted flex items-center justify-center relative">
             {template.screenshots?.[0] ? (
-              <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
+              <Image src={template.screenshots[0]} alt={template.title} fill className="object-cover" sizes="200px" loading="lazy" />
             ) : (
               <CategoryPlaceholder category={template.category} />
             )}
@@ -104,99 +105,148 @@ export function TemplateCard({
     )
   }
 
-  // ── Default + Library variants ──
+  // ── Library variant keeps old layout ──
+  if (variant === "library") {
+    const OuterWrapper = isPreview ? "div" : Link
+    const outerProps = isPreview ? { className: "block h-full" } : { href: templateUrl, onClick: handleBeacon, className: "block h-full" }
+    return (
+      <OuterWrapper {...(outerProps as any)}>
+        <Card className={`h-full flex flex-col transition-shadow ${isPreview ? "" : "hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] cursor-pointer"} overflow-hidden pt-0 ${ringClass}`}>
+          <div className="aspect-video w-full overflow-hidden bg-muted relative">
+            {template.screenshots && template.screenshots.length > 0 ? (
+              <Image src={template.screenshots[0]} alt={template.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw" loading="lazy" />
+            ) : (
+              <CategoryPlaceholder category={template.category} />
+            )}
+          </div>
+          <CardHeader className="pb-2 min-w-0">
+            <div className="flex items-center gap-2 flex-nowrap min-w-0 overflow-hidden">
+              <Badge variant="outline" className="text-xs shrink min-w-0 truncate">{template.category}</Badge>
+              <div className="shrink-0">{priceDisplay}</div>
+            </div>
+            <div className="mt-2 flex items-start justify-between gap-2 min-w-0 overflow-hidden">
+              <h3 className="font-semibold leading-tight line-clamp-1 min-w-0 hover:underline">{template.title}</h3>
+              {!isPreview && (
+                <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.preventDefault()}>
+                  <BookmarkButton templateId={template.id} size={16} initialBookmarked={initialBookmarked} onRemove={onBookmarkRemove} />
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="pb-2 flex-1">
+            <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
+            {template.seller && (
+              <div className="mt-2 flex items-center" onClick={(e) => e.preventDefault()}>
+                <SellerLink username={template.seller.username} displayName={template.seller.display_name} avatarUrl={template.seller.avatar_url} showAvatar />
+                {template.seller.is_verified && (
+                  <TrustBadge githubVerified={template.seller.github_verified} twitterVerified={template.seller.twitter_verified} variant="inline" />
+                )}
+              </div>
+            )}
+            {purchaseDate && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Downloaded on {new Date(purchaseDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </p>
+            )}
+          </CardContent>
+          <CardFooter className="mt-auto flex flex-col items-stretch gap-1 text-xs text-muted-foreground">
+            {showTimestamp && (
+              <div className="flex items-center gap-2">
+                <span>{formatDistanceToNow(new Date(template.created_at), { addSuffix: true })}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <StarRating value={template.avg_rating} size={12} />
+                <span>({template.review_count})</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Download size={12} />
+                <span>{template.download_count}</span>
+              </div>
+            </div>
+            {userRating !== undefined && (
+              <div className="flex items-center gap-1 text-sm">
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <span>Your rating: {userRating}/5</span>
+              </div>
+            )}
+            {actions && (
+              <div className="mt-1" onClick={(e) => e.preventDefault()}>
+                {actions}
+              </div>
+            )}
+          </CardFooter>
+        </Card>
+      </OuterWrapper>
+    )
+  }
+
+  // ── Default variant (redesigned: compact explore card) ──
   const OuterWrapper = isPreview ? "div" : Link
   const outerProps = isPreview ? { className: "block h-full" } : { href: templateUrl, onClick: handleBeacon, className: "block h-full" }
   return (
     <OuterWrapper {...(outerProps as any)}>
-      <Card className={`h-full flex flex-col transition-shadow ${isPreview ? "" : "hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] cursor-pointer"} overflow-hidden pt-0 ${ringClass}`}>
-        {/* Thumbnail — always rendered for uniform height */}
-        <div className="aspect-video w-full overflow-hidden bg-muted relative">
+      <div className={`group h-full rounded-lg border bg-card overflow-hidden transition-all duration-200 ${isPreview ? "" : "hover:shadow-md hover:scale-[1.02] cursor-pointer"} ${ringClass}`}>
+        {/* Thumbnail — 4:3 */}
+        <div className="aspect-[4/3] w-full overflow-hidden bg-muted relative">
           {template.screenshots && template.screenshots.length > 0 ? (
-            <img src={template.screenshots[0]} alt={template.title} className="w-full h-full object-cover" />
+            <Image
+              src={template.screenshots[0]}
+              alt={template.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
+              loading="lazy"
+            />
           ) : (
             <CategoryPlaceholder category={template.category} />
           )}
-          {/* Overlay badges */}
-          {showTimestamp && isNew && (
-            <Badge className="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-4 gap-0.5">
-              <Sparkles size={10} />
-              NEW
-            </Badge>
+          {/* Hover overlay with bookmark (desktop only) */}
+          {!isPreview && (
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 hidden md:flex items-start justify-end p-1.5 opacity-0 group-hover:opacity-100">
+              <div onClick={(e) => e.preventDefault()}>
+                <BookmarkButton templateId={template.id} size={14} initialBookmarked={initialBookmarked} onRemove={onBookmarkRemove} />
+              </div>
+            </div>
           )}
+          {/* Mobile bookmark — always visible */}
+          {!isPreview && (
+            <div className="absolute top-1 right-1 md:hidden" onClick={(e) => e.preventDefault()}>
+              <BookmarkButton templateId={template.id} size={14} initialBookmarked={initialBookmarked} onRemove={onBookmarkRemove} />
+            </div>
+          )}
+          {/* Featured badge */}
           {isFeatured && (
-            <Badge className="absolute top-2 right-2 bg-amber-500 text-white text-[10px] px-1.5 py-0 h-4">
+            <Badge className="absolute top-1.5 left-1.5 bg-amber-500 text-white text-[10px] px-1.5 py-0 h-4">
               ⭐ Featured
             </Badge>
           )}
         </div>
 
-        <CardHeader className="pb-2 min-w-0">
-          <div className="flex items-center gap-2 flex-nowrap min-w-0 overflow-hidden">
-            <Badge variant="outline" className="text-xs shrink min-w-0 truncate">{template.category}</Badge>
+        {/* Info — single padding section */}
+        <div className="p-2.5 space-y-1">
+          <div className="flex items-center justify-between gap-1">
+            <h3 className="font-semibold text-sm leading-tight line-clamp-1 min-w-0 md:text-sm text-xs">{template.title}</h3>
             <div className="shrink-0">{priceDisplay}</div>
           </div>
-          <div className="mt-2 flex items-start justify-between gap-2 min-w-0 overflow-hidden">
-            <h3 className="font-semibold leading-tight line-clamp-1 min-w-0 hover:underline">{template.title}</h3>
-            {!isPreview && (
-              <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.preventDefault()}>
-                <BookmarkButton templateId={template.id} size={16} initialBookmarked={initialBookmarked} onRemove={onBookmarkRemove} />
-              </div>
-            )}
-          </div>
-        </CardHeader>
 
-        <CardContent className="pb-2 flex-1">
-          <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
           {template.seller && (
-            <div className="mt-2 flex items-center" onClick={(e) => e.preventDefault()}>
-              <SellerLink
-                username={template.seller.username}
-                displayName={template.seller.display_name}
-                avatarUrl={template.seller.avatar_url}
-                showAvatar
-              />
-              {template.seller.is_verified && (
-                <TrustBadge githubVerified={template.seller.github_verified} twitterVerified={template.seller.twitter_verified} variant="inline" />
-              )}
-            </div>
+            <p className="text-xs text-muted-foreground truncate">{template.seller.display_name || template.seller.username}</p>
           )}
-          {purchaseDate && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Downloaded on {new Date(purchaseDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-            </p>
-          )}
-        </CardContent>
 
-        <CardFooter className="mt-auto flex flex-col items-stretch gap-1 text-xs text-muted-foreground">
-          {showTimestamp && (
-            <div className="flex items-center gap-2">
-              <span>{formatDistanceToNow(new Date(template.created_at), { addSuffix: true })}</span>
-            </div>
-          )}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <StarRating value={template.avg_rating} size={12} />
-              <span>({template.review_count})</span>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="items-center gap-1 hidden sm:flex">
+              <StarRating value={template.avg_rating} size={10} />
+              <span className="text-[10px]">({template.review_count})</span>
             </div>
             <div className="flex items-center gap-1">
-              <Download size={12} />
-              <span>{template.download_count}</span>
+              <Download size={10} />
+              <span className="text-[10px]">{template.download_count}</span>
             </div>
           </div>
-          {userRating !== undefined && (
-            <div className="flex items-center gap-1 text-sm">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span>Your rating: {userRating}/5</span>
-            </div>
-          )}
-          {actions && (
-            <div className="mt-1" onClick={(e) => e.preventDefault()}>
-              {actions}
-            </div>
-          )}
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </OuterWrapper>
   )
 }

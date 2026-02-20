@@ -15,9 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, Loader2, Plus } from "lucide-react"
+import { Search, Loader2, Plus, ChevronLeft, ChevronRight } from "lucide-react"
 import { CATEGORIES } from "@/lib/constants"
 import type { Template } from "@/lib/types"
+import { TemplateCardSkeleton } from "@/components/template-card-skeleton"
 import Link from "next/link"
 
 type TemplateWithSeller = Template & {
@@ -80,6 +81,7 @@ export function ExploreClient({
   const [query, setQuery] = useState(searchParams.get("q") || "")
   const [category, setCategory] = useState(searchParams.get("category") || "")
   const [sort, setSort] = useState(searchParams.get("sort") || "newest")
+  const [priceFilter, setPriceFilter] = useState("")
 
   const [templates, setTemplates] = useState<TemplateWithSeller[]>(initialTemplates)
   const [featured, setFeatured] = useState<TemplateWithSeller[]>(initialFeatured)
@@ -89,6 +91,7 @@ export function ExploreClient({
   const [allTotal, setAllTotal] = useState(initialAllTotal)
   const [loading, setLoading] = useState(false)
 
+  const staffPicksRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isFirstRender = useRef(true)
@@ -235,9 +238,24 @@ export function ExploreClient({
   // Filter categories with counts > 0
   const visibleCategories = CATEGORIES.filter(cat => (categoryCounts[cat] || 0) > 0)
 
+  // Client-side price filtering
+  const filteredTemplates = useMemo(() => {
+    if (!priceFilter) return templates
+    return templates.filter((t) => {
+      switch (priceFilter) {
+        case "free": return t.price_cents === 0
+        case "under5": return t.price_cents > 0 && t.price_cents < 500
+        case "under10": return t.price_cents > 0 && t.price_cents < 1000
+        case "10plus": return t.price_cents >= 1000
+        default: return true
+      }
+    })
+  }, [templates, priceFilter])
+
+  const displayCount = priceFilter ? filteredTemplates.length : totalCount
   const resultSummary = query.trim()
-    ? `${totalCount} result${totalCount !== 1 ? "s" : ""} for "${query.trim()}"`
-    : `Showing ${totalCount} enhancement${totalCount !== 1 ? "s" : ""}`
+    ? `${displayCount} result${displayCount !== 1 ? "s" : ""} for "${query.trim()}"`
+    : `Showing ${displayCount} enhancement${displayCount !== 1 ? "s" : ""}`
 
   return (
     <div className="space-y-6">
@@ -291,25 +309,62 @@ export function ExploreClient({
         </div>
       )}
 
-      {/* Staff Picks */}
+      {/* Staff Picks — horizontal carousel */}
       {featured.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold flex items-center gap-1.5">
-            <span>⭐</span> Staff Picks
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold flex items-center gap-1.5">
+              <span>⭐</span> Staff Picks
+            </h2>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => staffPicksRef.current?.scrollBy({ left: -220, behavior: "smooth" })}
+                className="rounded-full p-1 hover:bg-muted transition-colors"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <button
+                onClick={() => staffPicksRef.current?.scrollBy({ left: 220, behavior: "smooth" })}
+                className="rounded-full p-1 hover:bg-muted transition-colors"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
+          </div>
+          <div
+            ref={staffPicksRef}
+            className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-2 scrollbar-hide"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
             {featured.map((t) => (
-              <TemplateCard key={t.id} template={t} isFeatured />
+              <div key={t.id} className="w-[200px] flex-shrink-0 snap-start">
+                <TemplateCard template={t} isFeatured />
+              </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Sort bar + result count */}
-      <div className="flex items-center justify-between gap-4">
+      {/* Sort bar + filters + result count */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <p className="text-sm text-muted-foreground">{resultSummary}</p>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-sm text-muted-foreground hidden sm:inline">Sort by:</span>
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          {/* Price filter pills */}
+          {(["free", "under5", "under10", "10plus"] as const).map((pf) => {
+            const labels: Record<string, string> = { free: "Free", under5: "Under $5", under10: "Under $10", "10plus": "$10+" }
+            return (
+              <Badge
+                key={pf}
+                variant={priceFilter === pf ? "default" : "outline"}
+                className="cursor-pointer text-xs"
+                onClick={() => setPriceFilter(priceFilter === pf ? "" : pf)}
+              >
+                {labels[pf]}
+              </Badge>
+            )
+          })}
           <Select value={sort} onValueChange={handleSortChange}>
             <SelectTrigger className="w-[160px] h-8 text-sm">
               <SelectValue placeholder="Sort by" />
@@ -326,14 +381,22 @@ export function ExploreClient({
       </div>
 
       {/* Main grid */}
-      {templates.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {templates.map((t) => (
+      {loading && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          {Array.from({ length: 18 }).map((_, i) => (
+            <TemplateCardSkeleton key={i} />
+          ))}
+        </div>
+      )}
+
+      {!loading && filteredTemplates.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          {filteredTemplates.map((t) => (
             <TemplateCard key={t.id} template={t} />
           ))}
           {/* CTA card */}
           <Link href="/sell" className="block h-full">
-            <div className="h-full flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/30 p-6 text-center transition-colors hover:border-muted-foreground/40 hover:bg-muted/50 min-h-[280px]">
+            <div className="h-full flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/30 p-4 text-center transition-colors hover:border-muted-foreground/40 hover:bg-muted/50 min-h-[180px]">
               <div className="rounded-full bg-primary/10 p-3">
                 <Plus className="size-6 text-primary" />
               </div>
@@ -345,7 +408,7 @@ export function ExploreClient({
             </div>
           </Link>
         </div>
-      ) : featured.length === 0 ? (
+      ) : !loading && featured.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-16 text-center">
           <p className="text-lg font-medium">No templates found</p>
           <p className="text-sm text-muted-foreground">
