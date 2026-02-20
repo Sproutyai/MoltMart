@@ -1,22 +1,31 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function ScreenshotCarousel({ screenshots, title }: { screenshots: string[]; title: string }) {
   const [current, setCurrent] = useState(0)
+  const [failedIndexes, setFailedIndexes] = useState<Set<number>>(new Set())
+  const handleError = useCallback((idx: number) => {
+    setFailedIndexes((prev) => new Set(prev).add(idx))
+  }, [])
 
   if (screenshots.length === 0) return null
 
   return (
     <div className="relative overflow-hidden rounded-lg border bg-muted">
       <div className="aspect-video relative">
+        {failedIndexes.has(current) ? (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">Image unavailable</div>
+        ) : (
         <img
           src={screenshots[current]}
           alt={`${title} screenshot ${current + 1}`}
           className="w-full h-full object-cover"
+          onError={() => handleError(current)}
         />
+        )}
       </div>
       {screenshots.length > 1 && (
         <>

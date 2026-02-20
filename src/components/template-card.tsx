@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
+import { SafeImage } from "@/components/safe-image"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { StarRating } from "@/components/star-rating"
@@ -82,7 +82,7 @@ export function TemplateCard({
         <div className="rounded-lg border border-border/60 bg-card p-2 hover:bg-accent/50 transition-colors cursor-pointer text-left w-full shadow-sm overflow-hidden">
           <div className="w-full aspect-video rounded-md overflow-hidden bg-muted flex items-center justify-center relative">
             {template.screenshots?.[0] ? (
-              <Image src={template.screenshots[0]} alt={template.title} fill className="object-cover" sizes="200px" loading="lazy" />
+              <SafeImage src={template.screenshots[0]} alt={template.title} fill className="object-cover" sizes="200px" loading="lazy" fallback={<CategoryPlaceholder category={template.category} />} />
             ) : (
               <CategoryPlaceholder category={template.category} />
             )}
@@ -114,7 +114,7 @@ export function TemplateCard({
         <Card className={`h-full flex flex-col transition-shadow ${isPreview ? "" : "hover:shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.07)] cursor-pointer"} overflow-hidden pt-0 ${ringClass}`}>
           <div className="aspect-video w-full overflow-hidden bg-muted relative">
             {template.screenshots && template.screenshots.length > 0 ? (
-              <Image src={template.screenshots[0]} alt={template.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw" loading="lazy" />
+              <SafeImage src={template.screenshots[0]} alt={template.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw" loading="lazy" fallback={<CategoryPlaceholder category={template.category} />} />
             ) : (
               <CategoryPlaceholder category={template.category} />
             )}
