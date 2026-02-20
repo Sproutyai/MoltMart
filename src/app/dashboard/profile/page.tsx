@@ -167,11 +167,8 @@ export default function ProfilePage() {
           <Card className="sticky top-6">
             <CardHeader><CardTitle>Preview</CardTitle></CardHeader>
             <CardContent className="p-0 overflow-hidden">
-              <div className="relative h-24 w-full overflow-hidden" style={{
-                background: `linear-gradient(135deg, hsl(${(profile.username || "a").split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360}, 60%, 85%), hsl(${((profile.username || "a").split("").reduce((a, c) => a + c.charCodeAt(0), 0) + 60) % 360}, 50%, 90%))`,
-              }} />
-              <div className="px-4 pb-4">
-                <div className="flex items-center gap-3 -mt-6">
+              <div className="px-4 pb-4 pt-4">
+                <div className="flex items-center gap-3">
                   <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border-2 border-background bg-muted">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
@@ -181,7 +178,7 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
-                  <div className="pt-6">
+                  <div>
                     <p className="font-semibold text-sm">{profile.display_name || profile.username || "Your Name"}</p>
                     <p className="text-xs text-muted-foreground">@{profile.username || "username"}</p>
                   </div>
