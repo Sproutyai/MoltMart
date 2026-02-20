@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -21,7 +20,6 @@ export default function EditPersonalProfilePage() {
   const [saving, setSaving] = useState(false)
   const [displayName, setDisplayName] = useState("")
   const [username, setUsername] = useState("")
-  const [bio, setBio] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
   const [usernameError, setUsernameError] = useState("")
 
@@ -36,7 +34,6 @@ export default function EditPersonalProfilePage() {
         setProfile(prof)
         setDisplayName(prof.display_name || "")
         setUsername(prof.username || "")
-        setBio(prof.bio || "")
         setAvatarUrl(prof.avatar_url || "")
       }
       setLoading(false)
@@ -64,7 +61,7 @@ export default function EditPersonalProfilePage() {
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ display_name: displayName, username, bio, avatar_url: avatarUrl }),
+        body: JSON.stringify({ display_name: displayName, username, avatar_url: avatarUrl }),
       })
       if (!res.ok) {
         const data = await res.json()
@@ -121,10 +118,6 @@ export default function EditPersonalProfilePage() {
               <Label htmlFor="username">Username</Label>
               <Input id="username" value={username} onChange={(e) => { setUsername(e.target.value.toLowerCase()); validateUsername(e.target.value.toLowerCase()) }} />
               {usernameError && <p className="text-xs text-destructive mt-1">{usernameError}</p>}
-            </div>
-            <div>
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />
             </div>
             <Button type="submit" disabled={saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

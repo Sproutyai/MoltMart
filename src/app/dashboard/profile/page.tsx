@@ -21,14 +21,11 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [displayName, setDisplayName] = useState("")
-  const [username, setUsername] = useState("")
   const [bio, setBio] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
   const [tagline, setTagline] = useState("")
   const [website, setWebsite] = useState("")
   const [specialties, setSpecialties] = useState("")
-  const [usernameError, setUsernameError] = useState("")
 
   useEffect(() => {
     async function load() {
@@ -40,8 +37,6 @@ export default function ProfilePage() {
       if (p) {
         const prof = p as Profile
         setProfile(prof)
-        setDisplayName(prof.display_name || "")
-        setUsername(prof.username || "")
         setBio(prof.bio || "")
         setAvatarUrl(prof.avatar_url || "")
         setTagline(prof.tagline || "")
@@ -53,21 +48,8 @@ export default function ProfilePage() {
     load()
   }, [router])
 
-  function validateUsername(value: string) {
-    if (!value) { setUsernameError(""); return }
-    if (!/^[a-z0-9_-]{3,30}$/.test(value)) {
-      setUsernameError("3-30 characters, lowercase letters, numbers, hyphens, underscores only")
-    } else {
-      setUsernameError("")
-    }
-  }
-
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (username && !/^[a-z0-9_-]{3,30}$/.test(username)) {
-      toast.error("Invalid username format")
-      return
-    }
     setSaving(true)
     try {
       const specialtiesArr = specialties
@@ -79,8 +61,6 @@ export default function ProfilePage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          display_name: displayName,
-          username,
           bio,
           avatar_url: avatarUrl,
           tagline: tagline || null,
@@ -155,21 +135,12 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="displayName">Display Name</Label>
-                  <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-                </div>
-                <div>
-                  <Label htmlFor="username">Username</Label>
-                  <Input id="username" value={username} onChange={(e) => { setUsername(e.target.value.toLowerCase()); validateUsername(e.target.value.toLowerCase()) }} placeholder="my-username" />
-                  {usernameError && <p className="text-xs text-destructive mt-1">{usernameError}</p>}
-                </div>
-                <div>
                   <Label htmlFor="tagline">Tagline</Label>
                   <Input id="tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="Building the future of AI agents" maxLength={80} />
                   <p className="text-xs text-muted-foreground mt-1">Short motto displayed under your name (max 80 chars)</p>
                 </div>
                 <div>
-                  <Label htmlFor="bio">Bio</Label>
+                  <Label htmlFor="bio">Store Description</Label>
                   <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />
                 </div>
                 <div>
@@ -197,7 +168,7 @@ export default function ProfilePage() {
             <CardHeader><CardTitle>Preview</CardTitle></CardHeader>
             <CardContent className="p-0 overflow-hidden">
               <div className="relative h-24 w-full overflow-hidden" style={{
-                background: `linear-gradient(135deg, hsl(${(username || "a").split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360}, 60%, 85%), hsl(${((username || "a").split("").reduce((a, c) => a + c.charCodeAt(0), 0) + 60) % 360}, 50%, 90%))`,
+                background: `linear-gradient(135deg, hsl(${(profile.username || "a").split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360}, 60%, 85%), hsl(${((profile.username || "a").split("").reduce((a, c) => a + c.charCodeAt(0), 0) + 60) % 360}, 50%, 90%))`,
               }} />
               <div className="px-4 pb-4">
                 <div className="flex items-center gap-3 -mt-6">
@@ -206,13 +177,13 @@ export default function ProfilePage() {
                       <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-sm font-bold text-muted-foreground">
-                        {(displayName || username)?.[0]?.toUpperCase()}
+                        {(profile.display_name || profile.username)?.[0]?.toUpperCase()}
                       </div>
                     )}
                   </div>
                   <div className="pt-6">
-                    <p className="font-semibold text-sm">{displayName || username || "Your Name"}</p>
-                    <p className="text-xs text-muted-foreground">@{username || "username"}</p>
+                    <p className="font-semibold text-sm">{profile.display_name || profile.username || "Your Name"}</p>
+                    <p className="text-xs text-muted-foreground">@{profile.username || "username"}</p>
                   </div>
                 </div>
                 {tagline && <p className="text-xs text-primary/80 mt-2 italic">{tagline}</p>}
