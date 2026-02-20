@@ -259,9 +259,20 @@ export default function MyProductsPage() {
           {products.map((product) => (
             <Card key={product.id} className={`overflow-hidden ${product.status === "archived" ? "opacity-70" : ""}`}>
               {product.status === "archived" && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-4 py-1.5 flex items-center gap-2">
-                  <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
-                  <span className="text-xs text-yellow-700 dark:text-yellow-400">This product is archived and not visible to buyers</span>
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-4 py-1.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
+                    <span className="text-xs text-yellow-700 dark:text-yellow-400">This product is archived and not visible to buyers</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 text-xs border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/40"
+                    onClick={() => handleArchiveToggle(product)}
+                  >
+                    <ArchiveRestore className="h-3 w-3 mr-1" />
+                    Restore
+                  </Button>
                 </div>
               )}
               <div className="flex items-center gap-4 p-4">
@@ -300,7 +311,7 @@ export default function MyProductsPage() {
                   </Link>
                   <Link href={`/templates/${product.slug}`} target="_blank">
                     <Button variant="ghost" size="sm" className="text-xs h-8">
-                      <Eye className="h-3.5 w-3.5 mr-1" />View
+                      <Eye className="h-3.5 w-3.5 mr-1" />{product.status === "published" ? "View" : "Preview"}
                     </Button>
                   </Link>
                   <DropdownMenu>
@@ -347,9 +358,20 @@ export default function MyProductsPage() {
               </div>
               <div className="p-3 flex-1 flex flex-col">
                 {product.status === "archived" && (
-                  <div className="flex items-center gap-1 mb-2 text-[10px] text-yellow-700 dark:text-yellow-400">
-                    <AlertTriangle className="h-3 w-3" />
-                    Archived — not visible to buyers
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1 text-[10px] text-yellow-700 dark:text-yellow-400">
+                      <AlertTriangle className="h-3 w-3" />
+                      Archived
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-5 text-[10px] px-1.5 border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/40"
+                      onClick={() => handleArchiveToggle(product)}
+                    >
+                      <ArchiveRestore className="h-2.5 w-2.5 mr-0.5" />
+                      Restore
+                    </Button>
                   </div>
                 )}
                 <h3 className="font-semibold text-sm line-clamp-1 mb-1">{product.title}</h3>

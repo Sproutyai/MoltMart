@@ -72,12 +72,30 @@ export default async function TemplateDetailPage({
   const { slug } = await params
   const supabase = await createClient()
 
-  const { data: template } = await supabase
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Try published first
+  let { data: template } = await supabase
     .from("templates")
     .select("*, seller:profiles!seller_id(username, display_name, avatar_url, is_verified, github_verified, github_username, github_avatar_url, github_repos_count, github_followers_count, github_created_at, twitter_verified, twitter_username, twitter_followers_count, twitter_tweet_count)")
     .eq("slug", slug)
     .eq("status", "published")
     .single()
+
+  // If not found and user is logged in, check if they own a non-published version
+  let isOwnerPreview = false
+  if (!template && user) {
+    const { data: ownedTemplate } = await supabase
+      .from("templates")
+      .select("*, seller:profiles!seller_id(username, display_name, avatar_url, is_verified, github_verified, github_username, github_avatar_url, github_repos_count, github_followers_count, github_created_at, twitter_verified, twitter_username, twitter_followers_count, twitter_tweet_count)")
+      .eq("slug", slug)
+      .eq("seller_id", user.id)
+      .single()
+    if (ownedTemplate) {
+      template = ownedTemplate
+      isOwnerPreview = true
+    }
+  }
 
   if (!template) notFound()
 
@@ -90,8 +108,6 @@ export default async function TemplateDetailPage({
     .select("*, buyer:profiles!buyer_id(username, avatar_url)")
     .eq("template_id", t.id)
     .order("created_at", { ascending: false })
-
-  const { data: { user } } = await supabase.auth.getUser()
 
   const { data: moreBySeller } = await supabase
     .from("templates")
@@ -131,6 +147,14 @@ export default async function TemplateDetailPage({
 
   return (
     <div className="grid gap-8 lg:grid-cols-3">
+      {isOwnerPreview && (
+        <div className="lg:col-span-3 rounded-lg border border-yellow-300 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 p-3 flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
+          <span className="text-sm text-yellow-700 dark:text-yellow-400">
+            <strong>Owner preview</strong> — This product is <strong>{(template as any).status}</strong> and not visible to buyers.
+          </span>
+        </div>
+      )}
       <div className="space-y-6 lg:col-span-2">
         <Breadcrumb items={[
           { label: "Home", href: "/" },

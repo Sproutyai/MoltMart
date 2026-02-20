@@ -94,19 +94,21 @@ export default function EditPersonalProfilePage() {
             <div>
               <Label>Avatar</Label>
               <div className="mt-1">
-                {profile.is_seller ? (
-                  <ImageUpload
-                    bucket="profile-images"
-                    path={`${profile.id}/avatar`}
-                    currentUrl={avatarUrl || null}
-                    onUploaded={(url) => setAvatarUrl(url)}
-                    aspectRatio="square"
-                  />
-                ) : (
-                  <AvatarPicker
-                    currentAvatarUrl={avatarUrl || null}
-                    onAvatarChange={(url) => setAvatarUrl(url)}
-                  />
+                <AvatarPicker
+                  currentAvatarUrl={avatarUrl || null}
+                  onAvatarChange={(url) => setAvatarUrl(url)}
+                />
+                {profile.is_seller && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium mb-2">Or upload a custom image</p>
+                    <ImageUpload
+                      bucket="profile-images"
+                      path={`${profile.id}/avatar`}
+                      currentUrl={avatarUrl || null}
+                      onUploaded={(url) => setAvatarUrl(url)}
+                      aspectRatio="square"
+                    />
+                  </div>
                 )}
               </div>
             </div>
