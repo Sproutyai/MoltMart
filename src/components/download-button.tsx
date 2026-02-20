@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Download, Loader2, BookOpen } from "lucide-react"
 import { toast } from "sonner"
 import { InstallGuide } from "@/components/install-guide"
+import { CheckoutModal } from "@/components/checkout-modal"
 
 interface DownloadButtonProps {
   templateId: string
@@ -56,21 +57,34 @@ export function DownloadButton({ templateId, templateSlug, templateName, isLogge
     }
   }
 
+  const downloadButton = (
+    <Button onClick={handleDownload} disabled={loading} className="w-full" size="lg">
+      {loading ? (
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      ) : (
+        <Download className="mr-2 h-4 w-4" />
+      )}
+      {hasPurchased
+        ? "Download Again"
+        : priceCents > 0
+          ? `Purchase — $${(priceCents / 100).toFixed(2)}`
+          : "Download Free"}
+    </Button>
+  )
+
   return (
     <>
       <div className="space-y-2">
-        <Button onClick={handleDownload} disabled={loading} className="w-full" size="lg">
-          {loading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="mr-2 h-4 w-4" />
-          )}
-          {hasPurchased
-            ? "Download Again"
-            : priceCents > 0
-              ? `Purchase — $${(priceCents / 100).toFixed(2)}`
-              : "Download Free"}
-        </Button>
+        {priceCents > 0 && !hasPurchased ? (
+          <CheckoutModal templateId={templateId} title={templateName || "Template"} priceCents={priceCents}>
+            <Button className="w-full" size="lg">
+              <Download className="mr-2 h-4 w-4" />
+              Purchase — ${(priceCents / 100).toFixed(2)}
+            </Button>
+          </CheckoutModal>
+        ) : (
+          downloadButton
+        )}
         <Button variant="outline" size="sm" className="w-full" onClick={() => setShowGuide(true)}>
           <BookOpen className="mr-2 h-4 w-4" />
           How to Install

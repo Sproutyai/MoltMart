@@ -9,7 +9,7 @@ export async function Footer() {
   return (
     <footer className="border-t bg-muted/30">
       <div className="container mx-auto px-4 py-10">
-        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-5">
           {/* Brand */}
           <div className="space-y-3">
             <Link href="/" className="flex items-center gap-2 text-lg font-bold">
@@ -40,6 +40,17 @@ export async function Footer() {
               <Link href="/signup" className="hover:text-foreground">Get Started</Link>
               <Link href="/affiliate" className="hover:text-foreground">Affiliate Program</Link>
               <Link href="/faq" className="hover:text-foreground">FAQ</Link>
+            </nav>
+          </div>
+
+          {/* Legal */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold">Legal</h4>
+            <nav className="flex flex-col gap-2 text-sm text-muted-foreground">
+              <Link href="/terms" className="hover:text-foreground">Terms of Service</Link>
+              <Link href="/privacy" className="hover:text-foreground">Privacy Policy</Link>
+              <Link href="/seller-agreement" className="hover:text-foreground">Seller Agreement</Link>
+              <Link href="/dmca" className="hover:text-foreground">DMCA Policy</Link>
             </nav>
           </div>
 

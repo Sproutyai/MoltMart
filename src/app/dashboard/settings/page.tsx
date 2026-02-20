@@ -58,11 +58,14 @@ export default function AccountSettingsPage() {
     if (deleteInput !== "DELETE") return
     setDeleting(true)
     try {
-      // TODO: Implement server-side account deletion
-      // 1. Delete user data from all tables
-      // 2. Cancel Stripe subscriptions if any
-      // 3. supabase.auth.admin.deleteUser(userId)
-      toast.error("Account deletion is not yet implemented. Contact support.")
+      const res = await fetch("/api/account/delete", { method: "POST" })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Failed to delete account")
+      }
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      router.push("/")
     } catch {
       toast.error("Something went wrong")
     } finally {
