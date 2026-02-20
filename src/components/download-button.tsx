@@ -23,11 +23,6 @@ export function DownloadButton({ templateId, templateSlug, templateName, isLogge
   const [showGuide, setShowGuide] = useState(false)
 
   async function handleDownload() {
-    if (priceCents > 0 && !hasPurchased) {
-      toast.info("Paid downloads coming soon!")
-      return
-    }
-
     if (!isLoggedIn) {
       router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`)
       return
