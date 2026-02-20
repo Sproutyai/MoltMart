@@ -21,6 +21,8 @@ import { BookmarkButton } from "@/components/bookmark-button"
 import { Download, Calendar, Shield, BookOpen, Cpu, History, Clock } from "lucide-react"
 import { SellerTrustSection } from "@/components/seller-trust-section"
 import { Breadcrumb } from "@/components/breadcrumb"
+import { ReportButton } from "@/components/report-button"
+import { AlertTriangle, CheckCircle2 } from "lucide-react"
 import type { Template, Review } from "@/lib/types"
 
 export async function generateMetadata({
@@ -156,13 +158,14 @@ export default async function TemplateDetailPage({
             <h1 className="text-3xl font-bold">{t.title}</h1>
             <BookmarkButton templateId={t.id} initialBookmarked={isBookmarked} size={24} />
           </div>
-          <div className="mt-1">
+          <div className="mt-1 flex items-center gap-3">
             <SellerLink
               username={t.seller.username}
               displayName={t.seller.display_name}
               avatarUrl={t.seller.avatar_url}
               showAvatar
             />
+            <ReportButton templateId={t.id} isLoggedIn={!!user} />
           </div>
           <div className="mt-2 flex items-center gap-3">
             <StarRating value={t.avg_rating} />
@@ -337,6 +340,30 @@ export default async function TemplateDetailPage({
           </div>
 
           <Separator />
+
+          {/* Verified / File Updated Indicators */}
+          {reviews && reviews.length > 0 && (() => {
+            const latestReviewDate = new Date(Math.max(...reviews.map((r: any) => new Date(r.created_at).getTime())))
+            const fileUpdated = (t as any).file_updated_at ? new Date((t as any).file_updated_at) : null
+            const fileChangedSinceReviews = fileUpdated && fileUpdated > latestReviewDate
+
+            return fileChangedSinceReviews ? (
+              <div className="flex items-start gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm">
+                <AlertTriangle size={16} className="text-yellow-500 mt-0.5 shrink-0" />
+                <div>
+                  <span className="font-medium text-yellow-600">File updated since reviews</span>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    The template file was updated after the most recent review. Existing reviews may not reflect the current version.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm">
+                <CheckCircle2 size={16} className="text-green-500 shrink-0" />
+                <span className="font-medium text-green-600">Verified — unchanged since reviews</span>
+              </div>
+            )
+          })()}
 
           <div>
             <h3 className="mb-2 text-sm font-semibold">Install</h3>

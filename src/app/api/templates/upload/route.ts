@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import JSZip from "jszip"
+import { scanZipContents } from "@/lib/scan-zip"
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -99,6 +101,35 @@ export async function POST(request: Request) {
   const tags = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : []
   const aiModels: string[] = aiModelsRaw ? JSON.parse(aiModelsRaw) : []
 
+  // Layer 2 & 3: File hash + automated scanning
+  const scanResult = await scanZipContents(buffer)
+
+  // If scan rejected, block the upload
+  if (scanResult.status === "rejected") {
+    // Clean up uploaded file
+    await supabase.storage.from("templates").remove([filePath])
+    return NextResponse.json({
+      error: "Upload rejected: suspicious content detected",
+      findings: scanResult.findings,
+    }, { status: 422 })
+  }
+
+  // Layer 4: New seller review queue — first 3 uploads require review
+  let requiresReview = false
+  const admin = createAdminClient()
+  if (admin) {
+    const { count } = await admin
+      .from("templates")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", user.id)
+    if (count !== null && count < 3) {
+      requiresReview = true
+    }
+  }
+
+  // Override status if requires review or flagged
+  const effectiveStatus = requiresReview ? "pending_review" : scanResult.status === "flagged" ? "pending_review" : status
+
   const { data: template, error: insertError } = await supabase
     .from("templates")
     .insert({
@@ -112,7 +143,7 @@ export async function POST(request: Request) {
       price_cents: priceCents,
       file_path: filePath,
       preview_data: previewData,
-      status,
+      status: effectiveStatus,
       compatibility: "openclaw",
       screenshots: screenshotUrls,
       difficulty,
@@ -124,6 +155,11 @@ export async function POST(request: Request) {
       demo_video_url: demoVideoUrl || null,
       changelog: changelog || null,
       faq: faq || null,
+      file_hash: scanResult.fileHash,
+      scan_status: scanResult.status,
+      scan_results: { findings: scanResult.findings, fileCount: scanResult.fileCount, scannedAt: new Date().toISOString() },
+      requires_review: requiresReview,
+      file_updated_at: new Date().toISOString(),
     })
     .select()
     .single()

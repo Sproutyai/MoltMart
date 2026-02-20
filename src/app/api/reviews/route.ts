@@ -15,13 +15,24 @@ export async function POST(request: Request) {
   // Verify purchase exists
   const { data: purchase } = await supabase
     .from("purchases")
-    .select("id")
+    .select("id, created_at")
     .eq("buyer_id", user.id)
     .eq("template_id", template_id)
     .single()
 
   if (!purchase) {
     return NextResponse.json({ error: "You must download this template before reviewing" }, { status: 403 })
+  }
+
+  // Review integrity: minimum 1 hour between purchase and review
+  const purchaseTime = new Date(purchase.created_at).getTime()
+  const now = Date.now()
+  const oneHourMs = 60 * 60 * 1000
+  if (now - purchaseTime < oneHourMs) {
+    const minutesLeft = Math.ceil((oneHourMs - (now - purchaseTime)) / 60000)
+    return NextResponse.json({
+      error: `Please wait at least 1 hour after purchase before reviewing. ${minutesLeft} minute(s) remaining.`
+    }, { status: 429 })
   }
 
   // Upsert review

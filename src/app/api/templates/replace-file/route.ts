@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import JSZip from "jszip"
+import { scanZipContents } from "@/lib/scan-zip"
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -63,5 +64,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Upload failed: " + uploadError.message }, { status: 500 })
   }
 
-  return NextResponse.json({ file_path: filePath, preview_data: previewData })
+  // Scan replaced file
+  const scanResult = await scanZipContents(buffer)
+
+  if (scanResult.status === "rejected") {
+    await supabase.storage.from("templates").remove([filePath])
+    return NextResponse.json({
+      error: "Upload rejected: suspicious content detected",
+      findings: scanResult.findings,
+    }, { status: 422 })
+  }
+
+  // Update scan results, hash, and file_updated_at on the template
+  await supabase.from("templates").update({
+    file_hash: scanResult.fileHash,
+    scan_status: scanResult.status,
+    scan_results: { findings: scanResult.findings, fileCount: scanResult.fileCount, scannedAt: new Date().toISOString() },
+    file_updated_at: new Date().toISOString(),
+  }).eq("id", templateId)
+
+  return NextResponse.json({ file_path: filePath, preview_data: previewData, scan_status: scanResult.status })
 }
