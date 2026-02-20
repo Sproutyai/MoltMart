@@ -53,7 +53,7 @@ export interface Template {
   download_count: number
   avg_rating: number
   review_count: number
-  status: 'draft' | 'published' | 'archived'
+  status: 'draft' | 'published' | 'archived' | 'pending_review' | 'flagged' | 'deleted'
   compatibility: string
   screenshots: string[]
   difficulty: 'beginner' | 'intermediate' | 'advanced'

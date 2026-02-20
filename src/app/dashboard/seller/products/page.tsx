@@ -32,7 +32,7 @@ interface Product {
   description: string
   category: string
   price_cents: number
-  status: "draft" | "published" | "archived"
+  status: "draft" | "published" | "archived" | "pending_review" | "flagged" | "deleted"
   download_count: number
   avg_rating: number
   review_count: number

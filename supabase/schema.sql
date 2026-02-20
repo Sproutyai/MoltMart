@@ -49,7 +49,7 @@ create table public.templates (
   download_count integer default 0,
   avg_rating numeric(3,2) default 0,
   review_count integer default 0,
-  status text default 'published' check (status in ('draft','published','archived')),
+  status text default 'published' check (status in ('draft','published','archived','pending_review','flagged','deleted')),
   compatibility text default '>=0.1',
   created_at timestamptz default now(),
   updated_at timestamptz default now()
