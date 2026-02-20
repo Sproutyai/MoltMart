@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import {
   Plus, Search, MoreHorizontal, Pencil, Eye, Copy, Archive, ArchiveRestore,
-  Trash2, Loader2, Package, Star,
+  Trash2, Loader2, Package, Star, LayoutGrid, List, AlertTriangle, Download,
 } from "lucide-react"
 import { toast } from "sonner"
 import { getTemplateImage } from "@/lib/category-defaults"
@@ -50,6 +50,12 @@ export default function MyProductsPage() {
   const [sort, setSort] = useState("newest")
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [viewMode, setViewMode] = useState<"list" | "card">(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("seller-products-view") as "list" | "card") || "list"
+    }
+    return "list"
+  })
 
   const fetchProducts = useCallback(async () => {
     setLoading(true)
@@ -161,6 +167,25 @@ export default function MyProductsPage() {
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
+        {/* View toggle */}
+        <div className="flex border rounded-md overflow-hidden shrink-0">
+          <button
+            className={`p-2 ${viewMode === "list" ? "bg-muted" : "hover:bg-muted/50"}`}
+            onClick={() => { setViewMode("list"); localStorage.setItem("seller-products-view", "list") }}
+            title="List view"
+          >
+            <List className="h-4 w-4" />
+          </button>
+          <button
+            className={`p-2 ${viewMode === "card" ? "bg-muted" : "hover:bg-muted/50"}`}
+            onClick={() => { setViewMode("card"); localStorage.setItem("seller-products-view", "card") }}
+            title="Card view"
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -229,81 +254,132 @@ export default function MyProductsPage() {
             </>
           )}
         </Card>
-      ) : (
+      ) : viewMode === "list" ? (
         <div className="space-y-2">
           {products.map((product) => (
-            <Card key={product.id} className="flex items-center gap-4 p-4">
-              {/* Thumbnail */}
-              <div className="w-16 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                <img src={getTemplateImage(product.screenshots, product.category)} alt="" className="w-full h-full object-cover" />
-              </div>
+            <Card key={product.id} className={`overflow-hidden ${product.status === "archived" ? "opacity-70" : ""}`}>
+              {product.status === "archived" && (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-4 py-1.5 flex items-center gap-2">
+                  <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
+                  <span className="text-xs text-yellow-700 dark:text-yellow-400">This product is archived and not visible to buyers</span>
+                </div>
+              )}
+              <div className="flex items-center gap-4 p-4">
+                {/* Thumbnail */}
+                <div className="w-16 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                  <img src={getTemplateImage(product.screenshots, product.category)} alt="" className="w-full h-full object-cover" />
+                </div>
 
-              {/* Title + Category */}
-              <div className="flex-1 min-w-0">
-                <Link href={`/dashboard/seller/edit/${product.id}`} className="font-medium hover:underline truncate block">
-                  {product.title}
-                </Link>
-                <span className="text-xs text-muted-foreground">{product.category}</span>
-              </div>
-
-              {/* Status */}
-              <div className="hidden sm:block">
-                {statusBadge(product.status)}
-              </div>
-
-              {/* Price */}
-              <div className="hidden sm:block text-sm font-medium w-16 text-right">
-                {formatPrice(product.price_cents)}
-              </div>
-
-              {/* Sales + Rating */}
-              <div className="hidden md:flex items-center gap-3 text-sm text-muted-foreground w-28">
-                <span>{product.download_count} sales</span>
-                {product.avg_rating > 0 && (
-                  <span className="flex items-center gap-0.5">
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                    {product.avg_rating.toFixed(1)}
-                  </span>
-                )}
-              </div>
-
-              {/* Actions */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => router.push(`/dashboard/seller/edit/${product.id}`)}>
-                    <Pencil className="mr-2 h-4 w-4" /> Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.open(`/templates/${product.slug}`, "_blank")}>
-                    <Eye className="mr-2 h-4 w-4" /> Preview
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleDuplicate(product)}>
-                    <Copy className="mr-2 h-4 w-4" /> Duplicate
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handleArchiveToggle(product)}>
-                    {product.status === "archived" ? (
-                      <><ArchiveRestore className="mr-2 h-4 w-4" /> Unarchive</>
-                    ) : (
-                      <><Archive className="mr-2 h-4 w-4" /> Archive</>
+                {/* Title + Category */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <Link href={`/dashboard/seller/edit/${product.id}`} className="font-medium hover:underline truncate block">
+                      {product.title}
+                    </Link>
+                    {statusBadge(product.status)}
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>{product.category}</span>
+                    <span className="font-medium text-foreground">{formatPrice(product.price_cents)}</span>
+                    <span className="flex items-center gap-0.5"><Download className="h-3 w-3" />{product.download_count}</span>
+                    {product.avg_rating > 0 && (
+                      <span className="flex items-center gap-0.5">
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                        {product.avg_rating.toFixed(1)}
+                      </span>
                     )}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={() => setDeleteTarget(product)}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="flex gap-1 shrink-0">
+                  <Link href={`/dashboard/seller/edit/${product.id}`}>
+                    <Button variant="outline" size="sm" className="text-xs h-8">
+                      <Pencil className="h-3.5 w-3.5 mr-1" />Edit
+                    </Button>
+                  </Link>
+                  <Link href={`/templates/${product.slug}`} target="_blank">
+                    <Button variant="ghost" size="sm" className="text-xs h-8">
+                      <Eye className="h-3.5 w-3.5 mr-1" />View
+                    </Button>
+                  </Link>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleDuplicate(product)}>
+                        <Copy className="mr-2 h-4 w-4" /> Duplicate
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => handleArchiveToggle(product)}>
+                        {product.status === "archived" ? (
+                          <><ArchiveRestore className="mr-2 h-4 w-4" /> Unarchive</>
+                        ) : (
+                          <><Archive className="mr-2 h-4 w-4" /> Archive</>
+                        )}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => setDeleteTarget(product)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
             </Card>
           ))}
         </div>
-      )}
+        ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {products.map((product) => (
+            <Card key={product.id} className={`overflow-hidden flex flex-col ${product.status === "archived" ? "opacity-70" : ""}`}>
+              {/* Image */}
+              <div className="aspect-[4/3] w-full overflow-hidden bg-muted relative">
+                <img src={getTemplateImage(product.screenshots, product.category)} alt={product.title} className="w-full h-full object-cover" />
+                <div className="absolute top-2 left-2">
+                  {statusBadge(product.status)}
+                </div>
+              </div>
+              <div className="p-3 flex-1 flex flex-col">
+                {product.status === "archived" && (
+                  <div className="flex items-center gap-1 mb-2 text-[10px] text-yellow-700 dark:text-yellow-400">
+                    <AlertTriangle className="h-3 w-3" />
+                    Archived — not visible to buyers
+                  </div>
+                )}
+                <h3 className="font-semibold text-sm line-clamp-1 mb-1">{product.title}</h3>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                  <span>{formatPrice(product.price_cents)}</span>
+                  <span className="flex items-center gap-0.5"><Download className="h-3 w-3" />{product.download_count}</span>
+                  {product.avg_rating > 0 && (
+                    <span className="flex items-center gap-0.5">
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      {product.avg_rating.toFixed(1)}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-auto flex gap-1">
+                  <Link href={`/dashboard/seller/edit/${product.id}`} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full text-xs h-8">
+                      <Pencil className="h-3.5 w-3.5 mr-1" />Edit
+                    </Button>
+                  </Link>
+                  <Link href={`/templates/${product.slug}`} target="_blank">
+                    <Button variant="ghost" size="sm" className="text-xs h-8">
+                      <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+        )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

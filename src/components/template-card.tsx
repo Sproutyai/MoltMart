@@ -88,6 +88,9 @@ export function TemplateCard({
             )}
           </div>
           <p className="font-semibold text-sm line-clamp-1 mt-1.5 min-w-0 truncate">{template.title}</p>
+          {template.description && (
+            <p className="text-[10px] text-muted-foreground line-clamp-1 leading-tight mt-0.5">{template.description}</p>
+          )}
           <div className="flex items-center justify-between mt-1 gap-1 min-w-0 overflow-hidden">
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink min-w-0 truncate">{template.category}</Badge>
             {priceDisplay}
@@ -191,13 +194,14 @@ export function TemplateCard({
         {/* Thumbnail — 4:3 */}
         <div className="aspect-[4/3] w-full overflow-hidden bg-muted relative">
           {template.screenshots && template.screenshots.length > 0 ? (
-            <Image
+            <SafeImage
               src={template.screenshots[0]}
               alt={template.title}
               fill
               className="object-cover"
               sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
               loading="lazy"
+              fallback={<CategoryPlaceholder category={template.category} />}
             />
           ) : (
             <CategoryPlaceholder category={template.category} />
@@ -230,6 +234,10 @@ export function TemplateCard({
             <h3 className="font-semibold text-sm leading-tight line-clamp-1 min-w-0 md:text-sm text-xs">{template.title}</h3>
             <div className="shrink-0">{priceDisplay}</div>
           </div>
+
+          {template.description && (
+            <p className="text-[11px] text-muted-foreground line-clamp-2 leading-tight">{template.description}</p>
+          )}
 
           {template.seller && (
             <p className="text-xs text-muted-foreground truncate">{template.seller.display_name || template.seller.username}</p>

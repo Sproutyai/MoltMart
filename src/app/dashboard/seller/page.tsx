@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Plus, Store, Pencil, Archive, DollarSign, Download, Star, Package, Megaphone, TrendingUp, AlertTriangle, RefreshCw, BarChart3, Upload, Zap, Crown } from "lucide-react"
+import { Loader2, Plus, Store, Pencil, Archive, DollarSign, Download, Star, Package, Megaphone, TrendingUp, AlertTriangle, RefreshCw, BarChart3, Upload, Zap, Crown, Eye } from "lucide-react"
+import { getTemplateImage } from "@/lib/category-defaults"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -303,43 +304,81 @@ export default function SellerDashboardPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {templates.map((t) => (
-            <Card key={t.id}>
+            <Card key={t.id} className={`overflow-hidden ${t.status === "archived" ? "opacity-70" : ""}`}>
+              {t.status === "archived" && (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-4 py-1.5 flex items-center gap-2">
+                  <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
+                  <span className="text-xs text-yellow-700 dark:text-yellow-400">This product is archived and not visible to buyers</span>
+                </div>
+              )}
               <CardContent className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 py-3">
+                {/* Product Image */}
+                <div className="w-16 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                  <img
+                    src={t.screenshots?.[0] || getTemplateImage([], t.category)}
+                    alt={t.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{t.title}</div>
-                  <div className="text-xs text-muted-foreground">{t.category}</div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant={statusColors[t.status] || "secondary"}>{t.status}</Badge>
-                  {promotions.has(t.id) && (
-                    <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-xs">
-                      ⭐ Promoted
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <div className="font-medium truncate">{t.title}</div>
+                    <Badge
+                      className={
+                        t.status === "published"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-1.5 py-0"
+                          : t.status === "draft"
+                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] px-1.5 py-0"
+                          : "text-muted-foreground text-[10px] px-1.5 py-0"
+                      }
+                      variant={t.status === "archived" ? "outline" : "default"}
+                    >
+                      {t.status}
                     </Badge>
-                  )}
-                  <span className="text-sm text-muted-foreground">{t.download_count} DLs</span>
-                  <span className="text-sm text-muted-foreground">★ {t.avg_rating.toFixed(1)}</span>
-                  <span className="text-sm font-medium">
-                    {t.price_cents > 0 ? `$${(t.price_cents / 100).toFixed(2)}` : "Free"}
-                  </span>
+                    {promotions.has(t.id) && (
+                      <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 text-[10px] px-1.5 py-0">
+                        ⭐ Promoted
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>{t.category}</span>
+                    <span className="font-medium text-foreground">
+                      {t.price_cents > 0 ? `$${(t.price_cents / 100).toFixed(2)}` : "Free"}
+                    </span>
+                    <span className="flex items-center gap-0.5"><Download className="h-3 w-3" />{t.download_count}</span>
+                    <span className="flex items-center gap-0.5"><Star className="h-3 w-3" />{t.avg_rating.toFixed(1)}</span>
+                  </div>
                 </div>
+
+                {/* Quick Actions */}
                 <div className="flex gap-1 shrink-0">
                   <Link href={`/dashboard/seller/edit/${t.id}`}>
-                    <Button variant="ghost" size="sm"><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="sm" className="text-xs h-8">
+                      <Pencil className="h-3.5 w-3.5 mr-1" />Edit
+                    </Button>
+                  </Link>
+                  <Link href={`/templates/${t.slug}`} target="_blank">
+                    <Button variant="ghost" size="sm" className="text-xs h-8">
+                      <Eye className="h-3.5 w-3.5 mr-1" />View
+                    </Button>
                   </Link>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="h-8"
                     onClick={() => t.status === "archived" ? toggleArchive(t) : setArchiveTarget(t)}
                     disabled={archiving === t.id}
                     title={t.status === "archived" ? "Restore" : "Archive"}
                   >
-                    {archiving === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Archive className="h-4 w-4" />}
+                    {archiving === t.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
                   </Button>
                   {t.status === "published" && (
-                    <Button variant="ghost" size="sm" onClick={() => setPromoteTarget(t)} disabled={promoting === t.id} title={promotions.has(t.id) ? "Re-promote to #1" : "Promote for $25"}>
-                      {promoting === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : promotions.has(t.id) ? <TrendingUp className="h-4 w-4 text-amber-500" /> : <Megaphone className="h-4 w-4" />}
+                    <Button variant="ghost" size="sm" className="h-8" onClick={() => setPromoteTarget(t)} disabled={promoting === t.id} title={promotions.has(t.id) ? "Re-promote to #1" : "Promote for $25"}>
+                      {promoting === t.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : promotions.has(t.id) ? <TrendingUp className="h-3.5 w-3.5 text-amber-500" /> : <Megaphone className="h-3.5 w-3.5" />}
                     </Button>
                   )}
                 </div>

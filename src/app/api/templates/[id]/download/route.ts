@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/admin"
+import { createAdminClient } from "@/lib/supabase/admin" 
 import { NextResponse } from "next/server"
 import JSZip from "jszip"
 
@@ -26,16 +26,30 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Fetch template with seller info
+    // Fetch template with seller info (don't filter by status yet)
     const { data: template } = await supabase
       .from("templates")
-      .select("id, title, slug, description, category, version, file_path, preview_data, seller:profiles!seller_id(username)")
+      .select("id, title, slug, description, category, version, file_path, preview_data, status, seller:profiles!seller_id(username)")
       .eq("id", id)
-      .eq("status", "published")
       .single()
 
     if (!template) {
       return NextResponse.json({ error: "Template not found" }, { status: 404 })
+    }
+
+    // If not published, only allow download if user has already purchased it
+    if (template.status !== "published") {
+      const admin = createAdminClient()
+      const client = admin || supabase
+      const { count } = await client
+        .from("purchases")
+        .select("id", { count: "exact", head: true })
+        .eq("template_id", id)
+        .eq("buyer_id", user.id)
+
+      if (!count || count === 0) {
+        return NextResponse.json({ error: "Template not found" }, { status: 404 })
+      }
     }
 
     // Record purchase (non-blocking — don't let failures prevent download)

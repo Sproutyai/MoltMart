@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 
 export async function PATCH(
   request: NextRequest,
@@ -56,6 +57,33 @@ export async function DELETE(
 
   if (!template) return NextResponse.json({ error: "Not found" }, { status: 404 })
   if (template.seller_id !== user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
+  // Check if any purchases exist — prevent hard delete if so
+  const admin = createAdminClient()
+  if (admin) {
+    const { count } = await admin
+      .from("purchases")
+      .select("id", { count: "exact", head: true })
+      .eq("template_id", id)
+    if (count && count > 0) {
+      return NextResponse.json(
+        { error: "This product has been purchased by buyers. You can archive it but not delete it." },
+        { status: 409 }
+      )
+    }
+  } else {
+    // Fallback: try with user client (may fail due to RLS but safer than allowing delete)
+    const { count } = await supabase
+      .from("purchases")
+      .select("id", { count: "exact", head: true })
+      .eq("template_id", id)
+    if (count && count > 0) {
+      return NextResponse.json(
+        { error: "This product has been purchased by buyers. You can archive it but not delete it." },
+        { status: 409 }
+      )
+    }
+  }
 
   // Delete storage file
   if (template.file_path) {
