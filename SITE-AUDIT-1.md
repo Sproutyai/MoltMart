@@ -196,4 +196,32 @@
 
 ## Auto-Fixes Applied
 
-The following changes were made directly:
+Commit: `ef7fdf9` — "fix: critical bugs found in site audit"
+
+| # | File | Change |
+|---|------|--------|
+| 1 | `src/app/api/account/delete/route.ts` | `reviews.delete().eq("user_id")` → `.eq("buyer_id")` |
+| 2 | `src/app/api/account/export/route.ts` | `reviews.select().eq("user_id")` → `.eq("buyer_id")` |
+| 3 | `src/app/api/account/delete/route.ts` | `affiliate_clicks` → `referral_clicks` |
+| 4 | `src/app/api/account/delete/route.ts` | `affiliate_referrals` → `referrals` |
+| 5 | `src/app/layout.tsx` | metadataBase → `https://molt-mart.vercel.app` |
+| 6 | `src/lib/affiliate.ts` | Base URL → `NEXT_PUBLIC_SITE_URL` fallback |
+| 7 | `src/app/api/promote/checkout/route.ts` | Fixed baseUrl fallback chain |
+
+---
+
+## Summary
+
+| Severity | Count |
+|----------|-------|
+| 🔴 Critical | 8 |
+| 🟡 Important | 11 |
+| 🟢 Minor | 9 |
+| **Auto-fixed** | **7** |
+
+**Top priorities for Thomas:**
+1. **#8** — DB check constraint doesn't allow `pending_review`/`flagged`/`deleted` statuses (template uploads will fail)
+2. **#5/#6** — Payment system is completely stubbed (no revenue possible)
+3. **#9** — Duplicate profile pages creating user confusion
+4. **#17** — No CSRF protection
+5. **#19** — Potential SQL injection in search tags filter
