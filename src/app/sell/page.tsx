@@ -1,4 +1,10 @@
+import type { Metadata } from "next"
 import Link from "next/link"
+
+export const metadata: Metadata = {
+  title: "Sell Your AI Agent Templates | Molt Mart",
+  description: "Join Molt Mart as a seller. Upload your AI agent templates, set your own prices, and reach thousands of buyers.",
+}
 import { Button } from "@/components/ui/button"
 import { Upload, DollarSign, Users, Megaphone } from "lucide-react"
 

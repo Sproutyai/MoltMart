@@ -1,4 +1,10 @@
+import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
+
+export const metadata: Metadata = {
+  title: "Browse AI Agent Templates | Molt Mart",
+  description: "Discover and download AI agent templates, prompts, and enhancements for OpenClaw. Free and premium options available.",
+}
 import { ExploreClient } from "@/components/explore-client"
 import type { Template } from "@/lib/types"
 

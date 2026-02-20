@@ -1,4 +1,10 @@
+import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
+
+export const metadata: Metadata = {
+  title: "Featured Templates | Molt Mart",
+  description: "Browse featured and promoted AI agent enhancements on Molt Mart, hand-picked by their creators.",
+}
 import { FeaturedGrid } from "@/components/featured-grid"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"

@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
@@ -19,6 +20,45 @@ import { BookmarkButton } from "@/components/bookmark-button"
 import { Download, Calendar, Shield, BookOpen, Cpu, History, Clock } from "lucide-react"
 import { SellerTrustSection } from "@/components/seller-trust-section"
 import type { Template, Review } from "@/lib/types"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const supabase = await createClient()
+  const { data: template } = await supabase
+    .from("templates")
+    .select("title, description, price_cents, screenshots")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .single()
+
+  if (!template) return { title: "Template Not Found | Molt Mart" }
+
+  const priceLabel = template.price_cents === 0 ? "Free" : `$${(template.price_cents / 100).toFixed(2)}`
+  const desc = `${priceLabel} — ${template.description}`.slice(0, 160)
+  const imageUrl = template.screenshots?.[0] || undefined
+
+  return {
+    title: `${template.title} | Molt Mart`,
+    description: desc,
+    openGraph: {
+      title: `${template.title} | Molt Mart`,
+      description: desc,
+      images: imageUrl ? [imageUrl] : [],
+      type: "website",
+      siteName: "Molt Mart",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${template.title} | Molt Mart`,
+      description: desc,
+      images: imageUrl ? [imageUrl] : [],
+    },
+  }
+}
 
 export default async function TemplateDetailPage({
   params,

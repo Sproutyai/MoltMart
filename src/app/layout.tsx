@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { CookieConsent } from "@/components/cookie-consent";
 import "./globals.css";
 
 const inter = Inter({
@@ -11,11 +12,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://moltmart.vercel.app"),
   title: "Molt Mart",
   description: "The marketplace for OpenClaw AI agent templates",
   icons: {
     icon: "/favicon.png",
     apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    siteName: "Molt Mart",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
   },
 };
 
@@ -34,6 +43,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <Toaster />
+          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>
