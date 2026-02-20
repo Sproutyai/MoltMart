@@ -56,12 +56,12 @@ export function TransactionTable({ transactions, sort, order, onSort }: Props) {
               <td className="px-4 py-3 text-sm whitespace-nowrap">
                 {format(new Date(t.created_at), "MMM d, yyyy h:mm a")}
               </td>
-              <td className="px-4 py-3 text-sm">
-                <Link href={`/templates/${t.template_slug}`} className="text-primary hover:underline">
+              <td className="px-4 py-3 text-sm max-w-[200px]">
+                <Link href={`/templates/${t.template_slug}`} className="text-primary hover:underline truncate block">
                   {t.template_title}
                 </Link>
               </td>
-              <td className="px-4 py-3 text-sm">{t.buyer_display_name || t.buyer_username}</td>
+              <td className="px-4 py-3 text-sm max-w-[150px] truncate">{t.buyer_display_name || t.buyer_username}</td>
               <td className="px-4 py-3 text-sm font-medium">{fmt(t.price_cents)}</td>
               <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(t.platform_fee_cents)}</td>
               <td className="px-4 py-3 text-sm font-medium">{fmt(t.seller_earnings_cents)}</td>

@@ -22,7 +22,6 @@ import {
   List,
   Calendar,
   DollarSign,
-  Filter,
 } from "lucide-react"
 import { format } from "date-fns"
 import type { Purchase, Template } from "@/lib/types"
@@ -193,17 +192,33 @@ export function LibraryClient({ purchases, reviewMap, bookmarkedIds = [], recomm
           />
         </div>
         <div className="flex items-center gap-2">
-          {/* Price filter */}
-          <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-          <select
-            value={priceFilter}
-            onChange={(e) => setPriceFilter(e.target.value as PriceFilter)}
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-          >
-            <option value="all">All ({purchases.length})</option>
-            <option value="free">Free ({freeCount})</option>
-            <option value="paid">Paid ({paidCount})</option>
-          </select>
+          {/* Price filter pills */}
+          <div className="flex items-center border rounded-md">
+            <Button
+              variant={priceFilter === "all" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-3 rounded-r-none text-xs whitespace-nowrap"
+              onClick={() => setPriceFilter("all")}
+            >
+              All ({purchases.length})
+            </Button>
+            <Button
+              variant={priceFilter === "free" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-3 rounded-none border-x text-xs whitespace-nowrap"
+              onClick={() => setPriceFilter("free")}
+            >
+              Free ({freeCount})
+            </Button>
+            <Button
+              variant={priceFilter === "paid" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-3 rounded-l-none text-xs whitespace-nowrap"
+              onClick={() => setPriceFilter("paid")}
+            >
+              Paid ({paidCount})
+            </Button>
+          </div>
           {/* Sort */}
           <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
           <select
@@ -285,7 +300,7 @@ export function LibraryClient({ purchases, reviewMap, bookmarkedIds = [], recomm
         /* ── List View ── */
         <div className="border rounded-lg overflow-hidden">
           {/* Table header — hidden on mobile */}
-          <div className="hidden sm:grid sm:grid-cols-[48px_1fr_120px_100px_120px_100px_80px_100px] gap-3 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground border-b">
+          <div className="hidden sm:grid sm:grid-cols-[48px_1fr_100px_90px_110px_80px_60px_auto] gap-3 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground border-b">
             <span></span>
             <span>Title</span>
             <span>Seller</span>
@@ -306,7 +321,7 @@ export function LibraryClient({ purchases, reviewMap, bookmarkedIds = [], recomm
               return (
                 <div
                   key={purchase.id}
-                  className="flex flex-col sm:grid sm:grid-cols-[48px_1fr_120px_100px_120px_100px_80px_100px] gap-2 sm:gap-3 px-4 py-3 items-start sm:items-center hover:bg-muted/30 transition-colors"
+                  className="flex flex-col sm:grid sm:grid-cols-[48px_1fr_100px_90px_110px_80px_60px_auto] gap-2 sm:gap-3 px-4 py-3 items-start sm:items-center hover:bg-muted/30 transition-colors"
                 >
                   {/* Thumbnail */}
                   <div className="w-12 h-12 rounded overflow-hidden shrink-0 bg-muted">
@@ -339,13 +354,13 @@ export function LibraryClient({ purchases, reviewMap, bookmarkedIds = [], recomm
                   </div>
 
                   {/* Seller — desktop */}
-                  <span className="hidden sm:block text-sm text-muted-foreground truncate">
+                  <span className="hidden sm:block text-sm text-muted-foreground truncate min-w-0">
                     {t.seller ? (t.seller.display_name || t.seller.username) : "—"}
                   </span>
 
                   {/* Category — desktop */}
-                  <span className="hidden sm:block">
-                    <Badge variant="secondary" className="text-xs font-normal">
+                  <span className="hidden sm:block min-w-0">
+                    <Badge variant="secondary" className="text-xs font-normal max-w-full truncate block">
                       {t.category}
                     </Badge>
                   </span>

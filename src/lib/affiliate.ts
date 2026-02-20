@@ -8,7 +8,7 @@ export function formatCents(cents: number): string {
 }
 
 export function getReferralUrl(code: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL || 'https://moltmart.com'
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://molt-mart.vercel.app'
   return `${base}/?ref=${code}`
 }
 

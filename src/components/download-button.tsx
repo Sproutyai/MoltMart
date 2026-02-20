@@ -53,7 +53,7 @@ export function DownloadButton({ templateId, templateSlug, templateName, isLogge
   }
 
   const downloadButton = (
-    <Button onClick={handleDownload} disabled={loading} className="w-full" size="lg">
+    <Button onClick={handleDownload} disabled={loading} className="w-full whitespace-nowrap" size="lg">
       {loading ? (
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       ) : (
@@ -80,7 +80,7 @@ export function DownloadButton({ templateId, templateSlug, templateName, isLogge
         ) : (
           downloadButton
         )}
-        <Button variant="outline" size="sm" className="w-full" onClick={() => setShowGuide(true)}>
+        <Button variant="outline" size="sm" className="w-full whitespace-nowrap" onClick={() => setShowGuide(true)}>
           <BookOpen className="mr-2 h-4 w-4" />
           How to Install
         </Button>

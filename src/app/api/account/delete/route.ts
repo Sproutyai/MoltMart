@@ -11,7 +11,7 @@ export async function POST() {
     const userId = user.id
 
     // 1. Delete reviews
-    await supabase.from("reviews").delete().eq("user_id", userId)
+    await supabase.from("reviews").delete().eq("buyer_id", userId)
 
     // 2. Delete bookmarks
     await supabase.from("bookmarks").delete().eq("user_id", userId)
@@ -27,10 +27,10 @@ export async function POST() {
 
     if (affiliates && affiliates.length > 0) {
       const affiliateIds = affiliates.map((a) => a.id)
-      await supabase.from("affiliate_clicks").delete().in("affiliate_id", affiliateIds)
+      await supabase.from("referral_clicks").delete().in("affiliate_id", affiliateIds)
 
-      // 5. Delete affiliate_referrals
-      await supabase.from("affiliate_referrals").delete().in("affiliate_id", affiliateIds)
+      // 5. Delete referrals
+      await supabase.from("referrals").delete().in("affiliate_id", affiliateIds)
     }
 
     // 6. Delete affiliates

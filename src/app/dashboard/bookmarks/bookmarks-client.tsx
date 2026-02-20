@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TemplateCard } from "@/components/template-card"
-import { Heart, Search, ArrowUpDown, ShoppingBag } from "lucide-react"
+import { Heart, Search, ArrowUpDown, ShoppingBag, Filter } from "lucide-react"
 import type { Template } from "@/lib/types"
 
 type SortOption = "recent" | "alpha" | "category"
+type PriceFilter = "all" | "free" | "paid"
 
 interface BookmarksClientProps {
   templates: (Template & { seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } })[]
@@ -21,6 +22,7 @@ export function BookmarksClient({ templates: initialTemplates, purchasedIds = []
   const [search, setSearch] = useState("")
   const [sort, setSort] = useState<SortOption>("recent")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [priceFilter, setPriceFilter] = useState<PriceFilter>("all")
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set())
 
   const purchasedSet = useMemo(() => new Set(purchasedIds), [purchasedIds])
@@ -30,6 +32,9 @@ export function BookmarksClient({ templates: initialTemplates, purchasedIds = []
     () => initialTemplates.filter((t) => !removedIds.has(t.id)),
     [initialTemplates, removedIds]
   )
+
+  const freeCount = useMemo(() => templates.filter(t => t.price_cents === 0).length, [templates])
+  const paidCount = useMemo(() => templates.filter(t => t.price_cents > 0).length, [templates])
 
   const categories = useMemo(() => {
     const cats = new Set<string>()
@@ -53,6 +58,12 @@ export function BookmarksClient({ templates: initialTemplates, purchasedIds = []
       items = items.filter((t) => t.category === categoryFilter)
     }
 
+    if (priceFilter === "free") {
+      items = items.filter((t) => t.price_cents === 0)
+    } else if (priceFilter === "paid") {
+      items = items.filter((t) => t.price_cents > 0)
+    }
+
     switch (sort) {
       case "alpha":
         items.sort((a, b) => (a.title || "").localeCompare(b.title || ""))
@@ -66,7 +77,7 @@ export function BookmarksClient({ templates: initialTemplates, purchasedIds = []
     }
 
     return items
-  }, [templates, search, sort, categoryFilter])
+  }, [templates, search, sort, categoryFilter, priceFilter])
 
   // Empty state — no bookmarks at all
   if (templates.length === 0) {
@@ -122,6 +133,33 @@ export function BookmarksClient({ templates: initialTemplates, purchasedIds = []
           />
         </div>
         <div className="flex items-center gap-2">
+          {/* Price filter pills */}
+          <div className="flex items-center border rounded-md">
+            <Button
+              variant={priceFilter === "all" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-3 rounded-r-none text-xs whitespace-nowrap"
+              onClick={() => setPriceFilter("all")}
+            >
+              All ({templates.length})
+            </Button>
+            <Button
+              variant={priceFilter === "free" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-3 rounded-none border-x text-xs whitespace-nowrap"
+              onClick={() => setPriceFilter("free")}
+            >
+              Free ({freeCount})
+            </Button>
+            <Button
+              variant={priceFilter === "paid" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-3 rounded-l-none text-xs whitespace-nowrap"
+              onClick={() => setPriceFilter("paid")}
+            >
+              Paid ({paidCount})
+            </Button>
+          </div>
           <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
           <select
             value={sort}
@@ -164,7 +202,7 @@ export function BookmarksClient({ templates: initialTemplates, purchasedIds = []
       )}
 
       {/* Results count */}
-      {search && (
+      {(search || priceFilter !== "all") && (
         <p className="text-sm text-muted-foreground mb-4">
           {filtered.length} result{filtered.length !== 1 ? "s" : ""} found
         </p>
@@ -175,12 +213,25 @@ export function BookmarksClient({ templates: initialTemplates, purchasedIds = []
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-12">
             <Search className="h-8 w-8 text-muted-foreground" />
-            <p className="text-muted-foreground">No matching bookmarks found</p>
-            {search && (
-              <Button variant="outline" size="sm" onClick={() => setSearch("")}>
-                Clear search
-              </Button>
-            )}
+            <p className="text-muted-foreground">
+              {priceFilter === "free"
+                ? "No free bookmarked enhancements"
+                : priceFilter === "paid"
+                  ? "No paid bookmarked enhancements"
+                  : "No matching bookmarks found"}
+            </p>
+            <div className="flex gap-2">
+              {search && (
+                <Button variant="outline" size="sm" onClick={() => setSearch("")}>
+                  Clear search
+                </Button>
+              )}
+              {priceFilter !== "all" && (
+                <Button variant="outline" size="sm" onClick={() => setPriceFilter("all")}>
+                  Show all
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       ) : (

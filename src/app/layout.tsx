@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://moltmart.vercel.app"),
+  metadataBase: new URL("https://molt-mart.vercel.app"),
   title: "Molt Mart",
   description: "The marketplace for OpenClaw AI agent templates",
   icons: {

@@ -59,9 +59,9 @@ export function CheckoutModal({ templateId, title, priceCents, children }: Check
           <DialogDescription>Complete your purchase to download this template.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <div className="flex items-center justify-between">
-            <span className="font-medium">{title}</span>
-            <span className="text-lg font-bold">${(priceCents / 100).toFixed(2)}</span>
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <span className="font-medium min-w-0 truncate">{title}</span>
+            <span className="text-lg font-bold shrink-0">${(priceCents / 100).toFixed(2)}</span>
           </div>
           <Button onClick={handleCheckout} disabled={loading} className="w-full" size="lg">
             {loading ? (

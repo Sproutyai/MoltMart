@@ -11,7 +11,7 @@ export async function GET() {
   const [profile, templates, reviews, purchases, bookmarks, affiliate] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", uid).single(),
     supabase.from("templates").select("*").eq("seller_id", uid),
-    supabase.from("reviews").select("*").eq("user_id", uid),
+    supabase.from("reviews").select("*").eq("buyer_id", uid),
     supabase.from("purchases").select("*").eq("buyer_id", uid),
     supabase.from("bookmarks").select("*").eq("user_id", uid),
     supabase.from("affiliates").select("*").eq("user_id", uid).maybeSingle(),

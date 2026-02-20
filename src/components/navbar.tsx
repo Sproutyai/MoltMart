@@ -86,7 +86,7 @@ export async function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <div className="px-2 py-1.5 text-sm font-medium">{profile.display_name || profile.username}</div>
+                  <div className="px-2 py-1.5 text-sm font-medium truncate">{profile.display_name || profile.username}</div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard">Dashboard</Link>
