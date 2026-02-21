@@ -11,7 +11,6 @@ interface NavLinksProps {
 }
 
 const links = [
-  { href: "/", label: "Home", match: (p: string) => p === "/" },
   { href: "/templates", label: "Explore", match: (p: string) => p === "/templates" },
   { href: "/templates/new", label: "New", match: (p: string) => p === "/templates/new" },
   { href: "/templates/featured", label: "Featured", match: (p: string) => p === "/templates/featured" },
@@ -23,7 +22,6 @@ export function NavLinks({ isSeller, isLoggedIn, isAffiliate }: NavLinksProps) {
   return (
     <>
       {links
-        .filter((l) => !(l.href === "/" && pathname === "/"))
         .map((l) => (
         <Link
           key={l.href}

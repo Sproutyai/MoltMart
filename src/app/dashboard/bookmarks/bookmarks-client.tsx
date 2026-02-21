@@ -1,17 +1,25 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TemplateCard } from "@/components/template-card"
-import { Heart, Search, ArrowUpDown, ShoppingBag, Filter } from "lucide-react"
+import { Heart, Search, ArrowUpDown, ShoppingBag, Filter, LayoutGrid, List, Star, ExternalLink } from "lucide-react"
+import { SafeImage } from "@/components/safe-image"
+import { CategoryPlaceholder } from "@/components/category-placeholder"
 import type { Template } from "@/lib/types"
 
 type SortOption = "recent" | "alpha" | "category"
 type PriceFilter = "all" | "free" | "paid"
+type ViewMode = "card" | "list"
+
+function getStoredViewMode(): ViewMode {
+  if (typeof window === "undefined") return "card"
+  return (localStorage.getItem("molt-bookmarks-view") as ViewMode) || "card"
+}
 
 interface BookmarksClientProps {
   templates: (Template & { seller?: { username: string; display_name: string | null; avatar_url?: string | null; is_verified?: boolean; github_verified?: boolean; twitter_verified?: boolean } })[]
@@ -24,6 +32,25 @@ export function BookmarksClient({ templates: initialTemplates, purchasedIds = []
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [priceFilter, setPriceFilter] = useState<PriceFilter>("all")
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set())
+  const [viewMode, setViewMode] = useState<ViewMode>("card")
+
+  useEffect(() => {
+    setViewMode(getStoredViewMode())
+  }, [])
+
+  function changeViewMode(mode: ViewMode) {
+    setViewMode(mode)
+    localStorage.setItem("molt-bookmarks-view", mode)
+  }
+
+  async function handleUnbookmark(templateId: string) {
+    try {
+      await fetch("/api/bookmarks", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ templateId }) })
+      setRemovedIds((prev) => new Set(prev).add(templateId))
+    } catch {
+      // silently fail
+    }
+  }
 
   const purchasedSet = useMemo(() => new Set(purchasedIds), [purchasedIds])
 
@@ -113,12 +140,34 @@ export function BookmarksClient({ templates: initialTemplates, purchasedIds = []
           <Heart className="text-red-500" size={24} /> My Bookmarks
           <span className="text-base font-normal text-muted-foreground">({templates.length})</span>
         </h1>
-        <Link href="/templates">
-          <Button variant="outline" size="sm">
-            <ShoppingBag className="mr-2 h-4 w-4" />
-            Browse Enhancements
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center border rounded-md">
+            <Button
+              variant={viewMode === "card" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-2 rounded-r-none"
+              onClick={() => changeViewMode("card")}
+              title="Card view"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-2 rounded-l-none"
+              onClick={() => changeViewMode("list")}
+              title="List view"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+          <Link href="/templates">
+            <Button variant="outline" size="sm">
+              <ShoppingBag className="mr-2 h-4 w-4" />
+              Browse Enhancements
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Search + Sort */}
@@ -235,22 +284,114 @@ export function BookmarksClient({ templates: initialTemplates, purchasedIds = []
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((t) => (
-            <div key={t.id} className="relative">
-              {purchasedSet.has(t.id) && (
-                <Badge className="absolute top-2 right-2 z-10 bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-5">
-                  ✓ Purchased
-                </Badge>
-              )}
-              <TemplateCard
-                template={t}
-                initialBookmarked={true}
-                onBookmarkRemove={() => setRemovedIds((prev) => new Set(prev).add(t.id))}
-              />
+        viewMode === "list" ? (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="hidden sm:grid sm:grid-cols-[48px_1fr_100px_90px_80px_60px_auto] gap-3 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground border-b">
+              <span></span>
+              <span>Title</span>
+              <span>Seller</span>
+              <span>Category</span>
+              <span>Price</span>
+              <span>Rating</span>
+              <span></span>
             </div>
-          ))}
-        </div>
+            <div className="divide-y">
+              {filtered.map((t) => {
+                const templateUrl = `/templates/${t.slug}`
+                const screenshot = t.screenshots?.[0]
+                return (
+                  <div
+                    key={t.id}
+                    className="flex flex-col sm:grid sm:grid-cols-[48px_1fr_100px_90px_80px_60px_auto] gap-2 sm:gap-3 px-4 py-3 items-start sm:items-center hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="w-12 h-12 rounded overflow-hidden shrink-0 bg-muted">
+                      {screenshot ? (
+                        <SafeImage src={screenshot} alt={t.title} width={48} height={48} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full"><CategoryPlaceholder category={t.category} /></div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <Link href={templateUrl} className="font-medium text-sm hover:underline truncate block">{t.title}</Link>
+                      <div className="sm:hidden flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground mt-1">
+                        {t.seller && <span>by {t.seller.display_name || t.seller.username}</span>}
+                        <span>{t.price_cents === 0 ? "Free" : `$${(t.price_cents / 100).toFixed(2)}`}</span>
+                        {purchasedSet.has(t.id) && <span className="text-emerald-500 font-medium">✓ Purchased</span>}
+                      </div>
+                    </div>
+                    <span className="hidden sm:block text-sm text-muted-foreground truncate min-w-0">
+                      {t.seller ? (t.seller.display_name || t.seller.username) : "—"}
+                    </span>
+                    <span className="hidden sm:block min-w-0">
+                      <Badge variant="secondary" className="text-xs font-normal max-w-full truncate block">{t.category}</Badge>
+                    </span>
+                    <span className="hidden sm:block text-sm font-medium">
+                      {t.price_cents === 0 ? <span className="text-green-500">Free</span> : `$${(t.price_cents / 100).toFixed(2)}`}
+                    </span>
+                    <span className="hidden sm:block">
+                      {t.avg_rating ? (
+                        <div className="flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          <span className="text-xs">{t.avg_rating.toFixed(1)}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </span>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      {purchasedSet.has(t.id) && (
+                        <Badge className="hidden sm:inline-flex bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-5">✓ Purchased</Badge>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-red-500 hover:text-red-600 hover:bg-red-50"
+                        onClick={() => handleUnbookmark(t.id)}
+                        title="Remove bookmark"
+                      >
+                        <Heart className="h-4 w-4 fill-current" />
+                      </Button>
+                      <Link href={templateUrl}>
+                        <Button variant="outline" size="sm" className="h-8">
+                          <ExternalLink className="mr-1 h-3 w-3" />
+                          View
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((t) => {
+              const templateUrl = `/templates/${t.slug}`
+              return (
+                <TemplateCard
+                  key={t.id}
+                  template={t}
+                  variant="library"
+                  initialBookmarked={true}
+                  onBookmarkRemove={() => setRemovedIds((prev) => new Set(prev).add(t.id))}
+                  actions={
+                    <div className="flex flex-col gap-2 w-full">
+                      {purchasedSet.has(t.id) && (
+                        <Badge className="bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-5 w-fit">✓ Purchased</Badge>
+                      )}
+                      <Link href={templateUrl}>
+                        <Button variant="outline" size="sm" className="w-full">
+                          <ExternalLink className="mr-2 h-3 w-3" />
+                          View Listing
+                        </Button>
+                      </Link>
+                    </div>
+                  }
+                />
+              )
+            })}
+          </div>
+        )
       )}
     </div>
   )

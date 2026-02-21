@@ -40,9 +40,6 @@ export function MobileNav({ isLoggedIn, isSeller, isAffiliate }: MobileNavProps)
           {/* Mobile Search — opens search popup */}
           <SearchPopup mobile />
 
-          {pathname !== "/" && (
-            <Link href="/" onClick={close} className={linkClass(pathname === "/")}>Home</Link>
-          )}
           <Link href="/templates" onClick={close} className={linkClass(pathname === "/templates")}>Explore</Link>
           <Link href="/templates/new" onClick={close} className={linkClass(pathname === "/templates/new")}>New Listings</Link>
           <Link href="/templates/featured" onClick={close} className={linkClass(pathname === "/templates/featured")}>Featured</Link>
