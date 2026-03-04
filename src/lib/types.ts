@@ -23,6 +23,7 @@ export interface Profile {
   is_seller: boolean
   is_verified?: boolean
   follower_count?: number
+  notification_prefs?: Record<string, boolean> | null
   created_at: string
   last_active_at?: string | null
 }
